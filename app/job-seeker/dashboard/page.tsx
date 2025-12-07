@@ -597,7 +597,9 @@ export default function Dashboard() {
 
                   <div className="flex items-center justify-between pt-4 border-t border-gray-50 dark:border-gray-700">
                     <span className="text-[10px] text-gray-400 dark:text-gray-500">
-                      {formatRelativeTime(new Date(Date.now() - 4 * 60 * 60 * 1000))}
+                      {formatRelativeTime(
+                        new Date(Date.now() - 4 * 60 * 60 * 1000)
+                      )}
                     </span>
                     <button className="text-xs font-semibold text-white bg-gray-900 dark:bg-gray-700 px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all transform translate-y-1 group-hover:translate-y-0">
                       Apply Now
@@ -642,7 +644,9 @@ export default function Dashboard() {
 
                   <div className="flex items-center justify-between pt-4 border-t border-gray-50 dark:border-gray-700">
                     <span className="text-[10px] text-gray-400 dark:text-gray-500">
-                      {formatRelativeTime(new Date(Date.now() - 24 * 60 * 60 * 1000))}
+                      {formatRelativeTime(
+                        new Date(Date.now() - 24 * 60 * 60 * 1000)
+                      )}
                     </span>
                     <button className="text-xs font-semibold text-white bg-gray-900 dark:bg-gray-700 px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all transform translate-y-1 group-hover:translate-y-0">
                       Apply Now

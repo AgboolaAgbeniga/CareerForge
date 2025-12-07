@@ -480,7 +480,11 @@ export default function PostJob() {
                         : 'Contract'}
                   </span>
                   <span className="px-2 py-1 rounded-md bg-white/5 border border-white/10 text-[10px] text-slate-300">
-                    {formatSalaryRange(parseInt(salaryMin), parseInt(salaryMax), 'USD')}
+                    {formatSalaryRange(
+                      parseInt(salaryMin),
+                      parseInt(salaryMax),
+                      'USD'
+                    )}
                   </span>
                   <span className="px-2 py-1 rounded-md bg-white/5 border border-white/10 text-[10px] text-slate-300">
                     Senior Level

@@ -3,9 +3,11 @@
 
 npx --no -- commitlint --edit ${1}
 
-# Check branch name
-branch=$(git rev-parse --abbrev-ref HEAD)
-if [[ ! $branch =~ ^(main|master|feature|bugfix|hotfix)/ ]]; then
-  echo "Branch name must start with main/, master/, feature/, bugfix/, or hotfix/"
-  exit 1
+# Check branch name (skip if no commits yet)
+if git rev-parse --verify HEAD >/dev/null 2>&1; then
+  branch=$(git rev-parse --abbrev-ref HEAD)
+  if [[ ! $branch =~ ^(main|master|feature/|bugfix/|hotfix/) ]]; then
+    echo "Branch name must be 'main', 'master', or start with 'feature/', 'bugfix/', or 'hotfix/'"
+    exit 1
+  fi
 fi

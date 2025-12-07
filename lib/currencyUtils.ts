@@ -5,7 +5,11 @@
  * @param locale - Optional locale string (defaults to browser locale)
  * @returns Formatted currency string
  */
-export function formatCurrency(amount: number, currency: string, locale?: string): string {
+export function formatCurrency(
+  amount: number,
+  currency: string,
+  locale?: string
+): string {
   try {
     const formatter = new Intl.NumberFormat(locale, {
       style: 'currency',
@@ -31,7 +35,12 @@ export function formatCurrency(amount: number, currency: string, locale?: string
  * @param locale - Optional locale string (defaults to browser locale)
  * @returns Formatted salary range string (e.g., "$50,000 - $70,000")
  */
-export function formatSalaryRange(min: number, max: number, currency: string, locale?: string): string {
+export function formatSalaryRange(
+  min: number,
+  max: number,
+  currency: string,
+  locale?: string
+): string {
   const formattedMin = formatCurrency(min, currency, locale);
   const formattedMax = formatCurrency(max, currency, locale);
   return `${formattedMin} - ${formattedMax}`;

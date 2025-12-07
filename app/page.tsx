@@ -16,7 +16,6 @@ import {
 } from 'lucide-react';
 
 const Hero: React.FC = () => {
-
   return (
     <section className="relative pt-32 pb-32 lg:pt-40 lg:pb-48 hero-glow overflow-hidden">
       <div className="max-w-7xl mx-auto px-6 relative z-10 text-center">
@@ -157,7 +156,6 @@ const Hero: React.FC = () => {
 };
 
 const ValueProposition: React.FC = () => {
-
   return (
     <section className="bg-slate-50 py-24 relative">
       <div className="max-w-7xl mx-auto px-6">
@@ -171,7 +169,9 @@ const ValueProposition: React.FC = () => {
               For Job Seekers
             </h2>
             <p className="text-slate-500 mb-8 leading-relaxed">
-              Discover your dream job with our AI-powered platform. Upload your resume and get matched with opportunities that fit your skills and preferences.
+              Discover your dream job with our AI-powered platform. Upload your
+              resume and get matched with opportunities that fit your skills and
+              preferences.
             </p>
 
             <ul className="space-y-4 mb-10">
@@ -213,16 +213,19 @@ const ValueProposition: React.FC = () => {
               For Recruiters
             </h2>
             <p className="text-slate-500 mb-8 leading-relaxed">
-              Find the best candidates quickly with our intelligent matching system.
+              Find the best candidates quickly with our intelligent matching
+              system.
             </p>
 
             <ul className="space-y-4 mb-10">
-              {["Smart candidate screening", "Automated resume parsing", "Advanced analytics"].map((feature: string, index: number) => (
+              {[
+                'Smart candidate screening',
+                'Automated resume parsing',
+                'Advanced analytics',
+              ].map((feature: string, index: number) => (
                 <li key={index} className="flex items-start gap-3">
                   <CheckCircle2 className="w-5 h-5 text-teal-500 mt-0.5 shrink-0" />
-                  <span className="text-slate-600 text-sm">
-                    {feature}
-                  </span>
+                  <span className="text-slate-600 text-sm">{feature}</span>
                 </li>
               ))}
             </ul>
@@ -242,7 +245,6 @@ const ValueProposition: React.FC = () => {
 };
 
 const FeaturesGrid: React.FC = () => {
-
   return (
     <section className="py-24 bg-white relative">
       <div className="max-w-7xl mx-auto px-6">
@@ -257,12 +259,41 @@ const FeaturesGrid: React.FC = () => {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[
-            { title: "Resume Analysis", description: "Get detailed insights into your resume with AI-powered analysis.", learnMore: "Learn more" },
-            { title: "AI Matching", description: "Our advanced algorithms find the perfect job matches for you.", learnMore: "Learn more" },
-            { title: "Career Guidance", description: "Receive personalized career advice and recommendations.", learnMore: "Learn more" },
-            { title: "Analytics Dashboard", description: "Track your job search progress with comprehensive analytics.", learnMore: "Learn more" },
-            { title: "Fast Application", description: "Apply to jobs in seconds with our streamlined process.", learnMore: "Learn more" },
-            { title: "Global Reach", description: "Connect with opportunities worldwide.", learnMore: "Learn more" }
+            {
+              title: 'Resume Analysis',
+              description:
+                'Get detailed insights into your resume with AI-powered analysis.',
+              learnMore: 'Learn more',
+            },
+            {
+              title: 'AI Matching',
+              description:
+                'Our advanced algorithms find the perfect job matches for you.',
+              learnMore: 'Learn more',
+            },
+            {
+              title: 'Career Guidance',
+              description:
+                'Receive personalized career advice and recommendations.',
+              learnMore: 'Learn more',
+            },
+            {
+              title: 'Analytics Dashboard',
+              description:
+                'Track your job search progress with comprehensive analytics.',
+              learnMore: 'Learn more',
+            },
+            {
+              title: 'Fast Application',
+              description:
+                'Apply to jobs in seconds with our streamlined process.',
+              learnMore: 'Learn more',
+            },
+            {
+              title: 'Global Reach',
+              description: 'Connect with opportunities worldwide.',
+              learnMore: 'Learn more',
+            },
           ].map((item: any, index: number) => {
             const colors = [
               { bg: 'bg-indigo-600', text: 'text-indigo-600' },
@@ -274,8 +305,13 @@ const FeaturesGrid: React.FC = () => {
             ];
             const color = colors[index % colors.length];
             return (
-              <div key={index} className="group p-8 rounded-3xl bg-slate-50 border border-slate-100 hover:shadow-xl hover:shadow-indigo-500/10 transition-all duration-300 cursor-pointer">
-                <div className={`w-10 h-10 rounded-lg bg-white border border-slate-200 flex items-center justify-center ${color.text} mb-6 shadow-sm`}>
+              <div
+                key={index}
+                className="group p-8 rounded-3xl bg-slate-50 border border-slate-100 hover:shadow-xl hover:shadow-indigo-500/10 transition-all duration-300 cursor-pointer"
+              >
+                <div
+                  className={`w-10 h-10 rounded-lg bg-white border border-slate-200 flex items-center justify-center ${color.text} mb-6 shadow-sm`}
+                >
                   {/* Icon would be dynamic, but for now keep hardcoded or add to json */}
                   {index === 0 && <FileText className="w-5 h-5" />}
                   {index === 1 && <Sparkles className="w-5 h-5" />}
@@ -290,7 +326,9 @@ const FeaturesGrid: React.FC = () => {
                 <p className="text-sm text-slate-500 mb-4">
                   {item.description}
                 </p>
-                <span className={`text-xs font-medium ${color.text} group-hover:underline`}>
+                <span
+                  className={`text-xs font-medium ${color.text} group-hover:underline`}
+                >
                   {item.learnMore}
                 </span>
               </div>
@@ -303,7 +341,6 @@ const FeaturesGrid: React.FC = () => {
 };
 
 const Testimonials: React.FC = () => {
-
   return (
     <section className="py-24 bg-gradient-to-b from-white to-indigo-50/50 relative">
       <div className="curve-top transform rotate-180">
@@ -329,11 +366,24 @@ const Testimonials: React.FC = () => {
 
         <div className="grid md:grid-cols-2 gap-8">
           {[
-            { quote: "This platform changed my job search completely!", name: "Sarah Johnson", role: "Software Engineer" },
-            { quote: "Hiring has never been easier.", name: "Mike Chen", role: "HR Manager" }
+            {
+              quote: 'This platform changed my job search completely!',
+              name: 'Sarah Johnson',
+              role: 'Software Engineer',
+            },
+            {
+              quote: 'Hiring has never been easier.',
+              name: 'Mike Chen',
+              role: 'HR Manager',
+            },
           ].map((item: any, index: number) => (
-            <div key={index} className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 relative">
-              <Quote className={`absolute top-8 right-8 w-8 h-8 fill-opacity-10 ${index === 0 ? 'text-indigo-100 fill-indigo-50' : 'text-teal-100 fill-teal-50'}`} />
+            <div
+              key={index}
+              className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 relative"
+            >
+              <Quote
+                className={`absolute top-8 right-8 w-8 h-8 fill-opacity-10 ${index === 0 ? 'text-indigo-100 fill-indigo-50' : 'text-teal-100 fill-teal-50'}`}
+              />
               <p className="text-slate-700 text-lg mb-6 leading-relaxed">
                 "{item.quote}"
               </p>
@@ -347,9 +397,7 @@ const Testimonials: React.FC = () => {
                   <p className="text-sm font-semibold text-slate-900">
                     {item.name}
                   </p>
-                  <p className="text-xs text-slate-500">
-                    {item.role}
-                  </p>
+                  <p className="text-xs text-slate-500">{item.role}</p>
                 </div>
               </div>
             </div>
@@ -361,7 +409,6 @@ const Testimonials: React.FC = () => {
 };
 
 const CallToAction: React.FC = () => {
-
   return (
     <section className="relative py-24 px-6">
       <div className="max-w-5xl mx-auto bg-slate-900 rounded-[2.5rem] p-10 md:p-16 text-center relative overflow-hidden shadow-2xl shadow-indigo-900/40">

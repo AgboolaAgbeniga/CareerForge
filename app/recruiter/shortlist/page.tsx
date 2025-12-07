@@ -216,7 +216,12 @@ export default function Shortlist() {
                       {job.title}
                     </h2>
                     <p className="text-sm text-slate-400">
-                      {job.location} • Posted {formatRelativeTime(new Date(Date.now() - job.postedDays * 24 * 60 * 60 * 1000))}
+                      {job.location} • Posted{' '}
+                      {formatRelativeTime(
+                        new Date(
+                          Date.now() - job.postedDays * 24 * 60 * 60 * 1000
+                        )
+                      )}
                     </p>
                   </div>
                 </div>

@@ -61,10 +61,12 @@ We maintain high code quality through automated tools and consistent conventions
 ### ESLint Configuration
 
 Our ESLint configuration (`.eslintrc.json`) extends:
+
 - `next/core-web-vitals`: Next.js recommended rules for performance and accessibility
 - `prettier`: Integrates Prettier formatting rules
 
 Custom rules:
+
 - `react/no-unescaped-entities`: Disabled (allows unescaped entities in JSX)
 - `@next/next/no-img-element`: Disabled (allows `<img>` tags)
 - `prettier/prettier`: Set to error (formatting issues are treated as errors)
@@ -72,6 +74,7 @@ Custom rules:
 ### Prettier Configuration
 
 Our Prettier configuration (`.prettierrc.json`) enforces:
+
 - Semicolons: Required
 - Trailing commas: ES5 style (trailing commas where valid in ES5)
 - Quotes: Single quotes preferred
@@ -97,6 +100,7 @@ Always run `npm run format` before committing to ensure consistent formatting.
 ## Pull Request Guidelines
 
 1. **Create a Feature Branch**:
+
    ```bash
    git checkout -b feature/your-feature-name
    ```
@@ -107,6 +111,7 @@ Always run `npm run format` before committing to ensure consistent formatting.
    - Test your changes thoroughly
 
 3. **Run Quality Checks**:
+
    ```bash
    npm run lint
    npm run format:check
@@ -114,6 +119,7 @@ Always run `npm run format` before committing to ensure consistent formatting.
    ```
 
 4. **Commit and Push**:
+
    ```bash
    git add .
    git commit -m "feat: add your feature description"
@@ -133,6 +139,7 @@ Always run `npm run format` before committing to ensure consistent formatting.
 ### Commit Message Convention
 
 We follow conventional commits:
+
 - `feat:` for new features
 - `fix:` for bug fixes
 - `docs:` for documentation changes
@@ -186,6 +193,7 @@ career-forge/
 ## Testing
 
 Currently, we don't have automated tests set up. When contributing:
+
 - Manually test your changes in the browser
 - Ensure no console errors
 - Test on different screen sizes
@@ -194,6 +202,7 @@ Currently, we don't have automated tests set up. When contributing:
 ## Reporting Issues
 
 When reporting bugs or requesting features:
+
 - Use GitHub Issues
 - Provide detailed descriptions
 - Include steps to reproduce

@@ -4,7 +4,9 @@
  * Formats a date in short style (e.g., "12/7/25")
  */
 export function formatShortDate(date: Date): string {
-  return new Intl.DateTimeFormat(undefined, { dateStyle: 'short' }).format(date);
+  return new Intl.DateTimeFormat(undefined, { dateStyle: 'short' }).format(
+    date
+  );
 }
 
 /**

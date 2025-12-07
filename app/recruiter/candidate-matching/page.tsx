@@ -247,7 +247,9 @@ export default function CandidateMatching() {
                         </span>
                         <span className="flex items-center gap-1">
                           <Icon icon="lucide:calendar" width={12} />
-                          {formatRelativeTime(new Date(Date.now() - 2 * 24 * 60 * 60 * 1000))}
+                          {formatRelativeTime(
+                            new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)
+                          )}
                         </span>
                         <span className="flex items-center gap-1 text-indigo-300 bg-indigo-500/10 px-1.5 py-0.5 rounded">
                           <Icon icon="lucide:users" width={12} />
@@ -608,7 +610,9 @@ export default function CandidateMatching() {
                   <p className="text-xs text-slate-300">
                     Sarah replied to interview request.
                   </p>
-                  <p className="text-[10px] text-slate-500 mt-0.5">{formatRelativeTime(new Date(Date.now() - 10 * 60 * 1000))}</p>
+                  <p className="text-[10px] text-slate-500 mt-0.5">
+                    {formatRelativeTime(new Date(Date.now() - 10 * 60 * 1000))}
+                  </p>
                 </div>
               </div>
               <div className="p-3 rounded-lg hover:bg-white/5 transition-colors cursor-pointer flex gap-3">
@@ -621,7 +625,9 @@ export default function CandidateMatching() {
                   <p className="text-xs text-slate-300">
                     New match for Backend Role.
                   </p>
-                  <p className="text-[10px] text-slate-500 mt-0.5">{formatRelativeTime(new Date(Date.now() - 60 * 60 * 1000))}</p>
+                  <p className="text-[10px] text-slate-500 mt-0.5">
+                    {formatRelativeTime(new Date(Date.now() - 60 * 60 * 1000))}
+                  </p>
                 </div>
               </div>
             </div>

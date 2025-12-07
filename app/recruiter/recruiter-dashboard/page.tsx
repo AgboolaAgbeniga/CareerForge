@@ -462,7 +462,11 @@ export default function RecruiterDashboard() {
                             Date Posted
                           </span>
                         </div>
-                        <p className="text-white">{formatRelativeTime(new Date(Date.now() - 3 * 24 * 60 * 60 * 1000))}</p>
+                        <p className="text-white">
+                          {formatRelativeTime(
+                            new Date(Date.now() - 3 * 24 * 60 * 60 * 1000)
+                          )}
+                        </p>
                       </div>
                     </div>
 
@@ -907,7 +911,13 @@ export default function RecruiterDashboard() {
                               {job.title}
                             </h4>
                             <p className="text-xs text-slate-500">
-                              {job.location} • Posted {formatRelativeTime(new Date(Date.now() - job.postedDays * 24 * 60 * 60 * 1000))}
+                              {job.location} • Posted{' '}
+                              {formatRelativeTime(
+                                new Date(
+                                  Date.now() -
+                                    job.postedDays * 24 * 60 * 60 * 1000
+                                )
+                              )}
                             </p>
                           </div>
                           <span
@@ -1106,19 +1116,25 @@ export default function RecruiterDashboard() {
                     icon: 'user-plus',
                     color: 'indigo',
                     message: '5 new candidates matched for "Backend Engineer".',
-                    time: formatRelativeTime(new Date(Date.now() - 10 * 60 * 1000)),
+                    time: formatRelativeTime(
+                      new Date(Date.now() - 10 * 60 * 1000)
+                    ),
                   },
                   {
                     icon: 'check-circle',
                     color: 'emerald',
                     message: 'Job posting "Marketing Lead" is now Live.',
-                    time: formatRelativeTime(new Date(Date.now() - 60 * 60 * 1000)),
+                    time: formatRelativeTime(
+                      new Date(Date.now() - 60 * 60 * 1000)
+                    ),
                   },
                   {
                     icon: 'message-square',
                     color: 'amber',
                     message: 'Sarah Chen replied to your message.',
-                    time: formatRelativeTime(new Date(Date.now() - 2 * 60 * 60 * 1000)),
+                    time: formatRelativeTime(
+                      new Date(Date.now() - 2 * 60 * 60 * 1000)
+                    ),
                   },
                 ].map((notif, index) => (
                   <div
