@@ -46,13 +46,23 @@ export default function SignupPage() {
         <div className="p-8 sm:p-12 lg:p-16">
           {/* Header */}
           <div className="mb-8">
-            <div className="flex items-center justify-center lg:justify-start mb-6">
-              <div className="w-14 h-14 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-2xl flex items-center justify-center font-bold tracking-tighter text-xl shadow-lg">
-                CF
+            <div className="flex items-center justify-between lg:justify-start mb-6">
+              <div className="flex items-center">
+                <a href="/" className="flex items-center group">
+                  <div className="w-14 h-14 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-2xl flex items-center justify-center font-bold tracking-tighter text-xl shadow-lg group-hover:scale-105 transition-transform">
+                    CF
+                  </div>
+                  <span className="ml-3 text-2xl font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">
+                    CareerForge
+                  </span>
+                </a>
               </div>
-              <span className="ml-3 text-2xl font-bold text-gray-900">
-                CareerForge
-              </span>
+              <a
+                href="/"
+                className="text-sm text-gray-500 hover:text-gray-700 lg:hidden"
+              >
+                ← Back to Home
+              </a>
             </div>
             <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4 leading-tight">
               Join the Future of Careers

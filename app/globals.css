@@ -173,3 +173,59 @@ body {
 .animate-fade-up {
   animation: fadeUp 0.8s ease-out forwards;
 }
+
+/* Recruiter Onboarding Styles */
+.onboarding-body {
+  font-family: 'Rethink Sans', sans-serif;
+  background-color: #020617;
+  background-image:
+    radial-gradient(circle at 15% 0%, rgba(99, 102, 241, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 85% 0%, rgba(168, 85, 247, 0.08) 0%, transparent 40%);
+}
+
+/* Custom Scrollbar for onboarding */
+.onboarding-body ::-webkit-scrollbar {
+  width: 6px;
+}
+.onboarding-body ::-webkit-scrollbar-track {
+  background: transparent;
+}
+.onboarding-body ::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 3px;
+}
+.onboarding-body ::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+/* Animations */
+.fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+  opacity: 0;
+  transform: translateY(5px);
+}
+.delay-100 { animation-delay: 0.1s; }
+.delay-200 { animation-delay: 0.2s; }
+.delay-300 { animation-delay: 0.3s; }
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Custom Toggle Switch Class */
+.toggle-checkbox:checked {
+  right: 0;
+  border-color: #6366f1;
+}
+.toggle-checkbox:checked + .toggle-label {
+  background-color: #6366f1;
+}
+
+/* Subtle Glow Utility */
+.glow-border:hover {
+  box-shadow: 0 0 20px -5px rgba(99, 102, 241, 0.15);
+  border-color: rgba(99, 102, 241, 0.3);
+}

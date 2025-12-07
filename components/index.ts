@@ -9,4 +9,6 @@ export { default as Checkbox } from './Checkbox';
 export { default as Radio } from './Radio';
 export { ToastProvider, useToast } from './ToastContext';
 export { ThemeProvider, useTheme } from './ThemeProvider';
+export { default as MessagingInbox } from './MessagingInbox';
+export { default as Settings } from './Settings';
 export * from './types';

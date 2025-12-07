@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { usePathname } from 'next/navigation';
 import {
   ChevronDown,
   Menu,
@@ -9,6 +10,7 @@ import {
   Briefcase,
   Moon,
   Sun,
+  MessageCircle,
 } from 'lucide-react';
 import { useTheme } from './ThemeProvider';
 
@@ -19,6 +21,7 @@ const Navigation: React.FC<NavigationProps> = () => {
   const [recruiterDropdownOpen, setRecruiterDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
+  const pathname = usePathname();
 
   return (
     <nav className="fixed w-full z-50 top-0 start-0 border-b border-gray-100/50 bg-white/80 backdrop-blur-md transition-all dark:border-slate-700/50 dark:bg-slate-900/80">
@@ -46,22 +49,46 @@ const Navigation: React.FC<NavigationProps> = () => {
               className={`absolute top-full left-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 dark:bg-slate-800 dark:border-slate-600 ${jobSeekerDropdownOpen ? 'opacity-100 visible' : ''}`}
             >
               <a
-                href="#"
+                href="/job-seeker/dashboard"
                 className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-slate-300 dark:hover:bg-slate-700"
               >
-                Features
+                Dashboard
               </a>
               <a
-                href="#"
+                href="/job-seeker/ai-resume-draft"
                 className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-slate-300 dark:hover:bg-slate-700"
               >
-                Resume Builder
+                AI Resume Builder
               </a>
               <a
-                href="#"
+                href="/job-seeker/full-profile"
                 className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-slate-300 dark:hover:bg-slate-700"
               >
-                Job Matches
+                Profile
+              </a>
+              <a
+                href="/job-seeker/upload-resume"
+                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-slate-300 dark:hover:bg-slate-700"
+              >
+                Upload Resume
+              </a>
+              <a
+                href="/job-seeker/messaging"
+                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-slate-300 dark:hover:bg-slate-700"
+              >
+                Messaging
+              </a>
+              <a
+                href="/job-seeker/onboarding-welcome"
+                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-slate-300 dark:hover:bg-slate-700"
+              >
+                Onboarding
+              </a>
+              <a
+                href="/job-seeker/settings"
+                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-slate-300 dark:hover:bg-slate-700"
+              >
+                Settings
               </a>
             </div>
           </div>
@@ -77,22 +104,46 @@ const Navigation: React.FC<NavigationProps> = () => {
               className={`absolute top-full left-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 dark:bg-slate-800 dark:border-slate-600 ${recruiterDropdownOpen ? 'opacity-100 visible' : ''}`}
             >
               <a
-                href="#"
+                href="/recruiter/recruiter-dashboard"
+                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-slate-300 dark:hover:bg-slate-700"
+              >
+                Dashboard
+              </a>
+              <a
+                href="/recruiter/post-job"
+                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-slate-300 dark:hover:bg-slate-700"
+              >
+                Post Job
+              </a>
+              <a
+                href="/recruiter/candidate-matching"
                 className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-slate-300 dark:hover:bg-slate-700"
               >
                 Candidate Matching
               </a>
               <a
-                href="#"
+                href="/recruiter/shortlist"
                 className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-slate-300 dark:hover:bg-slate-700"
               >
-                Post Jobs
+                Shortlists
               </a>
               <a
-                href="#"
+                href="/recruiter/candidate-profile"
                 className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-slate-300 dark:hover:bg-slate-700"
               >
-                Dashboard
+                Candidate Profiles
+              </a>
+              <a
+                href="/recruiter/onboarding"
+                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-slate-300 dark:hover:bg-slate-700"
+              >
+                Onboarding
+              </a>
+              <a
+                href="/recruiter/settings"
+                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-slate-300 dark:hover:bg-slate-700"
+              >
+                Settings
               </a>
             </div>
           </div>
@@ -122,14 +173,23 @@ const Navigation: React.FC<NavigationProps> = () => {
               <Sun className="w-5 h-5" />
             )}
           </button>
+          {pathname.startsWith('/job-seeker') && (
+            <a
+              href="/job-seeker/messaging"
+              className="p-2 text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
+              aria-label="Messages"
+            >
+              <MessageCircle className="w-5 h-5" />
+            </a>
+          )}
           <a
-            href="#"
+            href="/auth/login"
             className="hidden md:block text-sm font-medium text-slate-600 hover:text-slate-900 px-3 py-2 dark:text-slate-400 dark:hover:text-slate-100"
           >
             Log In
           </a>
           <a
-            href="#"
+            href="/auth/signup"
             className="text-sm text-white bg-slate-900 hover:bg-slate-800 focus:ring-4 focus:ring-slate-300 font-medium rounded-full px-5 py-2.5 transition-all shadow-lg shadow-slate-900/20 dark:bg-slate-700 dark:hover:bg-slate-600"
           >
             Get Started
@@ -162,22 +222,46 @@ const Navigation: React.FC<NavigationProps> = () => {
               {jobSeekerDropdownOpen && (
                 <div className="mt-2 ml-4 space-y-2">
                   <a
-                    href="#"
+                    href="/job-seeker/dashboard"
                     className="block text-sm text-gray-700 hover:bg-gray-50 py-1 dark:text-slate-300 dark:hover:bg-slate-700"
                   >
-                    Features
+                    Dashboard
                   </a>
                   <a
-                    href="#"
+                    href="/job-seeker/ai-resume-draft"
                     className="block text-sm text-gray-700 hover:bg-gray-50 py-1 dark:text-slate-300 dark:hover:bg-slate-700"
                   >
-                    Resume Builder
+                    AI Resume Builder
                   </a>
                   <a
-                    href="#"
+                    href="/job-seeker/full-profile"
                     className="block text-sm text-gray-700 hover:bg-gray-50 py-1 dark:text-slate-300 dark:hover:bg-slate-700"
                   >
-                    Job Matches
+                    Profile
+                  </a>
+                  <a
+                    href="/job-seeker/upload-resume"
+                    className="block text-sm text-gray-700 hover:bg-gray-50 py-1 dark:text-slate-300 dark:hover:bg-slate-700"
+                  >
+                    Upload Resume
+                  </a>
+                  <a
+                    href="/job-seeker/messaging"
+                    className="block text-sm text-gray-700 hover:bg-gray-50 py-1 dark:text-slate-300 dark:hover:bg-slate-700"
+                  >
+                    Messaging
+                  </a>
+                  <a
+                    href="/job-seeker/onboarding-welcome"
+                    className="block text-sm text-gray-700 hover:bg-gray-50 py-1 dark:text-slate-300 dark:hover:bg-slate-700"
+                  >
+                    Onboarding
+                  </a>
+                  <a
+                    href="/job-seeker/settings"
+                    className="block text-sm text-gray-700 hover:bg-gray-50 py-1 dark:text-slate-300 dark:hover:bg-slate-700"
+                  >
+                    Settings
                   </a>
                 </div>
               )}
@@ -192,22 +276,46 @@ const Navigation: React.FC<NavigationProps> = () => {
               {recruiterDropdownOpen && (
                 <div className="mt-2 ml-4 space-y-2">
                   <a
-                    href="#"
+                    href="/recruiter/recruiter-dashboard"
+                    className="block text-sm text-gray-700 hover:bg-gray-50 py-1 dark:text-slate-300 dark:hover:bg-slate-700"
+                  >
+                    Dashboard
+                  </a>
+                  <a
+                    href="/recruiter/post-job"
+                    className="block text-sm text-gray-700 hover:bg-gray-50 py-1 dark:text-slate-300 dark:hover:bg-slate-700"
+                  >
+                    Post Job
+                  </a>
+                  <a
+                    href="/recruiter/candidate-matching"
                     className="block text-sm text-gray-700 hover:bg-gray-50 py-1 dark:text-slate-300 dark:hover:bg-slate-700"
                   >
                     Candidate Matching
                   </a>
                   <a
-                    href="#"
+                    href="/recruiter/shortlist"
                     className="block text-sm text-gray-700 hover:bg-gray-50 py-1 dark:text-slate-300 dark:hover:bg-slate-700"
                   >
-                    Post Jobs
+                    Shortlists
                   </a>
                   <a
-                    href="#"
+                    href="/recruiter/candidate-profile"
                     className="block text-sm text-gray-700 hover:bg-gray-50 py-1 dark:text-slate-300 dark:hover:bg-slate-700"
                   >
-                    Dashboard
+                    Candidate Profiles
+                  </a>
+                  <a
+                    href="/recruiter/onboarding"
+                    className="block text-sm text-gray-700 hover:bg-gray-50 py-1 dark:text-slate-300 dark:hover:bg-slate-700"
+                  >
+                    Onboarding
+                  </a>
+                  <a
+                    href="/recruiter/settings"
+                    className="block text-sm text-gray-700 hover:bg-gray-50 py-1 dark:text-slate-300 dark:hover:bg-slate-700"
+                  >
+                    Settings
                   </a>
                 </div>
               )}
@@ -225,13 +333,13 @@ const Navigation: React.FC<NavigationProps> = () => {
               About
             </a>
             <a
-              href="#"
+              href="/auth/login"
               className="block text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
             >
               Log In
             </a>
             <a
-              href="#"
+              href="/auth/signup"
               className="block text-sm text-white bg-slate-900 hover:bg-slate-800 font-medium rounded-full px-5 py-2.5 text-center dark:bg-slate-700 dark:hover:bg-slate-600"
             >
               Get Started
