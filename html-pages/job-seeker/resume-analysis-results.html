@@ -1,0 +1,748 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Resume Analysis Results - CareerForge</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Rethink+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['"Rethink Sans"', 'sans-serif'],
+            },
+            colors: {
+              zinc: {
+                850: '#1f1f22',
+                900: '#18181b',
+                950: '#09090b',
+              },
+            },
+            animation: {
+              'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      /* Custom Scrollbar */
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #09090b;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #27272a;
+        border-radius: 3px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #3f3f46;
+      }
+
+      .glass-panel {
+        background: rgba(24, 24, 27, 0.6);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .gradient-text {
+        background: linear-gradient(
+          135deg,
+          #a5b4fc 0%,
+          #c084fc 50%,
+          #f472b6 100%
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .gradient-border-bottom {
+        position: relative;
+      }
+      .gradient-border-bottom::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(99, 102, 241, 0.5),
+          transparent
+        );
+      }
+    </style>
+  </head>
+  <body
+    class="bg-zinc-950 text-zinc-300 font-sans antialiased min-h-screen flex flex-col selection:bg-indigo-500/30"
+  >
+    <!-- Header -->
+    <header class="sticky top-0 z-50 glass-panel border-b-0 border-zinc-800">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16 items-center">
+          <!-- Logo -->
+          <div class="flex items-center gap-2 cursor-pointer group">
+            <div
+              class="size-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20 group-hover:shadow-indigo-500/40 transition-all"
+            >
+              <span
+                class="iconify text-white"
+                data-icon="lucide:sparkles"
+                data-width="18"
+              ></span>
+            </div>
+            <span class="text-lg tracking-tight font-medium text-white"
+              >Career<span class="text-zinc-500">AI</span></span
+            >
+          </div>
+
+          <!-- Navigation -->
+          <nav class="hidden md:flex space-x-8">
+            <a
+              href="#"
+              class="text-sm font-medium text-zinc-400 hover:text-white transition-colors"
+              >Dashboard</a
+            >
+            <a
+              href="#"
+              class="text-sm font-medium text-white transition-colors relative"
+            >
+              Resumes
+              <span
+                class="absolute -bottom-[22px] left-0 right-0 h-0.5 bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]"
+              ></span>
+            </a>
+            <a
+              href="#"
+              class="text-sm font-medium text-zinc-400 hover:text-white transition-colors"
+              >Jobs</a
+            >
+            <a
+              href="#"
+              class="text-sm font-medium text-zinc-400 hover:text-white transition-colors"
+              >Applications</a
+            >
+          </nav>
+
+          <!-- Right Actions -->
+          <div class="flex items-center gap-4">
+            <button
+              class="relative p-2 text-zinc-400 hover:text-white transition-colors"
+            >
+              <span
+                class="iconify"
+                data-icon="lucide:bell"
+                data-width="20"
+              ></span>
+              <span
+                class="absolute top-2 right-2 size-2 bg-indigo-500 rounded-full border border-zinc-950"
+              ></span>
+            </button>
+            <div class="flex items-center gap-3 pl-4 border-l border-zinc-800">
+              <div class="text-right hidden sm:block">
+                <p class="text-xs font-medium text-white">Alex M.</p>
+                <p class="text-[10px] text-zinc-500">Pro Member</p>
+              </div>
+              <button
+                class="size-8 rounded-full bg-zinc-800 border border-zinc-700 overflow-hidden focus:ring-2 focus:ring-indigo-500 ring-offset-2 ring-offset-zinc-950"
+              >
+                <img
+                  src="https://api.dicebear.com/7.x/avataaars/svg?seed=Alex"
+                  alt="Avatar"
+                  class="w-full h-full object-cover"
+                />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+      <!-- Page Title Area -->
+      <div
+        class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4"
+      >
+        <div>
+          <div class="flex items-center gap-2 mb-2">
+            <span
+              class="px-2 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-[10px] text-indigo-400 uppercase tracking-wider font-semibold"
+              >Beta v2.0</span
+            >
+            <span class="flex items-center gap-1 text-[10px] text-green-400">
+              <span
+                class="iconify"
+                data-icon="lucide:check-circle-2"
+                data-width="12"
+              ></span>
+              Analysis Complete
+            </span>
+          </div>
+          <h1
+            class="text-3xl md:text-4xl font-medium tracking-tight text-white mb-2"
+          >
+            Resume Analysis Results
+          </h1>
+          <p
+            class="text-zinc-400 max-w-2xl font-light text-sm md:text-base leading-relaxed"
+          >
+            Your resume has been processed against
+            <span class="text-zinc-200">10,000+ job descriptions</span>. Below
+            are your optimization scores and AI-driven recommendations.
+          </p>
+        </div>
+        <div class="flex gap-3">
+          <button
+            class="flex items-center gap-2 px-4 py-2 rounded-lg border border-zinc-800 bg-zinc-900/50 text-zinc-300 text-sm hover:bg-zinc-800 hover:text-white transition-all"
+          >
+            <span
+              class="iconify"
+              data-icon="lucide:share-2"
+              data-width="16"
+            ></span>
+            Share
+          </button>
+          <button
+            class="flex items-center gap-2 px-4 py-2 rounded-lg bg-white text-zinc-950 text-sm font-medium hover:bg-zinc-200 transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)]"
+          >
+            <span
+              class="iconify"
+              data-icon="lucide:download"
+              data-width="16"
+            ></span>
+            Export PDF
+          </button>
+        </div>
+      </div>
+
+      <!-- Dashboard Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Top Row: Score Cards (Span Full) -->
+        <div class="lg:col-span-12 grid grid-cols-1 md:grid-cols-3 gap-6 mb-2">
+          <!-- ATS Score Card -->
+          <div
+            class="glass-panel rounded-xl p-6 relative overflow-hidden group"
+          >
+            <div
+              class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity"
+            >
+              <span
+                class="iconify text-indigo-500"
+                data-icon="lucide:target"
+                data-width="80"
+              ></span>
+            </div>
+            <div class="flex items-start justify-between mb-4">
+              <div>
+                <h3
+                  class="text-zinc-400 text-xs font-semibold uppercase tracking-wider"
+                >
+                  ATS Compatibility
+                </h3>
+                <p class="text-white text-2xl font-medium mt-1">
+                  85<span class="text-sm text-zinc-500 font-normal">%</span>
+                </p>
+              </div>
+              <!-- Circular Chart SVG -->
+              <div class="relative size-12">
+                <svg class="size-full -rotate-90" viewBox="0 0 36 36">
+                  <path
+                    class="text-zinc-800"
+                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="3"
+                  />
+                  <path
+                    class="text-indigo-500 drop-shadow-[0_0_6px_rgba(99,102,241,0.5)]"
+                    stroke-dasharray="85, 100"
+                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="3"
+                    stroke-linecap="round"
+                  />
+                </svg>
+              </div>
+            </div>
+            <p class="text-xs text-zinc-500 leading-relaxed">
+              Excellent readability. Add
+              <span class="text-indigo-400 font-medium">2 keywords</span> to
+              reach 90% optimization.
+            </p>
+          </div>
+
+          <!-- Skill Match Card -->
+          <div
+            class="glass-panel rounded-xl p-6 relative overflow-hidden group"
+          >
+            <div
+              class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity"
+            >
+              <span
+                class="iconify text-purple-500"
+                data-icon="lucide:tag"
+                data-width="80"
+              ></span>
+            </div>
+            <div class="flex items-start justify-between mb-4">
+              <div>
+                <h3
+                  class="text-zinc-400 text-xs font-semibold uppercase tracking-wider"
+                >
+                  Skill Match
+                </h3>
+                <p class="text-white text-2xl font-medium mt-1">
+                  72<span class="text-sm text-zinc-500 font-normal">%</span>
+                </p>
+              </div>
+              <div
+                class="size-10 flex items-center justify-center rounded-full bg-purple-500/10 text-purple-400"
+              >
+                <span
+                  class="iconify"
+                  data-icon="lucide:layers"
+                  data-width="20"
+                ></span>
+              </div>
+            </div>
+            <!-- Bar Chart -->
+            <div
+              class="w-full bg-zinc-800 h-1.5 rounded-full mb-3 overflow-hidden"
+            >
+              <div
+                class="bg-gradient-to-r from-purple-500 to-pink-500 h-1.5 rounded-full"
+                style="width: 72%"
+              ></div>
+            </div>
+            <p class="text-xs text-zinc-500 leading-relaxed">
+              Missing critical hard skills:
+              <span class="text-zinc-300">TypeScript, GraphQL</span>.
+            </p>
+          </div>
+
+          <!-- Overall Score Card -->
+          <div
+            class="glass-panel rounded-xl p-6 relative overflow-hidden border-indigo-500/20 group"
+          >
+            <div
+              class="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5"
+            ></div>
+            <div class="flex items-start justify-between mb-2 relative z-10">
+              <div>
+                <h3
+                  class="text-indigo-300 text-xs font-semibold uppercase tracking-wider"
+                >
+                  Overall Strength
+                </h3>
+                <div class="flex items-baseline gap-2 mt-1">
+                  <p class="gradient-text text-3xl font-semibold">Strong</p>
+                </div>
+              </div>
+              <div
+                class="size-10 flex items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg shadow-indigo-500/20 text-white animate-pulse-slow"
+              >
+                <span
+                  class="iconify"
+                  data-icon="lucide:star"
+                  data-width="20"
+                ></span>
+              </div>
+            </div>
+            <p class="text-xs text-zinc-400 relative z-10 mt-4">
+              Top <span class="text-white font-medium">15%</span> of candidates
+              for "Senior Frontend Engineer".
+            </p>
+          </div>
+        </div>
+
+        <!-- Left Column: Recommendations & Summary (Span 8) -->
+        <div class="lg:col-span-8 flex flex-col gap-6">
+          <!-- Recommendations -->
+          <div
+            class="glass-panel rounded-xl border border-zinc-800 overflow-hidden"
+          >
+            <div
+              class="px-6 py-4 border-b border-zinc-800 flex justify-between items-center bg-zinc-900/30"
+            >
+              <h2
+                class="text-base font-medium text-white flex items-center gap-2"
+              >
+                <span
+                  class="iconify text-yellow-400"
+                  data-icon="lucide:lightbulb"
+                  data-width="18"
+                ></span>
+                AI Recommendations
+              </h2>
+              <span class="text-xs px-2 py-1 rounded bg-zinc-800 text-zinc-400"
+                >3 Priority Fixes</span
+              >
+            </div>
+
+            <div class="divide-y divide-zinc-800">
+              <!-- Item 1 -->
+              <div class="p-6 hover:bg-zinc-900/40 transition-colors group">
+                <div class="flex gap-4">
+                  <div class="mt-1 min-w-[20px]">
+                    <div
+                      class="size-5 rounded-full border border-red-500/30 bg-red-500/10 flex items-center justify-center"
+                    >
+                      <span class="text-[10px] font-bold text-red-400">1</span>
+                    </div>
+                  </div>
+                  <div class="flex-grow">
+                    <h3
+                      class="text-sm font-medium text-zinc-200 mb-1 group-hover:text-white"
+                    >
+                      Keyword Gaps Detected
+                    </h3>
+                    <p class="text-xs text-zinc-400 mb-3 leading-relaxed">
+                      Your resume is missing "CI/CD" and "Cloud Architecture"
+                      which appear in 80% of target job descriptions.
+                    </p>
+                    <button
+                      class="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 text-xs font-medium hover:bg-indigo-500 hover:text-white transition-all"
+                    >
+                      <span
+                        class="iconify"
+                        data-icon="lucide:wand-2"
+                        data-width="12"
+                      ></span>
+                      Apply AI Fix
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Item 2 -->
+              <div class="p-6 hover:bg-zinc-900/40 transition-colors group">
+                <div class="flex gap-4">
+                  <div class="mt-1 min-w-[20px]">
+                    <div
+                      class="size-5 rounded-full border border-orange-500/30 bg-orange-500/10 flex items-center justify-center"
+                    >
+                      <span class="text-[10px] font-bold text-orange-400"
+                        >2</span
+                      >
+                    </div>
+                  </div>
+                  <div class="flex-grow">
+                    <h3
+                      class="text-sm font-medium text-zinc-200 mb-1 group-hover:text-white"
+                    >
+                      Quantify Your Impact
+                    </h3>
+                    <p class="text-xs text-zinc-400 mb-3 leading-relaxed">
+                      Experience section lacks metrics. Change "Managed team" to
+                      "Managed team of 15, increasing velocity by 20%".
+                    </p>
+                    <button
+                      class="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-zinc-800 text-zinc-300 border border-zinc-700 text-xs font-medium hover:bg-zinc-700 hover:text-white transition-all"
+                    >
+                      <span
+                        class="iconify"
+                        data-icon="lucide:pencil"
+                        data-width="12"
+                      ></span>
+                      Manual Edit
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Item 3 -->
+              <div class="p-6 hover:bg-zinc-900/40 transition-colors group">
+                <div class="flex gap-4">
+                  <div class="mt-1 min-w-[20px]">
+                    <div
+                      class="size-5 rounded-full border border-blue-500/30 bg-blue-500/10 flex items-center justify-center"
+                    >
+                      <span class="text-[10px] font-bold text-blue-400">3</span>
+                    </div>
+                  </div>
+                  <div class="flex-grow">
+                    <h3
+                      class="text-sm font-medium text-zinc-200 mb-1 group-hover:text-white"
+                    >
+                      Certification Visibility
+                    </h3>
+                    <p class="text-xs text-zinc-400 leading-relaxed">
+                      Move "AWS Certified Solutions Architect" to the top
+                      section to boost recruiter visibility by ~15%.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div
+              class="px-6 py-3 bg-zinc-900/30 border-t border-zinc-800 text-center"
+            >
+              <button
+                class="text-xs text-zinc-400 hover:text-white transition-colors flex items-center justify-center gap-1 w-full"
+              >
+                View all 7 suggestions
+                <span
+                  class="iconify"
+                  data-icon="lucide:chevron-down"
+                  data-width="12"
+                ></span>
+              </button>
+            </div>
+          </div>
+
+          <!-- AI Professional Summary -->
+          <div
+            class="glass-panel rounded-xl border border-zinc-800 overflow-hidden flex flex-col"
+          >
+            <div
+              class="px-6 py-4 border-b border-zinc-800 bg-zinc-900/30 flex justify-between items-center"
+            >
+              <h2
+                class="text-base font-medium text-white flex items-center gap-2"
+              >
+                <span
+                  class="iconify text-indigo-400"
+                  data-icon="lucide:sparkles"
+                  data-width="18"
+                ></span>
+                Generated Professional Summary
+              </h2>
+              <div class="flex items-center gap-2">
+                <span class="relative flex h-2 w-2">
+                  <span
+                    class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"
+                  ></span>
+                  <span
+                    class="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"
+                  ></span>
+                </span>
+                <span class="text-[10px] text-indigo-300 font-medium"
+                  >AI Draft</span
+                >
+              </div>
+            </div>
+            <div class="p-6 bg-zinc-900/20">
+              <div class="relative group">
+                <textarea
+                  class="w-full bg-zinc-950/50 border border-zinc-800 rounded-lg p-4 text-sm text-zinc-300 leading-7 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 outline-none resize-none transition-all h-32 hover:border-zinc-700"
+                  spellcheck="false"
+                >
+Results-driven Senior Frontend Engineer with 6+ years of experience building scalable web applications. Proven track record in optimizing React architectures, reducing load times by 40%, and leading cross-functional teams in high-growth agile environments. Expert in modern JavaScript ecosystems and UI/UX best practices.</textarea
+                >
+                <div
+                  class="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <span
+                    class="iconify text-zinc-600"
+                    data-icon="lucide:edit-3"
+                    data-width="14"
+                  ></span>
+                </div>
+              </div>
+
+              <p class="mt-3 text-[11px] text-zinc-500 flex items-center gap-1">
+                <span
+                  class="iconify"
+                  data-icon="lucide:info"
+                  data-width="12"
+                ></span>
+                AI has tailored this summary for "Tech Lead" roles based on your
+                experience.
+              </p>
+
+              <div class="flex gap-3 mt-4">
+                <button
+                  class="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-green-500/10 border border-green-500/20 text-green-400 text-xs font-medium hover:bg-green-500 hover:text-zinc-950 transition-all"
+                >
+                  <span
+                    class="iconify"
+                    data-icon="lucide:check"
+                    data-width="14"
+                  ></span>
+                  Accept Summary
+                </button>
+                <button
+                  class="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-300 text-xs font-medium hover:bg-zinc-700 hover:text-white transition-all"
+                >
+                  <span
+                    class="iconify"
+                    data-icon="lucide:refresh-cw"
+                    data-width="14"
+                  ></span>
+                  Regenerate
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Sidebar (Span 4) -->
+        <div class="lg:col-span-4 flex flex-col gap-6">
+          <!-- Actions Panel -->
+          <div class="glass-panel rounded-xl p-5 border border-zinc-800">
+            <h2
+              class="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-4"
+            >
+              Quick Actions
+            </h2>
+            <div class="space-y-3">
+              <button
+                class="w-full group relative overflow-hidden rounded-lg bg-white p-[1px] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-zinc-950"
+              >
+                <span
+                  class="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2E8F0_0%,#5046E5_50%,#E2E8F0_100%)] opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                ></span>
+                <div
+                  class="relative flex items-center justify-center gap-2 w-full h-full rounded-lg bg-zinc-950 px-4 py-3 text-sm font-medium text-white hover:bg-zinc-900 transition-colors"
+                >
+                  <span
+                    class="iconify"
+                    data-icon="lucide:briefcase"
+                    data-width="16"
+                  ></span>
+                  View Job Matches
+                </div>
+              </button>
+
+              <div class="grid grid-cols-2 gap-3">
+                <button
+                  class="flex items-center justify-center gap-2 px-4 py-3 rounded-lg border border-zinc-800 bg-zinc-900/50 text-zinc-300 text-sm font-medium hover:bg-zinc-800 hover:text-white transition-all"
+                >
+                  <span
+                    class="iconify"
+                    data-icon="lucide:pencil"
+                    data-width="14"
+                  ></span>
+                  Edit
+                </button>
+                <button
+                  class="flex items-center justify-center gap-2 px-4 py-3 rounded-lg border border-zinc-800 bg-zinc-900/50 text-zinc-300 text-sm font-medium hover:bg-zinc-800 hover:text-white transition-all"
+                >
+                  <span
+                    class="iconify"
+                    data-icon="lucide:file-text"
+                    data-width="14"
+                  ></span>
+                  Save
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- AI Insights / Hints -->
+          <div
+            class="glass-panel rounded-xl p-1 border border-zinc-800 bg-gradient-to-b from-indigo-900/10 to-transparent"
+          >
+            <div class="p-5">
+              <div
+                class="size-10 rounded-full bg-indigo-500/20 flex items-center justify-center mb-3"
+              >
+                <span
+                  class="iconify text-indigo-400"
+                  data-icon="lucide:bot"
+                  data-width="20"
+                ></span>
+              </div>
+              <h3 class="text-sm font-medium text-white mb-2">Did you know?</h3>
+              <p class="text-xs text-zinc-400 leading-relaxed mb-4">
+                Resumes with quantifiable achievements (numbers, %, $) score
+                <span class="text-indigo-300">40% higher</span> with hiring
+                managers than generic task lists.
+              </p>
+              <a
+                href="#"
+                class="text-xs text-indigo-400 hover:text-indigo-300 font-medium flex items-center gap-1 group"
+              >
+                Learn more about scoring
+                <span
+                  class="iconify transform group-hover:translate-x-1 transition-transform"
+                  data-icon="lucide:arrow-right"
+                  data-width="12"
+                ></span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Upload/Status Box -->
+          <div
+            class="rounded-xl border border-dashed border-zinc-800 p-5 flex flex-col items-center justify-center text-center bg-zinc-900/20 hover:bg-zinc-900/40 transition-colors cursor-pointer group"
+          >
+            <div
+              class="size-10 rounded-full bg-zinc-800 flex items-center justify-center mb-3 group-hover:bg-zinc-700 transition-colors"
+            >
+              <span
+                class="iconify text-zinc-400"
+                data-icon="lucide:upload-cloud"
+                data-width="20"
+              ></span>
+            </div>
+            <p class="text-xs font-medium text-zinc-300">Re-upload Resume</p>
+            <p class="text-[10px] text-zinc-500 mt-1">PDF, DOCX, TXT</p>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer
+      class="mt-auto border-t border-zinc-800 bg-zinc-950 relative overflow-hidden"
+    >
+      <!-- Decorative gradient top edge -->
+      <div
+        class="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-zinc-600 to-transparent opacity-30"
+      ></div>
+
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div
+          class="flex flex-col md:flex-row justify-between items-center gap-4"
+        >
+          <div
+            class="flex items-center gap-2 opacity-60 hover:opacity-100 transition-opacity"
+          >
+            <span
+              class="iconify text-indigo-500"
+              data-icon="lucide:zap"
+              data-width="16"
+            ></span>
+            <p class="text-xs text-zinc-400">
+              Powered by Neural Resume Engine™
+            </p>
+          </div>
+          <div class="flex gap-6">
+            <a
+              href="#"
+              class="text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
+              >Help Center</a
+            >
+            <a
+              href="#"
+              class="text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
+              >Privacy Policy</a
+            >
+            <a
+              href="#"
+              class="text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
+              >Terms of Service</a
+            >
+          </div>
+          <p class="text-[10px] text-zinc-600">© 2023 CareerAI Inc.</p>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

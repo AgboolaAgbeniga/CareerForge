@@ -1,0 +1,546 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Upskilling & Learning - CareerForge</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+      body {
+        font-family: 'Inter', sans-serif;
+        background-color: #f8f9fc;
+        color: #111827;
+      }
+
+      ::-webkit-scrollbar {
+        width: 5px;
+        height: 5px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 10px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+      }
+
+      .text-gradient {
+        background: linear-gradient(135deg, #4f46e5 0%, #9333ea 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .glass-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(226, 232, 240, 0.8);
+      }
+
+      .hover-lift {
+        transition:
+          transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+          box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .hover-lift:hover {
+        transform: translateY(-2px);
+        box-shadow:
+          0 10px 15px -3px rgba(0, 0, 0, 0.05),
+          0 4px 6px -2px rgba(0, 0, 0, 0.025);
+      }
+
+      .progress-ring__circle {
+        transition: stroke-dashoffset 0.35s;
+        transform: rotate(-90deg);
+        transform-origin: 50% 50%;
+      }
+    </style>
+  </head>
+  <body
+    class="selection:bg-indigo-100 selection:text-indigo-700 overflow-x-hidden"
+  >
+    <!-- Top Navigation Bar -->
+    <nav class="sticky top-0 z-50 glass-card border-b border-gray-200/50">
+      <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16 items-center">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-8 h-8 rounded-xl bg-gradient-to-br from-gray-900 to-gray-700 flex items-center justify-center text-white font-bold tracking-tighter shadow-lg"
+            >
+              AI
+            </div>
+            <span class="font-bold text-lg tracking-tight text-gray-900"
+              >Career<span class="text-indigo-600">OS</span></span
+            >
+          </div>
+
+          <div
+            class="hidden md:flex items-center space-x-1 bg-gray-100/50 p-1 rounded-full border border-gray-200/50"
+          >
+            <a
+              href="dashboard-job_seekers.html"
+              class="px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors"
+              >Dashboard</a
+            >
+            <a
+              href="#"
+              class="px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors"
+              >Resumes</a
+            >
+            <a
+              href="#"
+              class="px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors"
+              >Jobs</a
+            >
+            <a
+              href="#"
+              class="px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors"
+              >Applications</a
+            >
+            <a
+              href="#"
+              class="px-4 py-1.5 text-sm font-medium text-gray-900 bg-white shadow-sm rounded-full"
+              >Learn</a
+            >
+          </div>
+
+          <div class="flex items-center gap-4">
+            <button
+              class="relative p-2 text-gray-500 hover:text-indigo-600 transition-colors"
+            >
+              <i data-lucide="bell" class="w-5 h-5"></i>
+              <span
+                class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"
+              ></span>
+            </button>
+            <div class="h-6 w-px bg-gray-200"></div>
+            <button class="flex items-center gap-2 group">
+              <img
+                src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"
+                alt="Profile"
+                class="w-8 h-8 rounded-full border border-gray-200 group-hover:border-indigo-300 transition-colors"
+              />
+              <i
+                data-lucide="chevron-down"
+                class="w-4 h-4 text-gray-400 group-hover:text-gray-600"
+              ></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-[1600px] mx-auto p-4 lg:p-8">
+      <!-- Header -->
+      <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">
+          Upskilling & Learning
+        </h1>
+        <p class="text-gray-600">
+          AI-recommended courses and learning paths to advance your career
+        </p>
+      </div>
+
+      <!-- Learning Stats -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="glass-card rounded-2xl p-6 text-center">
+          <div
+            class="w-12 h-12 mx-auto mb-3 bg-blue-100 rounded-2xl flex items-center justify-center"
+          >
+            <i data-lucide="book-open" class="w-6 h-6 text-blue-600"></i>
+          </div>
+          <div class="text-2xl font-bold text-gray-900 mb-1">8</div>
+          <div class="text-sm text-gray-500">Courses Completed</div>
+        </div>
+
+        <div class="glass-card rounded-2xl p-6 text-center">
+          <div
+            class="w-12 h-12 mx-auto mb-3 bg-green-100 rounded-2xl flex items-center justify-center"
+          >
+            <i data-lucide="trending-up" class="w-6 h-6 text-green-600"></i>
+          </div>
+          <div class="text-2xl font-bold text-gray-900 mb-1">12</div>
+          <div class="text-sm text-gray-500">Skills Learned</div>
+        </div>
+
+        <div class="glass-card rounded-2xl p-6 text-center">
+          <div
+            class="w-12 h-12 mx-auto mb-3 bg-purple-100 rounded-2xl flex items-center justify-center"
+          >
+            <i data-lucide="clock" class="w-6 h-6 text-purple-600"></i>
+          </div>
+          <div class="text-2xl font-bold text-gray-900 mb-1">45h</div>
+          <div class="text-sm text-gray-500">Learning Time</div>
+        </div>
+
+        <div class="glass-card rounded-2xl p-6 text-center">
+          <div
+            class="w-12 h-12 mx-auto mb-3 bg-orange-100 rounded-2xl flex items-center justify-center"
+          >
+            <i data-lucide="target" class="w-6 h-6 text-orange-600"></i>
+          </div>
+          <div class="text-2xl font-bold text-gray-900 mb-1">3</div>
+          <div class="text-sm text-gray-500">Certifications</div>
+        </div>
+      </div>
+
+      <!-- AI Recommendations -->
+      <div class="glass-card rounded-2xl p-6 mb-8">
+        <div class="flex items-center gap-2 mb-6">
+          <div class="p-1.5 bg-yellow-50 rounded-md">
+            <i data-lucide="lightbulb" class="w-4 h-4 text-yellow-600"></i>
+          </div>
+          <h3 class="font-semibold text-gray-900">
+            AI Learning Recommendations
+          </h3>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div
+            class="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100"
+          >
+            <div class="flex items-start gap-3">
+              <div
+                class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0"
+              >
+                <i data-lucide="database" class="w-5 h-5 text-blue-600"></i>
+              </div>
+              <div class="flex-1">
+                <h4 class="font-semibold text-blue-900 mb-2">
+                  SQL for Product Managers
+                </h4>
+                <p class="text-sm text-blue-800 mb-3">
+                  Based on your job applications, SQL skills are critical for
+                  80% of PM roles.
+                </p>
+                <div class="flex items-center gap-2 text-xs text-blue-700">
+                  <i data-lucide="clock" class="w-3 h-3"></i>
+                  <span>4 weeks • 8 hours/week</span>
+                </div>
+              </div>
+            </div>
+            <button
+              class="w-full mt-4 bg-blue-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+            >
+              Start Learning
+            </button>
+          </div>
+
+          <div
+            class="p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-100"
+          >
+            <div class="flex items-start gap-3">
+              <div
+                class="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center flex-shrink-0"
+              >
+                <i data-lucide="users" class="w-5 h-5 text-purple-600"></i>
+              </div>
+              <div class="flex-1">
+                <h4 class="font-semibold text-purple-900 mb-2">
+                  Advanced Stakeholder Management
+                </h4>
+                <p class="text-sm text-purple-800 mb-3">
+                  Improve your leadership skills to prepare for senior PM roles.
+                </p>
+                <div class="flex items-center gap-2 text-xs text-purple-700">
+                  <i data-lucide="clock" class="w-3 h-3"></i>
+                  <span>2 weeks • 6 hours/week</span>
+                </div>
+              </div>
+            </div>
+            <button
+              class="w-full mt-4 bg-purple-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors"
+            >
+              Start Learning
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Learning Paths -->
+      <div class="mb-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">Learning Paths</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Product Management Path -->
+          <div
+            class="glass-card rounded-2xl p-6 hover-lift cursor-pointer group"
+          >
+            <div
+              class="w-12 h-12 mb-4 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center"
+            >
+              <i data-lucide="target" class="w-6 h-6 text-white"></i>
+            </div>
+            <h3
+              class="text-lg font-semibold text-gray-900 mb-2 group-hover:text-indigo-600 transition-colors"
+            >
+              Product Management Mastery
+            </h3>
+            <p class="text-sm text-gray-600 mb-4">
+              Complete path to become a senior product manager
+            </p>
+
+            <div class="space-y-2 mb-4">
+              <div class="flex items-center justify-between text-xs">
+                <span class="text-gray-600">Progress</span>
+                <span class="text-gray-900 font-medium">65%</span>
+              </div>
+              <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div
+                  class="h-full bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full"
+                  style="width: 65%"
+                ></div>
+              </div>
+            </div>
+
+            <div
+              class="flex items-center justify-between text-xs text-gray-500"
+            >
+              <span>12 courses • 8 certifications</span>
+              <span
+                class="text-indigo-600 font-medium group-hover:text-indigo-700"
+                >Continue →</span
+              >
+            </div>
+          </div>
+
+          <!-- Data Skills Path -->
+          <div
+            class="glass-card rounded-2xl p-6 hover-lift cursor-pointer group"
+          >
+            <div
+              class="w-12 h-12 mb-4 bg-gradient-to-br from-green-500 to-teal-600 rounded-2xl flex items-center justify-center"
+            >
+              <i data-lucide="bar-chart-3" class="w-6 h-6 text-white"></i>
+            </div>
+            <h3
+              class="text-lg font-semibold text-gray-900 mb-2 group-hover:text-green-600 transition-colors"
+            >
+              Data-Driven Decision Making
+            </h3>
+            <p class="text-sm text-gray-600 mb-4">
+              Master analytics and data skills for product roles
+            </p>
+
+            <div class="space-y-2 mb-4">
+              <div class="flex items-center justify-between text-xs">
+                <span class="text-gray-600">Progress</span>
+                <span class="text-gray-900 font-medium">30%</span>
+              </div>
+              <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div
+                  class="h-full bg-gradient-to-r from-green-500 to-teal-600 rounded-full"
+                  style="width: 30%"
+                ></div>
+              </div>
+            </div>
+
+            <div
+              class="flex items-center justify-between text-xs text-gray-500"
+            >
+              <span>8 courses • 4 certifications</span>
+              <span
+                class="text-green-600 font-medium group-hover:text-green-700"
+                >Start Path →</span
+              >
+            </div>
+          </div>
+
+          <!-- Leadership Path -->
+          <div
+            class="glass-card rounded-2xl p-6 hover-lift cursor-pointer group"
+          >
+            <div
+              class="w-12 h-12 mb-4 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center"
+            >
+              <i data-lucide="users" class="w-6 h-6 text-white"></i>
+            </div>
+            <h3
+              class="text-lg font-semibold text-gray-900 mb-2 group-hover:text-purple-600 transition-colors"
+            >
+              Leadership Excellence
+            </h3>
+            <p class="text-sm text-gray-600 mb-4">
+              Develop leadership skills for senior positions
+            </p>
+
+            <div class="space-y-2 mb-4">
+              <div class="flex items-center justify-between text-xs">
+                <span class="text-gray-600">Progress</span>
+                <span class="text-gray-900 font-medium">0%</span>
+              </div>
+              <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div
+                  class="h-full bg-gradient-to-r from-purple-500 to-pink-600 rounded-full"
+                  style="width: 0%"
+                ></div>
+              </div>
+            </div>
+
+            <div
+              class="flex items-center justify-between text-xs text-gray-500"
+            >
+              <span>6 courses • 3 certifications</span>
+              <span
+                class="text-purple-600 font-medium group-hover:text-purple-700"
+                >Start Path →</span
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Courses -->
+      <div class="glass-card rounded-2xl p-6">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">Continue Learning</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Course 1 -->
+          <div
+            class="p-4 border border-gray-200 rounded-xl hover:border-indigo-300 hover:shadow-md transition-all cursor-pointer group"
+          >
+            <div class="flex items-start gap-4 mb-4">
+              <div
+                class="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center flex-shrink-0"
+              >
+                <i data-lucide="database" class="w-6 h-6 text-indigo-600"></i>
+              </div>
+              <div class="flex-1">
+                <h4
+                  class="font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors mb-1"
+                >
+                  SQL Fundamentals for PMs
+                </h4>
+                <p class="text-sm text-gray-600 mb-2">
+                  Learn essential SQL queries for product analytics
+                </p>
+                <div class="flex items-center gap-4 text-xs text-gray-500">
+                  <span class="flex items-center gap-1">
+                    <i data-lucide="clock" class="w-3 h-3"></i>
+                    4 hours
+                  </span>
+                  <span class="flex items-center gap-1">
+                    <i data-lucide="star" class="w-3 h-3"></i>
+                    4.8
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-2 mb-4">
+              <div class="flex justify-between text-xs">
+                <span class="text-gray-600">Progress</span>
+                <span class="text-gray-900 font-medium">75%</span>
+              </div>
+              <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div
+                  class="h-full bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full"
+                  style="width: 75%"
+                ></div>
+              </div>
+            </div>
+
+            <button
+              class="w-full bg-indigo-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
+            >
+              Continue Course
+            </button>
+          </div>
+
+          <!-- Course 2 -->
+          <div
+            class="p-4 border border-gray-200 rounded-xl hover:border-green-300 hover:shadow-md transition-all cursor-pointer group"
+          >
+            <div class="flex items-start gap-4 mb-4">
+              <div
+                class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0"
+              >
+                <i data-lucide="trending-up" class="w-6 h-6 text-green-600"></i>
+              </div>
+              <div class="flex-1">
+                <h4
+                  class="font-semibold text-gray-900 group-hover:text-green-600 transition-colors mb-1"
+                >
+                  A/B Testing Mastery
+                </h4>
+                <p class="text-sm text-gray-600 mb-2">
+                  Design and analyze experiments for product decisions
+                </p>
+                <div class="flex items-center gap-4 text-xs text-gray-500">
+                  <span class="flex items-center gap-1">
+                    <i data-lucide="clock" class="w-3 h-3"></i>
+                    6 hours
+                  </span>
+                  <span class="flex items-center gap-1">
+                    <i data-lucide="star" class="w-3 h-3"></i>
+                    4.9
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-2 mb-4">
+              <div class="flex justify-between text-xs">
+                <span class="text-gray-600">Progress</span>
+                <span class="text-gray-900 font-medium">40%</span>
+              </div>
+              <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div
+                  class="h-full bg-gradient-to-r from-green-500 to-teal-600 rounded-full"
+                  style="width: 40%"
+                ></div>
+              </div>
+            </div>
+
+            <button
+              class="w-full bg-green-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
+            >
+              Continue Course
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer
+      class="mt-12 bg-gray-900 text-white py-8 rounded-t-[40px] relative overflow-hidden"
+    >
+      <div
+        class="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-50 blur-sm"
+      ></div>
+      <div
+        class="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6"
+      >
+        <div class="flex items-center gap-2">
+          <div
+            class="w-6 h-6 rounded bg-gray-800 flex items-center justify-center text-xs font-bold"
+          >
+            AI
+          </div>
+          <span class="text-sm font-semibold tracking-tight">CareerForge</span>
+        </div>
+        <div class="flex gap-6 text-xs text-gray-400">
+          <a href="#" class="hover:text-white transition-colors">Help Center</a>
+          <a href="#" class="hover:text-white transition-colors"
+            >Privacy Policy</a
+          >
+          <a href="#" class="hover:text-white transition-colors">Terms</a>
+        </div>
+        <p class="text-[10px] text-gray-600">
+          Built for professionals, powered by AI.
+        </p>
+      </div>
+    </footer>
+
+    <script>
+      lucide.createIcons();
+    </script>
+  </body>
+</html>
