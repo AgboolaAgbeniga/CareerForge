@@ -1,5 +1,25 @@
 import React from 'react';
-import { Plus, Search, Briefcase, Building2, User, Phone, Video, MoreVertical, CheckCheck, Clock, Paperclip, Smile, Sparkles, ArrowRight, Bot, Wand2, BarChart2, CalendarPlus, FileText } from 'lucide-react';
+import {
+  Plus,
+  Search,
+  Briefcase,
+  Building2,
+  User,
+  Phone,
+  Video,
+  MoreVertical,
+  CheckCheck,
+  Clock,
+  Paperclip,
+  Smile,
+  Sparkles,
+  ArrowRight,
+  Bot,
+  Wand2,
+  BarChart2,
+  CalendarPlus,
+  FileText,
+} from 'lucide-react';
 
 const styles = `
 body {
@@ -137,7 +157,9 @@ const MessagingInbox: React.FC = () => {
                     <h3 className="text-sm font-semibold text-slate-900 truncate">
                       Sarah Miller
                     </h3>
-                    <span className="text-[10px] font-medium text-indigo-600">2m</span>
+                    <span className="text-[10px] font-medium text-indigo-600">
+                      2m
+                    </span>
                   </div>
                   <p className="text-xs font-medium text-slate-500 mb-1 flex items-center gap-1">
                     <Briefcase size={10} />
@@ -230,11 +252,15 @@ const MessagingInbox: React.FC = () => {
               <div>
                 <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
                   Sarah Miller
-                  <span className="text-xs font-normal text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">Stripe</span>
+                  <span className="text-xs font-normal text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">
+                    Stripe
+                  </span>
                 </h2>
                 <p className="text-xs text-slate-500 flex items-center gap-1">
                   Regarding:
-                  <span className="font-medium text-slate-700">Senior Product Designer</span>
+                  <span className="font-medium text-slate-700">
+                    Senior Product Designer
+                  </span>
                 </p>
               </div>
             </div>
@@ -255,7 +281,9 @@ const MessagingInbox: React.FC = () => {
           <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6">
             {/* Date Divider */}
             <div className="flex justify-center">
-              <span className="text-[10px] font-medium text-slate-400 bg-slate-100 px-3 py-1 rounded-full uppercase tracking-wider">Today</span>
+              <span className="text-[10px] font-medium text-slate-400 bg-slate-100 px-3 py-1 rounded-full uppercase tracking-wider">
+                Today
+              </span>
             </div>
 
             {/* Recruiter Message */}
@@ -269,13 +297,18 @@ const MessagingInbox: React.FC = () => {
               <div>
                 <div className="bg-slate-100 rounded-2xl rounded-tl-none px-5 py-3 text-sm text-slate-700 leading-relaxed shadow-sm">
                   <p className="mb-2">
-                    Hi Alex! Thanks for applying to the Senior Product Designer role.
+                    Hi Alex! Thanks for applying to the Senior Product Designer
+                    role.
                   </p>
                   <p>
-                    I reviewed your portfolio and I'm really impressed with the case study on the Design System migration. The attention to detail is exactly what we're looking for at Stripe.
+                    I reviewed your portfolio and I'm really impressed with the
+                    case study on the Design System migration. The attention to
+                    detail is exactly what we're looking for at Stripe.
                   </p>
                 </div>
-                <span className="text-[10px] text-slate-400 mt-1 ml-1 font-medium">10:23 AM</span>
+                <span className="text-[10px] text-slate-400 mt-1 ml-1 font-medium">
+                  10:23 AM
+                </span>
               </div>
             </div>
 
@@ -291,11 +324,15 @@ const MessagingInbox: React.FC = () => {
                 <div className="msg-bubble-user text-white rounded-2xl rounded-tr-none px-5 py-3 text-sm leading-relaxed shadow-md">
                   <p>Hi Sarah! Thank you so much for reaching out.</p>
                   <p className="mt-2">
-                    I've been a huge fan of Stripe's interface for years, so that means a lot. I'd love to chat more about how I can contribute to the team.
+                    I've been a huge fan of Stripe's interface for years, so
+                    that means a lot. I'd love to chat more about how I can
+                    contribute to the team.
                   </p>
                 </div>
                 <div className="flex items-center gap-1 mt-1 mr-1">
-                  <span className="text-[10px] text-slate-400 font-medium">10:35 AM</span>
+                  <span className="text-[10px] text-slate-400 font-medium">
+                    10:35 AM
+                  </span>
                   <CheckCheck size={12} />
                 </div>
               </div>
@@ -312,10 +349,13 @@ const MessagingInbox: React.FC = () => {
               <div>
                 <div className="bg-slate-100 rounded-2xl rounded-tl-none px-5 py-3 text-sm text-slate-700 leading-relaxed shadow-sm">
                   <p>
-                    That's great to hear! Are you available for a quick 30-minute intro call this coming Tuesday?
+                    That's great to hear! Are you available for a quick
+                    30-minute intro call this coming Tuesday?
                   </p>
                 </div>
-                <span className="text-[10px] text-slate-400 mt-1 ml-1 font-medium">10:38 AM</span>
+                <span className="text-[10px] text-slate-400 mt-1 ml-1 font-medium">
+                  10:38 AM
+                </span>
               </div>
             </div>
           </div>
@@ -339,13 +379,22 @@ const MessagingInbox: React.FC = () => {
 
               <div className="flex justify-between items-center p-2 border-t border-slate-100 bg-slate-50/50 rounded-b-xl">
                 <div className="flex gap-1">
-                  <button className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors" title="Attach File">
+                  <button
+                    className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                    title="Attach File"
+                  >
                     <Paperclip size={18} />
                   </button>
-                  <button className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors" title="Insert Emoji">
+                  <button
+                    className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                    title="Insert Emoji"
+                  >
                     <Smile size={18} />
                   </button>
-                  <button className="p-2 text-indigo-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors flex items-center gap-1 text-xs font-medium" title="AI Draft">
+                  <button
+                    className="p-2 text-indigo-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors flex items-center gap-1 text-xs font-medium"
+                    title="AI Draft"
+                  >
                     <Sparkles size={14} />
                     AI Draft
                   </button>
@@ -381,11 +430,13 @@ const MessagingInbox: React.FC = () => {
                 </h4>
               </div>
               <p className="text-xs text-slate-600 mb-3 leading-relaxed">
-                Recruiter asked for availability. Propose specific slots to reduce back-and-forth.
+                Recruiter asked for availability. Propose specific slots to
+                reduce back-and-forth.
               </p>
               <div className="bg-slate-50 border border-slate-100 rounded p-2 mb-3 cursor-pointer hover:border-indigo-200 transition-colors">
                 <p className="text-xs text-slate-500 italic">
-                  "Yes, Tuesday works well. I'm free between 2 PM and 4 PM PST. Does that work for you?"
+                  "Yes, Tuesday works well. I'm free between 2 PM and 4 PM PST.
+                  Does that work for you?"
                 </p>
               </div>
               <button className="w-full py-2 rounded-lg bg-indigo-50 text-indigo-700 text-xs font-semibold hover:bg-indigo-100 transition-all border border-indigo-100 flex items-center justify-center gap-2 group">
@@ -402,7 +453,9 @@ const MessagingInbox: React.FC = () => {
                 <BarChart2 size={14} />
                 Conversation Tone
               </h4>
-              <span className="text-[10px] bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded font-medium">Positive</span>
+              <span className="text-[10px] bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded font-medium">
+                Positive
+              </span>
             </div>
 
             <div className="space-y-2">
