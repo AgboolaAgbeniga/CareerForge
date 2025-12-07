@@ -15,7 +15,7 @@ const rethinkSans = Rethink_Sans({
 });
 
 export const metadata: Metadata = {
-  title: 'CareerAI - The Future of Hiring',
+  title: 'CareerForge - The Future of Hiring',
   description:
     'The all-in-one AI platform connecting top talent with innovative companies. Optimize resumes, find perfect matches, and accelerate your career growth.',
   keywords: [
@@ -31,17 +31,17 @@ export const metadata: Metadata = {
   creator: 'CareerForge',
   publisher: 'CareerForge',
   openGraph: {
-    title: 'CareerAI - The Future of Hiring',
+    title: 'CareerForge - The Future of Hiring',
     description:
       'The all-in-one AI platform connecting top talent with innovative companies. Optimize resumes, find perfect matches, and accelerate your career growth.',
     url: 'https://careerforge.com',
-    siteName: 'CareerAI',
+    siteName: 'CareerForge',
     images: [
       {
         url: '/og-image.jpg',
         width: 1200,
         height: 630,
-        alt: 'CareerAI - AI-Powered Hiring Platform',
+        alt: 'CareerForge - AI-Powered Hiring Platform',
       },
     ],
     locale: 'en_US',
@@ -49,7 +49,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'CareerAI - The Future of Hiring',
+    title: 'CareerForge - The Future of Hiring',
     description:
       'The all-in-one AI platform connecting top talent with innovative companies.',
     images: ['/og-image.jpg'],

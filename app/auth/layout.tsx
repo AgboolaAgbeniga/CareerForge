@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Authentication - CareerAI',
+  title: 'Authentication - CareerForge',
   description:
-    'Sign in or create your CareerAI account to access AI-powered job matching and career development tools.',
+    'Sign in or create your CareerForge account to access AI-powered job matching and career development tools.',
 };
 
 export default function AuthLayout({

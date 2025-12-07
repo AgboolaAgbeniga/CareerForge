@@ -171,7 +171,7 @@ const Footer: React.FC<FooterProps> = () => {
               AI
             </div>
             <p className="text-xs text-slate-500">
-              © 2023 CareerAI Inc. All rights reserved.
+              © 2023 CareerForge Inc. All rights reserved.
             </p>
           </div>
           <p className="text-xs text-slate-400">
