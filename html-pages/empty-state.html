@@ -1,0 +1,302 @@
+<html lang="en" class="antialiased"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Career Platform - System States</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Rethink+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&amp;display=swap" rel="stylesheet">
+    <style>
+        /* Custom tweaks for the specific aesthetic */
+        body {
+            font-family: 'Rethink Sans', sans-serif;
+            background-color: #030712; /* Slate 950 base */
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(120, 119, 198, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 0% 100%, rgba(56, 189, 248, 0.05) 0%, transparent 30%);
+            min-height: 100vh;
+        }
+        
+        /* Smooth fade in */
+        .fade-in {
+            animation: fadeIn 0.6s ease-out forwards;
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Gradient Text utility */
+        .text-gradient {
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-image: linear-gradient(to right, #e2e8f0, #94a3b8);
+        }
+        
+        .ai-gradient {
+            background-image: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        /* Custom scrollbar to keep it sleek */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569; 
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        slate: {
+                            850: '#151f32',
+                            900: '#0f172a',
+                            950: '#020617',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="text-slate-400 selection:bg-indigo-500/30 selection:text-indigo-200 p-6 md:p-12">
+
+    <!-- Header -->
+    <header class="max-w-7xl mx-auto mb-16 flex items-center justify-between fade-in" style="animation-delay: 0.1s;">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                <span class="iconify text-white" data-icon="lucide:sparkles" data-width="18"></span>
+            </div>
+            <h1 class="text-lg font-medium tracking-tight text-white">AI Career Growth</h1>
+        </div>
+        <div class="flex gap-6 text-sm font-medium">
+            <span class="text-slate-500 cursor-not-allowed">Dashboard</span>
+            <span class="text-white border-b border-indigo-500 pb-0.5">System States</span>
+            <span class="text-slate-500 cursor-not-allowed">Settings</span>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+
+        <!-- 1. Empty State: Job Matches -->
+        <section class="group relative bg-slate-900/40 border border-slate-800/60 rounded-2xl p-8 flex flex-col items-center text-center hover:border-slate-700/80 transition-all duration-500 fade-in backdrop-blur-sm" style="animation-delay: 0.2s;">
+            <!-- Glow Effect -->
+            <div class="absolute inset-0 bg-indigo-500/5 rounded-2xl blur-xl group-hover:bg-indigo-500/10 transition-colors duration-500 pointer-events-none"></div>
+            
+            <!-- Illustration -->
+            <div class="relative w-16 h-16 mb-6 rounded-full bg-slate-800/50 border border-slate-700 flex items-center justify-center shadow-inner">
+                <span class="iconify text-slate-400 group-hover:text-indigo-400 transition-colors duration-300" data-icon="lucide:search" data-width="32" data-stroke-width="1.5"></span>
+                <div class="absolute -right-1 -top-1 w-6 h-6 bg-slate-900 rounded-full flex items-center justify-center border border-slate-700">
+                    <span class="iconify text-slate-500" data-icon="lucide:layout-grid" data-width="12"></span>
+                </div>
+            </div>
+
+            <!-- Content -->
+            <h2 class="text-lg font-medium text-slate-100 mb-2 tracking-tight">No job matches found yet</h2>
+            <p class="text-sm text-slate-500 mb-8 max-w-[260px] leading-relaxed">Update your skills or preferences to discover more opportunities tailored to you.</p>
+
+            <!-- AI Insight -->
+            <div class="w-full bg-indigo-950/20 border border-indigo-500/20 rounded-xl p-3 mb-6 flex gap-3 items-start text-left">
+                <span class="iconify text-indigo-400 mt-0.5 shrink-0" data-icon="lucide:sparkles" data-width="16"></span>
+                <p class="text-xs text-indigo-200/80 font-medium">Adding <span class="text-white">React</span> to your skills increases potential matches by 15%.</p>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex flex-col w-full gap-3 mt-auto">
+                <button class="w-full bg-slate-100 hover:bg-white text-slate-900 font-medium text-sm py-2.5 rounded-lg shadow-lg shadow-white/5 transition-all">
+                    Edit Preferences
+                </button>
+                <button class="w-full text-slate-500 hover:text-slate-300 font-medium text-xs transition-colors py-2">
+                    Return to Dashboard
+                </button>
+            </div>
+        </section>
+
+
+        <!-- 2. Empty State: Applications Tracker -->
+        <section class="group relative bg-slate-900/40 border border-slate-800/60 rounded-2xl p-8 flex flex-col items-center text-center hover:border-slate-700/80 transition-all duration-500 fade-in backdrop-blur-sm" style="animation-delay: 0.3s;">
+             <div class="absolute inset-0 bg-teal-500/5 rounded-2xl blur-xl group-hover:bg-teal-500/10 transition-colors duration-500 pointer-events-none"></div>
+
+            <!-- Illustration -->
+            <div class="relative w-16 h-16 mb-6 rounded-full bg-slate-800/50 border border-slate-700 flex items-center justify-center shadow-inner">
+                <span class="iconify text-slate-400 group-hover:text-teal-400 transition-colors duration-300" data-icon="lucide:briefcase" data-width="32" data-stroke-width="1.5"></span>
+            </div>
+
+            <!-- Content -->
+            <h2 class="text-lg font-medium text-slate-100 mb-2 tracking-tight">You haven’t applied to any jobs yet</h2>
+            <p class="text-sm text-slate-500 mb-8 max-w-[260px] leading-relaxed">Start applying to track your progress and manage interviews.</p>
+
+            <!-- AI Insight -->
+            <div class="w-full bg-teal-950/20 border border-teal-500/20 rounded-xl p-3 mb-6 flex gap-3 items-start text-left">
+                <span class="iconify text-teal-400 mt-0.5 shrink-0" data-icon="lucide:trending-up" data-width="16"></span>
+                <p class="text-xs text-teal-200/80 font-medium">Applying to 5 jobs per week significantly increases your interview chances.</p>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex flex-col w-full gap-3 mt-auto">
+                <button class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-medium text-sm py-2.5 rounded-lg transition-all flex items-center justify-center gap-2">
+                    Browse Jobs
+                    <span class="iconify opacity-60" data-icon="lucide:arrow-right" data-width="14"></span>
+                </button>
+                <button class="w-full text-slate-500 hover:text-slate-300 font-medium text-xs transition-colors py-2">
+                    Return to Dashboard
+                </button>
+            </div>
+        </section>
+
+
+        <!-- 3. Empty State: Notifications -->
+        <section class="group relative bg-slate-900/40 border border-slate-800/60 rounded-2xl p-8 flex flex-col items-center text-center hover:border-slate-700/80 transition-all duration-500 fade-in backdrop-blur-sm" style="animation-delay: 0.4s;">
+             <div class="absolute inset-0 bg-purple-500/5 rounded-2xl blur-xl group-hover:bg-purple-500/10 transition-colors duration-500 pointer-events-none"></div>
+
+            <!-- Illustration -->
+            <div class="relative w-16 h-16 mb-6 rounded-full bg-slate-800/50 border border-slate-700 flex items-center justify-center shadow-inner">
+                <span class="iconify text-slate-400 group-hover:text-purple-400 transition-colors duration-300" data-icon="lucide:bell-off" data-width="32" data-stroke-width="1.5"></span>
+            </div>
+
+            <!-- Content -->
+            <h2 class="text-lg font-medium text-slate-100 mb-2 tracking-tight">No notifications yet</h2>
+            <p class="text-sm text-slate-500 mb-8 max-w-[260px] leading-relaxed">Stay tuned — interview requests and job alerts will appear here.</p>
+
+            <!-- AI Insight -->
+            <div class="w-full bg-purple-950/20 border border-purple-500/20 rounded-xl p-3 mb-6 flex gap-3 items-start text-left">
+                <span class="iconify text-purple-400 mt-0.5 shrink-0" data-icon="lucide:message-square-more" data-width="16"></span>
+                <p class="text-xs text-purple-200/80 font-medium">Enable recruiter messages in settings to stay connected to new roles.</p>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex flex-col w-full gap-3 mt-auto">
+                <button class="w-full bg-transparent hover:bg-slate-800 border border-slate-700 text-slate-300 font-medium text-sm py-2.5 rounded-lg transition-all">
+                    Explore Dashboard
+                </button>
+            </div>
+        </section>
+
+
+        <!-- 4. Error State: Resume Import Failed -->
+        <section class="group relative bg-slate-900/40 border border-slate-800/60 rounded-2xl p-8 flex flex-col items-center text-center hover:border-slate-700/80 transition-all duration-500 fade-in backdrop-blur-sm" style="animation-delay: 0.5s;">
+             <!-- Subtle Warning Red/Amber Glow -->
+             <div class="absolute inset-0 bg-red-500/5 rounded-2xl blur-xl group-hover:bg-red-500/10 transition-colors duration-500 pointer-events-none"></div>
+
+            <!-- Illustration -->
+            <div class="relative w-16 h-16 mb-6 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center">
+                <span class="iconify text-red-400" data-icon="lucide:file-warning" data-width="32" data-stroke-width="1.5"></span>
+            </div>
+
+            <!-- Content -->
+            <h2 class="text-lg font-medium text-slate-100 mb-2 tracking-tight">Resume import failed</h2>
+            <p class="text-sm text-slate-500 mb-8 max-w-[260px] leading-relaxed">Something went wrong with the connection. Try again or upload manually.</p>
+
+            <!-- AI Insight -->
+            <div class="w-full bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 mb-6 flex gap-3 items-start text-left">
+                <span class="iconify text-slate-400 mt-0.5 shrink-0" data-icon="lucide:lightbulb" data-width="16"></span>
+                <p class="text-xs text-slate-300 font-medium">Tip: Manual upload ensures your profile fields are mapped 100% accurately.</p>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex flex-col w-full gap-3 mt-auto">
+                <button class="w-full bg-white text-black hover:bg-slate-200 font-medium text-sm py-2.5 rounded-lg shadow-lg shadow-white/5 transition-all">
+                    Retry Import
+                </button>
+                <button class="w-full text-slate-500 hover:text-slate-300 font-medium text-xs transition-colors py-2 flex items-center justify-center gap-2">
+                    <span class="iconify" data-icon="lucide:upload" data-width="12"></span>
+                    Upload Resume
+                </button>
+            </div>
+        </section>
+
+
+        <!-- 5. Error State: Job Details Not Found -->
+        <section class="group relative bg-slate-900/40 border border-slate-800/60 rounded-2xl p-8 flex flex-col items-center text-center hover:border-slate-700/80 transition-all duration-500 fade-in backdrop-blur-sm" style="animation-delay: 0.6s;">
+             <div class="absolute inset-0 bg-amber-500/5 rounded-2xl blur-xl group-hover:bg-amber-500/10 transition-colors duration-500 pointer-events-none"></div>
+
+            <!-- Illustration -->
+            <div class="relative w-16 h-16 mb-6 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
+                <span class="iconify text-amber-400" data-icon="lucide:alert-triangle" data-width="32" data-stroke-width="1.5"></span>
+            </div>
+
+            <!-- Content -->
+            <h2 class="text-lg font-medium text-slate-100 mb-2 tracking-tight">Job details unavailable</h2>
+            <p class="text-sm text-slate-500 mb-8 max-w-[260px] leading-relaxed">This posting may have expired, been removed, or the link is broken.</p>
+
+            <!-- AI Insight -->
+            <div class="w-full bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 mb-6 flex gap-3 items-start text-left">
+                <span class="iconify text-indigo-400 mt-0.5 shrink-0" data-icon="lucide:bot" data-width="16"></span>
+                <p class="text-xs text-slate-300 font-medium">Don't worry. Explore <span class="text-indigo-300 cursor-pointer hover:underline">related jobs</span> matching your profile to stay ahead.</p>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex flex-col w-full gap-3 mt-auto">
+                <button class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-medium text-sm py-2.5 rounded-lg transition-all">
+                    Return to Job Matches
+                </button>
+                <button class="w-full text-slate-500 hover:text-slate-300 font-medium text-xs transition-colors py-2">
+                    Explore Similar Roles
+                </button>
+            </div>
+        </section>
+
+
+        <!-- 6. Error State: Application Submission Failed -->
+        <section class="group relative bg-slate-900/40 border border-slate-800/60 rounded-2xl p-8 flex flex-col items-center text-center hover:border-slate-700/80 transition-all duration-500 fade-in backdrop-blur-sm" style="animation-delay: 0.7s;">
+             <div class="absolute inset-0 bg-rose-500/5 rounded-2xl blur-xl group-hover:bg-rose-500/10 transition-colors duration-500 pointer-events-none"></div>
+
+            <!-- Illustration -->
+            <div class="relative w-16 h-16 mb-6 rounded-full bg-rose-500/10 border border-rose-500/20 flex items-center justify-center">
+                <span class="iconify text-rose-400" data-icon="lucide:file-x-2" data-width="32" data-stroke-width="1.5"></span>
+            </div>
+
+            <!-- Content -->
+            <h2 class="text-lg font-medium text-slate-100 mb-2 tracking-tight">Application not submitted</h2>
+            <p class="text-sm text-slate-500 mb-8 max-w-[260px] leading-relaxed">We encountered a network error. Check your connection or try again later.</p>
+
+            <!-- AI Insight -->
+            <div class="w-full bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 mb-6 flex gap-3 items-start text-left">
+                <span class="iconify text-slate-400 mt-0.5 shrink-0" data-icon="lucide:bookmark" data-width="16"></span>
+                <p class="text-xs text-slate-300 font-medium">I've autosaved your answers. Saving this job allows you to reapply quickly later.</p>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex flex-col w-full gap-3 mt-auto">
+                <button class="w-full bg-rose-600 hover:bg-rose-500 text-white font-medium text-sm py-2.5 rounded-lg shadow-lg shadow-rose-900/20 transition-all">
+                    Retry Application
+                </button>
+                <button class="w-full text-slate-500 hover:text-slate-300 font-medium text-xs transition-colors py-2">
+                    Save Job for Later
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="max-w-7xl mx-auto mt-20 pt-8 border-t border-slate-800/60 text-center fade-in" style="animation-delay: 0.8s;">
+        <div class="flex items-center justify-center gap-2 mb-4">
+             <span class="iconify text-slate-600" data-icon="lucide:command" data-width="16"></span>
+             <span class="text-xs text-slate-600 font-medium tracking-wide">AI CAREER PLATFORM</span>
+        </div>
+        <p class="text-xs text-slate-600">
+            © 2024 AI Career Growth. Transforming setbacks into data points.
+        </p>
+    </footer>
+
+
+</body></html>

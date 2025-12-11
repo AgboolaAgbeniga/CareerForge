@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Rethink_Sans } from 'next/font/google';
+import { Rethink_Sans, Inter } from 'next/font/google';
 import './globals.css';
 import {
   Navigation,
@@ -8,10 +8,17 @@ import {
   ThemeProvider,
 } from '../components';
 
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
+});
+
 const rethinkSans = Rethink_Sans({
   subsets: ['latin'],
   variable: '--font-rethink-sans',
   display: 'swap',
+  fallback: ['var(--font-inter)', 'sans-serif'],
 });
 
 export const metadata: Metadata = {
@@ -77,7 +84,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" dir="ltr" className={rethinkSans.variable}>
+    <html lang="en" dir="ltr" className={`${rethinkSans.variable} ${inter.variable}`}>
       <body className="font-sans text-slate-600 antialiased selection:bg-indigo-100 selection:text-indigo-700 dark:text-slate-400 dark:selection:bg-indigo-900 dark:selection:text-indigo-100">
         <ThemeProvider>
           <ToastProvider>

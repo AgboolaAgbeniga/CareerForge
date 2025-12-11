@@ -56,69 +56,6 @@ export default function OnboardingWelcomePage() {
 
   return (
     <div className="text-slate-800 antialiased flex flex-col min-h-screen bg-slate-50 selection:bg-indigo-100 selection:text-indigo-900">
-      {/* Navigation */}
-      <nav className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/85 backdrop-blur-xl h-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
-          <div className="flex justify-between h-full items-center">
-            {/* Logo */}
-            <Link
-              href="#"
-              className="flex items-center cursor-pointer group gap-2.5"
-            >
-              <div className="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center text-white shadow-md group-hover:scale-105 transition-transform duration-300">
-                <Rocket className="w-4 h-4" />
-              </div>
-              <span className="font-bold text-lg tracking-tight text-slate-900">
-                CAREER<span className="font-normal text-slate-500">FORGE</span>
-              </span>
-            </Link>
-
-            {/* Main Nav */}
-            <div className="hidden md:flex items-center space-x-1">
-              <Link
-                href="/job-seeker/dashboard"
-                className="px-3 py-2 rounded-md text-sm font-medium text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-all"
-              >
-                Dashboard
-              </Link>
-              <a
-                href="#"
-                className="px-3 py-2 rounded-md text-sm font-medium text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-all"
-              >
-                Jobs
-              </a>
-              <a
-                href="#"
-                className="px-3 py-2 rounded-md text-sm font-medium text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-all"
-              >
-                Applications
-              </a>
-              <a
-                href="#"
-                className="px-3 py-2 rounded-md text-sm font-medium text-slate-900 bg-slate-100"
-              >
-                Onboarding
-              </a>
-            </div>
-
-            {/* Right Actions */}
-            <div className="flex items-center gap-4">
-              <button className="relative p-2 text-slate-400 hover:text-indigo-600 transition-colors">
-                <Bell className="w-5 h-5" />
-                <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-indigo-500 ring-2 ring-white"></span>
-              </button>
-
-              <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-indigo-100 to-purple-100 border border-slate-200 overflow-hidden ring-2 ring-transparent hover:ring-indigo-100 cursor-pointer transition-all">
-                <img
-                  src="https://i.pravatar.cc/150?u=career"
-                  alt="Profile"
-                  className="h-full w-full object-cover opacity-90"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </nav>
 
       {/* Hero / Progress Section */}
       <div className="bg-white border-b border-slate-200">
@@ -162,7 +99,7 @@ export default function OnboardingWelcomePage() {
       </div>
 
       {/* Main Content */}
-      <main className="flex-grow max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full">
+      <main className="flex-grow max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 pt-20 w-full">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Left Column: Wizard Steps */}
           <div className="lg:col-span-8 space-y-6">
@@ -563,47 +500,6 @@ export default function OnboardingWelcomePage() {
           </aside>
         </div>
       </main>
-
-      {/* Footer */}
-      <footer className="bg-slate-900 text-slate-400 py-10 rounded-t-[3rem] mt-auto relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-indigo-500 to-transparent opacity-30"></div>
-
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-            <div className="text-center md:text-left">
-              <div className="flex items-center justify-center md:justify-start gap-2 mb-1">
-                <Rocket className="w-4 h-4 text-indigo-400" />
-                <span className="font-bold text-white tracking-tight text-lg">
-                  CAREER FORGE
-                </span>
-              </div>
-              <p className="text-xs text-slate-500">
-                Launch your career journey, powered by AI.
-              </p>
-            </div>
-
-            <div className="flex gap-6 text-xs font-medium text-slate-400">
-              <a href="#" className="hover:text-white transition-colors">
-                Help Center
-              </a>
-              <a href="#" className="hover:text-white transition-colors">
-                Privacy Policy
-              </a>
-              <a href="#" className="hover:text-white transition-colors">
-                Terms of Service
-              </a>
-            </div>
-          </div>
-
-          <div className="mt-8 pt-8 border-t border-slate-800 flex justify-between items-center text-[10px] text-slate-600">
-            <p>&copy; 2023 Career Forge Inc.</p>
-            <div className="flex gap-2">
-              <div className="w-2 h-2 rounded-full bg-green-500"></div>
-              <span>Systems Operational</span>
-            </div>
-          </div>
-        </div>
-      </footer>
 
       <style jsx>{`
         .slider::-webkit-slider-thumb {

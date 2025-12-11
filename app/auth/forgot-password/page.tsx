@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { AuthLayout } from '../../../components';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -76,33 +77,28 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gray-100 text-gray-800">
+    <div className="min-h-screen bg-slate-950 text-slate-300 font-sans antialiased flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <div className="bg-white rounded-2xl shadow-2xl p-8 sm:p-12">
+        <div className="glass-panel rounded-xl border border-indigo-500/20 p-8 sm:p-12">
           {/* Header */}
           <div className="text-center mb-8">
             <div className="flex justify-center mb-4">
-              <div className="w-12 h-12 bg-slate-900 text-white rounded-xl flex items-center justify-center font-bold tracking-tighter text-lg">
+              <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-xl flex items-center justify-center font-bold tracking-tighter text-lg">
                 CF
               </div>
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            <h1 className="text-xl font-semibold text-white tracking-tight mb-2">
               Reset your password
             </h1>
-            <p className="text-gray-600 text-sm">
+            <p className="text-sm text-slate-400">
               No problem. Enter your email and we'll send you a reset link.
             </p>
           </div>
 
           {/* Forgot Password Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Email address
-              </label>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-slate-300">Email address</label>
               <input
                 type="email"
                 id="email"
@@ -110,7 +106,7 @@ export default function ForgotPasswordPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full bg-slate-950 border border-slate-800 rounded-lg py-2.5 px-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all"
                 placeholder="you@example.com"
               />
               {emailError && (
@@ -120,7 +116,7 @@ export default function ForgotPasswordPage() {
 
             <button
               type="submit"
-              className="w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors"
+              className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-sm font-semibold py-2.5 rounded-lg shadow-lg shadow-indigo-500/20 transition-all hover:shadow-[0_0_20px_rgba(79,70,229,0.3)] hover:scale-[1.02]"
             >
               Send Reset Link
             </button>
@@ -129,7 +125,7 @@ export default function ForgotPasswordPage() {
           <div className="text-center mt-6">
             <Link
               href="/auth/login"
-              className="text-sm text-indigo-600 hover:underline font-medium flex items-center justify-center gap-1"
+              className="text-sm text-indigo-400 hover:text-indigo-300 transition-colors font-medium flex items-center justify-center gap-1"
             >
               <svg
                 className="w-4 h-4"

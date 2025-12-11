@@ -112,68 +112,8 @@ export default function UploadResume() {
       {/* Top decorative line */}
       <div className="w-full h-0.5 bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent"></div>
 
-      {/* HEADER */}
-      <header className="w-full border-b border-white/5 bg-slate-950/50 backdrop-blur-xl sticky top-0 z-50 transition-all duration-300">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
-          <div className="flex items-center justify-between gap-6">
-            {/* Logo */}
-            <a href="#" className="flex items-center gap-2 group">
-              <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20 group-hover:bg-indigo-500/20 transition-all">
-                <Sparkles className="w-4.5 h-4.5 text-indigo-400" />
-              </div>
-              <span className="text-lg font-semibold tracking-tight text-white">
-                Career<span className="text-slate-500">OS</span>
-              </span>
-            </a>
-
-            {/* Navigation */}
-            <nav className="hidden md:flex items-center gap-1">
-              <a
-                href="#"
-                className="px-3 py-2 text-sm text-slate-400 hover:text-white rounded-md hover:bg-white/5 transition-all"
-              >
-                Dashboard
-              </a>
-              <a
-                href="#"
-                className="px-3 py-2 text-sm text-white bg-white/5 rounded-md font-medium transition-all"
-              >
-                Resumes
-              </a>
-              <a
-                href="#"
-                className="px-3 py-2 text-sm text-slate-400 hover:text-white rounded-md hover:bg-white/5 transition-all"
-              >
-                Jobs
-              </a>
-              <a
-                href="#"
-                className="px-3 py-2 text-sm text-slate-400 hover:text-white rounded-md hover:bg-white/5 transition-all"
-              >
-                Applications
-              </a>
-            </nav>
-
-            {/* User Actions */}
-            <div className="flex items-center gap-3">
-              <button className="relative p-2 text-slate-400 hover:text-white rounded-full hover:bg-white/5 transition-colors">
-                <Bell className="w-4.5 h-4.5" />
-                <span className="absolute top-2 right-2.5 w-1.5 h-1.5 bg-indigo-500 rounded-full border border-slate-950"></span>
-              </button>
-              <div className="w-px h-6 bg-white/10 mx-1"></div>
-              <button className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-full border border-white/5 hover:bg-white/5 hover:border-white/10 transition-all">
-                <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-[10px] font-bold text-white shadow-inner">
-                  JD
-                </div>
-                <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
-
       {/* MAIN CONTENT */}
-      <div className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 py-12 grid grid-cols-1 lg:grid-cols-12 gap-12">
+      <div className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 py-12 pt-20 grid grid-cols-1 lg:grid-cols-12 gap-12">
         {/* Left Column: Upload Interface */}
         <main className="lg:col-span-8 flex flex-col justify-center animate-fade-in">
           <div className="mb-8">
@@ -377,30 +317,6 @@ export default function UploadResume() {
           </div>
         </aside>
       </div>
-
-      {/* FOOTER */}
-      <footer className="mt-auto w-full bg-slate-950 border-t border-white/5 rounded-t-[40px] relative overflow-hidden">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/3 h-px bg-gradient-to-r from-transparent via-indigo-500/20 to-transparent"></div>
-        <div className="max-w-7xl mx-auto px-6 py-8">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-slate-500 font-medium">
-            <p className="flex items-center gap-2">
-              <Command className="w-3.5 h-3.5" />
-              Your career journey starts here, powered by AI.
-            </p>
-            <div className="flex gap-6">
-              <a href="#" className="hover:text-slate-300 transition-colors">
-                Help Center
-              </a>
-              <a href="#" className="hover:text-slate-300 transition-colors">
-                Privacy Policy
-              </a>
-              <a href="#" className="hover:text-slate-300 transition-colors">
-                Terms of Service
-              </a>
-            </div>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

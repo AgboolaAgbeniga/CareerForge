@@ -119,70 +119,9 @@ export default function FullProfile() {
 
   return (
     <div className="min-h-screen bg-gray-50 text-slate-900 antialiased selection:bg-indigo-100 selection:text-indigo-900 flex flex-col font-['Rethink_Sans']">
-      {/* Header */}
-      <nav className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/80 backdrop-blur-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
-            {/* Logo */}
-            <div className="flex items-center cursor-pointer group">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-violet-600 flex items-center justify-center text-white mr-3 shadow-md group-hover:shadow-lg transition-all duration-300">
-                <Sparkles className="w-4.5 h-4.5" />
-              </div>
-              <span className="font-bold text-lg tracking-tight text-slate-900 group-hover:text-indigo-600 transition-colors">
-                CAREER<span className="font-normal text-slate-500">AI</span>
-              </span>
-            </div>
-
-            {/* Navigation */}
-            <div className="hidden md:flex space-x-1">
-              <a
-                href="#"
-                className="px-3 py-2 rounded-md text-sm font-medium text-slate-500 hover:text-slate-900 hover:bg-slate-100/50 transition-all"
-              >
-                Dashboard
-              </a>
-              <a
-                href="#"
-                className="px-3 py-2 rounded-md text-sm font-medium text-slate-500 hover:text-slate-900 hover:bg-slate-100/50 transition-all"
-              >
-                Resumes
-              </a>
-              <a
-                href="#"
-                className="px-3 py-2 rounded-md text-sm font-medium text-slate-500 hover:text-slate-900 hover:bg-slate-100/50 transition-all"
-              >
-                Jobs
-              </a>
-              <a
-                href="#"
-                className="px-3 py-2 rounded-md text-sm font-medium text-slate-900 bg-white shadow-sm border border-slate-200"
-              >
-                Profile
-              </a>
-            </div>
-
-            {/* Right Actions */}
-            <div className="flex items-center space-x-4">
-              <button className="relative p-2 text-slate-400 hover:text-slate-600 transition-colors">
-                <Bell className="w-5 h-5" />
-                <span className="absolute top-2 right-2 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
-              </button>
-              <div className="relative group cursor-pointer">
-                <div className="h-8 w-8 rounded-full bg-slate-200 border border-slate-300 overflow-hidden">
-                  <img
-                    src="https://i.pravatar.cc/150?u=a042581f4e29026704d"
-                    alt="User"
-                    className="h-full w-full object-cover"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </nav>
 
       {/* Main Content Wrapper */}
-      <main className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+      <main className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-20 w-full">
         {/* Profile Overview */}
         <section className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 mb-6 relative overflow-hidden group">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
@@ -687,41 +626,6 @@ export default function FullProfile() {
           </div>
         </div>
       </main>
-
-      {/* Footer */}
-      <footer className="bg-slate-900 text-slate-400 mt-12 py-12 relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-slate-700 to-transparent"></div>
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-2 text-white font-semibold">
-                <Sparkles className="w-4 h-4" />
-                CAREER AI
-              </div>
-              <p className="text-sm">
-                Your professional identity, powered by AI.
-              </p>
-            </div>
-
-            <div className="flex gap-8 text-sm font-medium">
-              <a href="#" className="hover:text-white transition-colors">
-                Help Center
-              </a>
-              <a href="#" className="hover:text-white transition-colors">
-                Privacy Policy
-              </a>
-              <a href="#" className="hover:text-white transition-colors">
-                Terms of Service
-              </a>
-            </div>
-          </div>
-
-          <div className="mt-8 pt-8 border-t border-slate-800 text-center text-xs text-slate-600">
-            © 2023 Career AI Platform. All rights reserved.
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

@@ -1,4 +1,6 @@
-import React from 'react';
+"use client";
+
+import React, { useState, useEffect, useRef } from 'react';
 import {
   UploadCloud,
   Briefcase,
@@ -13,9 +15,55 @@ import {
   Zap,
   Globe,
   Quote,
+  User,
+  MapPin,
+  Check,
 } from 'lucide-react';
+import { motion, useTransform, useSpring } from 'framer-motion';
 
 const Hero: React.FC = () => {
+  const prefersReducedMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const animationProgress = useSpring(0, { stiffness: 100, damping: 30 });
+
+  const containerOpacity = 1;
+  const containerRotate = 0;
+
+  const candidateX = 0;
+  const jobX = 0;
+
+  const candidateProgress = useTransform(animationProgress, [0.2, 0.4], prefersReducedMotion ? [85, 85] : [0, 85]);
+  const jobProgress = useTransform(animationProgress, [0.2, 0.4], prefersReducedMotion ? [92, 92] : [0, 92]);
+
+  const connectorPathLength = useTransform(animationProgress, [0.3, 0.5], prefersReducedMotion ? [1, 1] : [0, 1]);
+
+  const badgesOpacity = useTransform(animationProgress, [0.4, 0.6], prefersReducedMotion ? [1, 1] : [0, 1]);
+
+  const [candidateScore, setCandidateScore] = useState(0);
+  const [jobScore, setJobScore] = useState(0);
+
+  useEffect(() => {
+    const unsub1 = candidateProgress.onChange((v) => setCandidateScore(Math.round(v)));
+    const unsub2 = jobProgress.onChange((v) => setJobScore(Math.round(v)));
+    return () => { unsub1(); unsub2(); };
+  }, [candidateProgress, jobProgress]);
+
+  useEffect(() => {
+    if (prefersReducedMotion) return;
+
+    let startTime = Date.now();
+    const duration = 5000; // 5 seconds loop
+
+    const animate = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = (elapsed % duration) / duration;
+      animationProgress.set(progress);
+      requestAnimationFrame(animate);
+    };
+
+    animate();
+  }, [animationProgress, prefersReducedMotion]);
+
   return (
     <section className="relative pt-32 pb-32 lg:pt-40 lg:pb-48 hero-glow overflow-hidden">
       <div className="max-w-7xl mx-auto px-6 relative z-10 text-center">
@@ -47,7 +95,7 @@ const Hero: React.FC = () => {
 
         <div
           className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-up"
-          style={{ animationDelay: '0.3s' }}
+          style={{ animationDelay: '0.1s' }}
         >
           <a
             href="#"
@@ -63,78 +111,128 @@ const Hero: React.FC = () => {
           </a>
         </div>
 
-        {/* Abstract UI Illustration */}
-        <div
-          className="mt-16 mx-auto max-w-4xl relative animate-fade-up"
-          style={{ animationDelay: '0.4s' }}
+        {/* Interactive Abstract UI Illustration */}
+        <motion.div
+          className="mt-16 mx-auto max-w-4xl relative"
+          style={{ opacity: containerOpacity, rotate: containerRotate }}
+          aria-label="Illustration of AI matching candidates to jobs"
         >
-          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200/60 p-2 transform rotate-1 hover:rotate-0 transition-transform duration-700">
-            <div className="bg-slate-50 rounded-xl overflow-hidden aspect-[16/9] relative flex items-center justify-center border border-slate-100">
+          <motion.div
+            className="bg-white rounded-2xl shadow-2xl border border-slate-200/60 p-2"
+            style={{ rotate: containerRotate }}
+          >
+            <div className="bg-gradient-to-br from-blue-50 to-teal-50 rounded-xl overflow-hidden aspect-[16/9] relative flex items-center justify-center border border-slate-100">
               <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] opacity-50"></div>
-              {/* Decorative Elements mimicking UI */}
+              {/* SVG Connector */}
+              <svg className="absolute inset-0 w-full h-full z-20 pointer-events-none">
+                <motion.path
+                  d="M 25% 50% Q 50% 30% 75% 25%"
+                  stroke="url(#glow)"
+                  strokeWidth="3"
+                  fill="none"
+                  strokeLinecap="round"
+                  initial={{ pathLength: 0 }}
+                  style={{ pathLength: connectorPathLength }}
+                  transition={{ duration: 1 }}
+                />
+                <defs>
+                  <linearGradient id="glow" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#6366f1" />
+                    <stop offset="50%" stopColor="#14b8a6" />
+                    <stop offset="100%" stopColor="#6366f1" />
+                  </linearGradient>
+                </defs>
+              </svg>
+              {/* Cards */}
               <div className="relative z-10 grid grid-cols-2 gap-8 w-3/4">
-                <div className="bg-white p-4 rounded-lg shadow-sm border border-slate-200">
+                {/* Candidate Card */}
+                <motion.div
+                  className="bg-white p-4 rounded-lg shadow-sm border border-slate-200"
+                  style={{ x: candidateX }}
+                  transition={{ type: "spring", stiffness: 100 }}
+                >
                   <div className="flex gap-3 mb-3">
                     <div className="w-8 h-8 rounded bg-indigo-100 flex items-center justify-center">
-                      <svg
-                        className="w-4 h-4 text-indigo-600"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                        />
-                      </svg>
+                      <User className="w-4 h-4 text-indigo-600" />
                     </div>
                     <div className="space-y-1">
-                      <div className="h-2 w-20 bg-slate-200 rounded"></div>
-                      <div className="h-2 w-12 bg-slate-100 rounded"></div>
+                      <div className="text-xs font-medium text-slate-900">Michael Chen</div>
+                      <div className="text-xs text-slate-500">Software Engineer</div>
                     </div>
                   </div>
                   <div className="h-1 w-full bg-slate-100 rounded mb-2 overflow-hidden">
-                    <div className="h-full w-[85%] bg-indigo-500 rounded"></div>
+                    <motion.div
+                      className="h-full bg-indigo-500 rounded"
+                      style={{ width: candidateProgress }}
+                      transition={{ duration: 1 }}
+                    />
                   </div>
-                  <div className="text-[10px] text-slate-400">
-                    Match Score: 85%
+                  <div className="text-[10px] text-slate-400" aria-label={`Match score ${candidateScore}%`}>
+                    Match Score: {candidateScore}%
                   </div>
-                </div>
-                <div className="bg-white p-4 rounded-lg shadow-sm border border-slate-200">
+                  <motion.div
+                    className="mt-2 flex flex-wrap gap-1"
+                    style={{ opacity: badgesOpacity }}
+                  >
+                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[8px] font-medium bg-indigo-50 text-indigo-700">
+                      Skills: Python, React
+                    </span>
+                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[8px] font-medium bg-green-50 text-green-700">
+                      <MapPin className="w-2 h-2 mr-1" />
+                      San Francisco, CA
+                    </span>
+                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[8px] font-medium bg-emerald-50 text-emerald-700">
+                      <Check className="w-2 h-2 mr-1" />
+                      Available
+                    </span>
+                  </motion.div>
+                </motion.div>
+                {/* Job Card */}
+                <motion.div
+                  className="bg-white p-4 rounded-lg shadow-sm border border-slate-200"
+                  style={{ x: jobX }}
+                  transition={{ type: "spring", stiffness: 100 }}
+                >
                   <div className="flex gap-3 mb-3">
                     <div className="w-8 h-8 rounded bg-teal-100 flex items-center justify-center">
-                      <svg
-                        className="w-4 h-4 text-teal-600"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                        />
-                      </svg>
+                      <Briefcase className="w-4 h-4 text-teal-600" />
                     </div>
                     <div className="space-y-1">
-                      <div className="h-2 w-20 bg-slate-200 rounded"></div>
-                      <div className="h-2 w-12 bg-slate-100 rounded"></div>
+                      <div className="text-xs font-medium text-slate-900">Backend Developer</div>
+                      <div className="text-xs text-slate-500">NovaTech</div>
                     </div>
                   </div>
                   <div className="h-1 w-full bg-slate-100 rounded mb-2 overflow-hidden">
-                    <div className="h-full w-[92%] bg-teal-500 rounded"></div>
+                    <motion.div
+                      className="h-full bg-teal-500 rounded"
+                      style={{ width: jobProgress }}
+                      transition={{ duration: 1 }}
+                    />
                   </div>
-                  <div className="text-[10px] text-slate-400">
-                    Match Score: 92%
+                  <div className="text-[10px] text-slate-400" aria-label={`Match score ${jobScore}%`}>
+                    Match Score: {jobScore}%
                   </div>
-                </div>
+                  <motion.div
+                    className="mt-2 flex flex-wrap gap-1"
+                    style={{ opacity: badgesOpacity }}
+                  >
+                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[8px] font-medium bg-teal-50 text-teal-700">
+                      Requirements: Node.js, AWS
+                    </span>
+                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[8px] font-medium bg-blue-50 text-blue-700">
+                      <Globe className="w-2 h-2 mr-1" />
+                      Remote
+                    </span>
+                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[8px] font-medium bg-orange-50 text-orange-700">
+                      <Check className="w-2 h-2 mr-1" />
+                      Open Role
+                    </span>
+                  </motion.div>
+                </motion.div>
               </div>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </div>
 
       {/* Curved Separator */}
