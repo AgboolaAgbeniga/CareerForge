@@ -1,15 +1,5 @@
 {
-  "app": {
-    "[project]/app/_not-found/page": [
-      "static/media/AMOWz4SDuXOMCPfdoglY9JQEVFi34dpL4w.p.39951e42.woff2"
-    ],
-    "[project]/app/page": [
-      "static/media/AMOWz4SDuXOMCPfdoglY9JQEVFi34dpL4w.p.39951e42.woff2"
-    ],
-    "[project]/app/demo/page": [
-      "static/media/AMOWz4SDuXOMCPfdoglY9JQEVFi34dpL4w.p.39951e42.woff2"
-    ]
-  },
+  "app": {},
   "appUsingSizeAdjust": false,
   "pages": {},
   "pagesUsingSizeAdjust": false

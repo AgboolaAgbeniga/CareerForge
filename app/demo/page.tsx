@@ -357,8 +357,9 @@ export default function DemoPresentation() {
             seconds.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4" data-testid="value-prop">
             <button
+              data-testid="upload-resume-btn"
               onClick={() => {
                 setUserType('job-seeker');
                 setCurrentStep('auth');
@@ -368,6 +369,7 @@ export default function DemoPresentation() {
               <UploadCloud className="w-4 h-4" /> Upload Resume
             </button>
             <button
+              data-testid="post-job-btn"
               onClick={() => {
                 setUserType('recruiter');
                 setCurrentStep('auth');
@@ -479,7 +481,7 @@ export default function DemoPresentation() {
           >
             ← Back to Homepage
           </button>
-          <div className="flex gap-4">
+          <div className="flex gap-4" data-testid="job-matches">
             <button
               onClick={() => setJobSeekerStep('dashboard')}
               className={`px-4 py-2 rounded-lg text-sm ${jobSeekerStep === 'dashboard' ? 'bg-indigo-500/20 text-indigo-300' : 'text-slate-400 hover:text-white'}`}
@@ -520,13 +522,14 @@ export default function DemoPresentation() {
         </div>
 
         {jobSeekerStep === 'upload' && (
-          <div className="glass-card rounded-2xl p-8">
+          <div className="glass-card rounded-2xl p-8" data-testid="upload-section">
             <h2 className="text-2xl font-semibold text-white mb-6">Upload Your Resume</h2>
-            <div className="border-2 border-dashed border-slate-600 rounded-xl p-12 text-center">
+            <div className="border-2 border-dashed border-slate-600 rounded-xl p-12 text-center" data-testid="upload-area">
               <UploadCloud className="w-16 h-16 text-slate-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-white mb-2">Drag & drop your resume here</h3>
               <p className="text-slate-400 mb-6">or click to browse files</p>
               <button
+                data-testid="simulate-upload-btn"
                 onClick={handleUploadResume}
                 className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-medium"
               >
@@ -537,8 +540,8 @@ export default function DemoPresentation() {
         )}
 
         {jobSeekerStep === 'analyzing' && (
-           <div className="glass-card rounded-2xl p-8">
-             <h2 className="text-2xl font-semibold text-white mb-6">AI Resume Analysis</h2>
+            <div className="glass-card rounded-2xl p-8" data-testid="analyzing">
+              <h2 className="text-2xl font-semibold text-white mb-6">AI Resume Analysis</h2>
              <div className="space-y-6">
                <div className="flex items-center gap-4 mb-6">
                  <Bot className="w-8 h-8 text-indigo-400 animate-pulse" />
@@ -623,7 +626,7 @@ export default function DemoPresentation() {
 
         {jobSeekerStep === 'generated' && (
           <div className="space-y-6">
-            <div className="glass-card rounded-2xl p-8">
+            <div className="glass-card rounded-2xl p-8" data-testid="generated-resume">
               <div className="flex items-center gap-3 mb-6">
                 <CheckCircle2 className="w-8 h-8 text-green-400" />
                 <h2 className="text-2xl font-semibold text-white">Resume Generated Successfully!</h2>
@@ -979,9 +982,9 @@ export default function DemoPresentation() {
             </div>
 
             {/* Candidates Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6" data-testid="candidate-matches">
               {mockCandidates.map((candidate) => (
-                <div key={candidate.id} className="glass-card rounded-xl p-6 hover:border-indigo-500/30 transition-colors">
+                <div key={candidate.id} className="glass-card rounded-xl p-6 hover:border-indigo-500/30 transition-colors candidate-card">
                   <div className="flex items-start gap-4 mb-4">
                     <div className="relative">
                       <img
@@ -1065,7 +1068,7 @@ export default function DemoPresentation() {
             </div>
 
             {/* AI Insights */}
-            <div className="glass-card rounded-xl p-6 border border-indigo-500/30">
+            <div className="glass-card rounded-xl p-6 border border-indigo-500/30" data-testid="ai-insights">
               <div className="flex items-center gap-3 mb-4">
                 <Bot className="w-6 h-6 text-indigo-400" />
                 <h3 className="text-lg font-semibold text-white">AI Copilot Insights</h3>
@@ -1135,28 +1138,28 @@ export default function DemoPresentation() {
 
             {/* KPIs */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="glass-card p-6 rounded-xl text-center">
+              <div className="glass-card p-6 rounded-xl text-center" data-testid="total-matches">
                 <div className="w-12 h-12 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mx-auto mb-3">
                   <Users className="w-6 h-6 text-indigo-400" />
                 </div>
                 <div className="text-2xl font-bold text-white mb-1">124</div>
                 <div className="text-xs text-slate-500">Total Matches</div>
               </div>
-              <div className="glass-card p-6 rounded-xl text-center">
+              <div className="glass-card p-6 rounded-xl text-center" data-testid="time-to-hire">
                 <div className="w-12 h-12 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto mb-3">
                   <Clock className="w-6 h-6 text-emerald-400" />
                 </div>
                 <div className="text-2xl font-bold text-white mb-1">18d</div>
                 <div className="text-xs text-slate-500">Avg Time to Hire</div>
               </div>
-              <div className="glass-card p-6 rounded-xl text-center">
+              <div className="glass-card p-6 rounded-xl text-center" data-testid="shortlisted">
                 <div className="w-12 h-12 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mx-auto mb-3">
                   <Star className="w-6 h-6 text-purple-400" />
                 </div>
                 <div className="text-2xl font-bold text-white mb-1">48</div>
                 <div className="text-xs text-slate-500">Shortlisted</div>
               </div>
-              <div className="glass-card p-6 rounded-xl text-center">
+              <div className="glass-card p-6 rounded-xl text-center" data-testid="success-rate">
                 <div className="w-12 h-12 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mx-auto mb-3">
                   <Activity className="w-6 h-6 text-amber-400" />
                 </div>

@@ -147,6 +147,7 @@ const MessagingInbox: React.FC = () => {
                   <div className="w-12 h-12 rounded-full border border-slate-200 p-0.5 bg-white">
                     <img
                       src="https://i.pravatar.cc/150?u=sara"
+                      alt="Profile picture of Sarah Miller"
                       className="rounded-full w-full h-full object-cover"
                     />
                   </div>
@@ -246,6 +247,7 @@ const MessagingInbox: React.FC = () => {
               <div className="w-9 h-9 rounded-full bg-slate-100 border border-slate-200 overflow-hidden">
                 <img
                   src="https://i.pravatar.cc/150?u=sara"
+                  alt="Profile picture of Sarah Miller"
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -291,6 +293,7 @@ const MessagingInbox: React.FC = () => {
               <div className="w-8 h-8 rounded-full bg-slate-200 flex-none overflow-hidden mt-1">
                 <img
                   src="https://i.pravatar.cc/150?u=sara"
+                  alt="Profile picture of Sarah Miller"
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -317,6 +320,7 @@ const MessagingInbox: React.FC = () => {
               <div className="w-8 h-8 rounded-full bg-slate-200 flex-none overflow-hidden mt-1 ring-2 ring-indigo-50">
                 <img
                   src="https://i.pravatar.cc/150?u=a042581f4e29026704d"
+                  alt="Your profile picture"
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -343,6 +347,7 @@ const MessagingInbox: React.FC = () => {
               <div className="w-8 h-8 rounded-full bg-slate-200 flex-none overflow-hidden mt-1">
                 <img
                   src="https://i.pravatar.cc/150?u=sara"
+                  alt="Profile picture of Sarah Miller"
                   className="w-full h-full object-cover"
                 />
               </div>
