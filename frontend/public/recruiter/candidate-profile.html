@@ -1,0 +1,985 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Candidate Profile - CareerForge</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Rethink+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap"
+      rel="stylesheet"
+    />
+
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Rethink Sans', 'sans-serif'],
+            },
+            colors: {
+              slate: {
+                850: '#151f32',
+                900: '#0f172a',
+                950: '#020617',
+              },
+              accent: {
+                500: '#6366f1', // Indigo
+                600: '#4f46e5',
+              },
+            },
+            backgroundImage: {
+              'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+              'hero-glow':
+                'conic-gradient(from 180deg at 50% 50%, #2a8af6 0deg, #a853ba 180deg, #e92a67 360deg)',
+            },
+            animation: {
+              'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+              float: 'float 6s ease-in-out infinite',
+            },
+            keyframes: {
+              float: {
+                '0%, 100%': { transform: 'translateY(0)' },
+                '50%': { transform: 'translateY(-10px)' },
+              },
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      /* Custom Scrollbar */
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #020617;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #334155;
+        border-radius: 3px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #475569;
+      }
+
+      /* Glassmorphism Utilities */
+      .glass-panel {
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .glass-header {
+        background: rgba(2, 6, 23, 0.85);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      /* Gradient Text */
+      .text-gradient {
+        background-clip: text;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-image: linear-gradient(to right, #818cf8, #c084fc, #2dd4bf);
+      }
+
+      /* Timeline Styles */
+      .timeline-item {
+        position: relative;
+        padding-left: 2rem;
+      }
+      .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: 0.5rem;
+        top: 0.5rem;
+        width: 0.5rem;
+        height: 0.5rem;
+        background: #6366f1;
+        border-radius: 50%;
+        border: 2px solid #020617;
+      }
+      .timeline-item:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        left: 0.9375rem;
+        top: 1rem;
+        width: 1px;
+        height: calc(100% - 1rem);
+        background: rgba(255, 255, 255, 0.1);
+      }
+    </style>
+  </head>
+  <body
+    class="bg-slate-950 text-slate-300 font-sans antialiased selection:bg-indigo-500/30 selection:text-indigo-200"
+  >
+    <!-- HEADER / NAVIGATION -->
+    <header class="glass-header sticky top-0 z-50 w-full">
+      <div
+        class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between"
+      >
+        <!-- Logo -->
+        <a
+          href="recruiter-dashboard.html"
+          class="flex items-center gap-2 group"
+        >
+          <div
+            class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-semibold tracking-tighter"
+          >
+            AI
+          </div>
+          <span
+            class="text-lg font-semibold tracking-tight text-white group-hover:text-indigo-400 transition-colors"
+            >CareerForge</span
+          >
+        </a>
+
+        <!-- Navigation -->
+        <nav class="hidden md:flex items-center gap-1">
+          <a
+            href="recruiter-dashboard.html"
+            class="px-3 py-2 text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 rounded-md transition-colors"
+            >Dashboard</a
+          >
+          <a
+            href="post-job.html"
+            class="px-3 py-2 text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 rounded-md transition-colors"
+            >Post Job</a
+          >
+          <a
+            href="candidate-matching.html"
+            class="px-3 py-2 text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 rounded-md transition-colors"
+            >Candidates</a
+          >
+          <a
+            href="shortlist.html"
+            class="px-3 py-2 text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 rounded-md transition-colors"
+            >Shortlists</a
+          >
+          <a
+            href="recruiter-notifications.html"
+            class="px-3 py-2 text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 rounded-md transition-colors"
+            >Notifications</a
+          >
+        </nav>
+
+        <!-- Actions -->
+        <div class="flex items-center gap-4">
+          <button
+            class="hidden lg:flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg hover:shadow-[0_0_20px_rgba(79,70,229,0.3)] hover:scale-[1.02] transition-all border border-white/10"
+          >
+            <span
+              class="iconify"
+              data-icon="lucide:briefcase"
+              data-width="14"
+            ></span>
+            Post a Job
+          </button>
+
+          <div class="h-6 w-px bg-slate-800 hidden md:block"></div>
+
+          <button
+            class="relative text-slate-400 hover:text-white transition-colors"
+          >
+            <span
+              class="iconify"
+              data-icon="lucide:bell"
+              data-width="20"
+            ></span>
+            <span
+              class="absolute top-0 right-0 w-2 h-2 bg-rose-500 rounded-full ring-2 ring-slate-950"
+            ></span>
+          </button>
+
+          <div class="flex items-center gap-3 pl-2 cursor-pointer group">
+            <div
+              class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 overflow-hidden"
+            >
+              <img
+                src="https://ui-avatars.com/api/?name=Alex+R&background=0D8ABC&color=fff"
+                alt="User"
+                class="w-full h-full object-cover opacity-90 group-hover:opacity-100"
+              />
+            </div>
+            <span
+              class="iconify text-slate-500 group-hover:text-slate-300"
+              data-icon="lucide:chevron-down"
+              data-width="14"
+            ></span>
+          </div>
+        </div>
+      </div>
+      <!-- Gradient Underline -->
+      <div
+        class="h-[1px] w-full bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent"
+      ></div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 py-8">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <!-- MAIN PROFILE CONTENT -->
+        <div class="lg:col-span-8 space-y-6">
+          <!-- Profile Header -->
+          <div class="glass-panel rounded-xl p-6">
+            <div
+              class="flex flex-col md:flex-row gap-6 items-start md:items-center"
+            >
+              <div class="relative">
+                <div
+                  class="w-24 h-24 rounded-full bg-slate-800 border border-slate-700 overflow-hidden"
+                >
+                  <img
+                    src="https://ui-avatars.com/api/?name=Sarah+Chen&background=random&size=96"
+                    class="w-full h-full object-cover"
+                  />
+                </div>
+                <div
+                  class="absolute -bottom-1 -right-1 bg-slate-950 rounded-full p-1"
+                >
+                  <div
+                    class="w-4 h-4 bg-green-500 rounded-full border border-slate-950"
+                  ></div>
+                </div>
+              </div>
+
+              <div class="flex-1">
+                <div class="flex items-center gap-2 mb-2">
+                  <h1 class="text-2xl font-semibold text-white tracking-tight">
+                    Sarah Chen
+                  </h1>
+                  <span
+                    class="iconify text-blue-400"
+                    data-icon="lucide:badge-check"
+                    data-width="20"
+                  ></span>
+                </div>
+                <p class="text-slate-400 mb-3">
+                  Senior UX Designer • San Francisco, CA
+                </p>
+
+                <div class="flex items-center gap-6 text-sm">
+                  <div class="flex items-center gap-2">
+                    <span
+                      class="iconify text-indigo-400"
+                      data-icon="lucide:briefcase"
+                      data-width="16"
+                    ></span>
+                    <span class="text-slate-300">7 years experience</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span
+                      class="iconify text-indigo-400"
+                      data-icon="lucide:map-pin"
+                      data-width="16"
+                    ></span>
+                    <span class="text-slate-300">San Francisco, CA</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span
+                      class="iconify text-indigo-400"
+                      data-icon="lucide:mail"
+                      data-width="16"
+                    ></span>
+                    <span class="text-slate-300">sarah.chen@email.com</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex flex-col gap-3">
+                <div class="text-center">
+                  <div class="text-2xl font-bold text-gradient mb-1">98%</div>
+                  <div class="text-xs text-slate-500">Match Score</div>
+                </div>
+                <div class="flex gap-2">
+                  <button
+                    class="flex-1 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-lg hover:shadow-[0_0_20px_rgba(79,70,229,0.3)] hover:scale-[1.02] transition-all border border-white/10 text-sm flex items-center justify-center gap-2"
+                  >
+                    <span
+                      class="iconify"
+                      data-icon="lucide:mail"
+                      data-width="14"
+                    ></span>
+                    Contact
+                  </button>
+                  <button
+                    class="px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-slate-300 hover:bg-white/10 hover:border-white/20 transition-colors"
+                  >
+                    <span
+                      class="iconify"
+                      data-icon="lucide:star"
+                      data-width="16"
+                    ></span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Summary -->
+          <div class="glass-panel rounded-xl p-6">
+            <div class="flex items-center gap-3 mb-4">
+              <div
+                class="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center"
+              >
+                <span
+                  class="iconify text-indigo-400"
+                  data-icon="lucide:user"
+                  data-width="16"
+                ></span>
+              </div>
+              <h2 class="text-lg font-semibold text-white tracking-tight">
+                Summary
+              </h2>
+            </div>
+            <p class="text-slate-300 leading-relaxed">
+              Passionate UX Designer with 7 years of experience creating
+              user-centered digital experiences. Specialized in design systems,
+              user research, and cross-functional collaboration. Proven track
+              record of leading design initiatives that drive business growth
+              and improve user satisfaction.
+            </p>
+            <p class="text-sm text-slate-400 mt-3 italic">
+              Candidate has 6 years of experience in React.js.
+            </p>
+          </div>
+
+          <!-- Experience -->
+          <div class="glass-panel rounded-xl p-6">
+            <div class="flex items-center gap-3 mb-6">
+              <div
+                class="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center"
+              >
+                <span
+                  class="iconify text-indigo-400"
+                  data-icon="lucide:briefcase"
+                  data-width="16"
+                ></span>
+              </div>
+              <h2 class="text-lg font-semibold text-white tracking-tight">
+                Experience
+              </h2>
+            </div>
+
+            <div class="space-y-6">
+              <div class="timeline-item">
+                <div class="bg-white/5 border border-white/10 rounded-lg p-4">
+                  <div class="flex justify-between items-start mb-2">
+                    <div>
+                      <h3 class="text-base font-semibold text-white">
+                        Senior UX Designer
+                      </h3>
+                      <p class="text-sm text-indigo-400">TechCorp Inc.</p>
+                    </div>
+                    <span
+                      class="text-xs text-slate-500 bg-slate-800 px-2 py-1 rounded"
+                      >2021 - Present</span
+                    >
+                  </div>
+                  <p class="text-sm text-slate-300 mb-3">
+                    Led design for 5+ major product features, conducted user
+                    research with 200+ participants, and established design
+                    system used across 10 teams.
+                  </p>
+                  <div class="flex flex-wrap gap-1">
+                    <span
+                      class="text-xs bg-indigo-500/10 text-indigo-300 px-2 py-1 rounded border border-indigo-500/20"
+                      >Figma</span
+                    >
+                    <span
+                      class="text-xs bg-indigo-500/10 text-indigo-300 px-2 py-1 rounded border border-indigo-500/20"
+                      >User Research</span
+                    >
+                    <span
+                      class="text-xs bg-indigo-500/10 text-indigo-300 px-2 py-1 rounded border border-indigo-500/20"
+                      >Design Systems</span
+                    >
+                  </div>
+                </div>
+              </div>
+
+              <div class="timeline-item">
+                <div class="bg-white/5 border border-white/10 rounded-lg p-4">
+                  <div class="flex justify-between items-start mb-2">
+                    <div>
+                      <h3 class="text-base font-semibold text-white">
+                        UX Designer
+                      </h3>
+                      <p class="text-sm text-indigo-400">StartupXYZ</p>
+                    </div>
+                    <span
+                      class="text-xs text-slate-500 bg-slate-800 px-2 py-1 rounded"
+                      >2019 - 2021</span
+                    >
+                  </div>
+                  <p class="text-sm text-slate-300 mb-3">
+                    Designed mobile app interface used by 50K+ users,
+                    collaborated with engineering team on implementation, and
+                    conducted A/B testing for feature optimization.
+                  </p>
+                  <div class="flex flex-wrap gap-1">
+                    <span
+                      class="text-xs bg-purple-500/10 text-purple-300 px-2 py-1 rounded border border-purple-500/20"
+                      >Sketch</span
+                    >
+                    <span
+                      class="text-xs bg-purple-500/10 text-purple-300 px-2 py-1 rounded border border-purple-500/20"
+                      >InVision</span
+                    >
+                    <span
+                      class="text-xs bg-purple-500/10 text-purple-300 px-2 py-1 rounded border border-purple-500/20"
+                      >Prototyping</span
+                    >
+                  </div>
+                </div>
+              </div>
+
+              <div class="timeline-item">
+                <div class="bg-white/5 border border-white/10 rounded-lg p-4">
+                  <div class="flex justify-between items-start mb-2">
+                    <div>
+                      <h3 class="text-base font-semibold text-white">
+                        Junior Designer
+                      </h3>
+                      <p class="text-sm text-indigo-400">Design Agency</p>
+                    </div>
+                    <span
+                      class="text-xs text-slate-500 bg-slate-800 px-2 py-1 rounded"
+                      >2017 - 2019</span
+                    >
+                  </div>
+                  <p class="text-sm text-slate-300 mb-3">
+                    Created visual designs for web and mobile projects, assisted
+                    in user testing sessions, and contributed to design process
+                    documentation.
+                  </p>
+                  <div class="flex flex-wrap gap-1">
+                    <span
+                      class="text-xs bg-teal-500/10 text-teal-300 px-2 py-1 rounded border border-teal-500/20"
+                      >Adobe Creative Suite</span
+                    >
+                    <span
+                      class="text-xs bg-teal-500/10 text-teal-300 px-2 py-1 rounded border border-teal-500/20"
+                      >HTML/CSS</span
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Education -->
+          <div class="glass-panel rounded-xl p-6">
+            <div class="flex items-center gap-3 mb-4">
+              <div
+                class="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center"
+              >
+                <span
+                  class="iconify text-indigo-400"
+                  data-icon="lucide:graduation-cap"
+                  data-width="16"
+                ></span>
+              </div>
+              <h2 class="text-lg font-semibold text-white tracking-tight">
+                Education
+              </h2>
+            </div>
+
+            <div class="space-y-4">
+              <div class="bg-white/5 border border-white/10 rounded-lg p-4">
+                <div class="flex justify-between items-start mb-2">
+                  <div>
+                    <h3 class="text-base font-semibold text-white">
+                      Master of Design
+                    </h3>
+                    <p class="text-sm text-indigo-400">
+                      California College of the Arts
+                    </p>
+                  </div>
+                  <span
+                    class="text-xs text-slate-500 bg-slate-800 px-2 py-1 rounded"
+                    >2015 - 2017</span
+                  >
+                </div>
+                <p class="text-sm text-slate-300">
+                  Focus on Interaction Design and Human-Computer Interaction
+                </p>
+              </div>
+
+              <div class="bg-white/5 border border-white/10 rounded-lg p-4">
+                <div class="flex justify-between items-start mb-2">
+                  <div>
+                    <h3 class="text-base font-semibold text-white">
+                      Bachelor of Fine Arts
+                    </h3>
+                    <p class="text-sm text-indigo-400">
+                      San Francisco Art Institute
+                    </p>
+                  </div>
+                  <span
+                    class="text-xs text-slate-500 bg-slate-800 px-2 py-1 rounded"
+                    >2011 - 2015</span
+                  >
+                </div>
+                <p class="text-sm text-slate-300">
+                  Graphic Design major with emphasis on digital media
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Skills -->
+          <div class="glass-panel rounded-xl p-6">
+            <div class="flex items-center gap-3 mb-4">
+              <div
+                class="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center"
+              >
+                <span
+                  class="iconify text-indigo-400"
+                  data-icon="lucide:tag"
+                  data-width="16"
+                ></span>
+              </div>
+              <h2 class="text-lg font-semibold text-white tracking-tight">
+                Skills
+              </h2>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+              <div
+                class="bg-white/5 border border-white/10 rounded-lg p-3 text-center"
+              >
+                <div class="text-sm font-medium text-white mb-1">Figma</div>
+                <div
+                  class="w-full bg-slate-700 h-2 rounded-full overflow-hidden"
+                >
+                  <div class="bg-indigo-500 h-full w-[95%] rounded-full"></div>
+                </div>
+                <div class="text-xs text-slate-500 mt-1">Expert</div>
+              </div>
+              <div
+                class="bg-white/5 border border-white/10 rounded-lg p-3 text-center"
+              >
+                <div class="text-sm font-medium text-white mb-1">
+                  User Research
+                </div>
+                <div
+                  class="w-full bg-slate-700 h-2 rounded-full overflow-hidden"
+                >
+                  <div class="bg-indigo-500 h-full w-[90%] rounded-full"></div>
+                </div>
+                <div class="text-xs text-slate-500 mt-1">Expert</div>
+              </div>
+              <div
+                class="bg-white/5 border border-white/10 rounded-lg p-3 text-center"
+              >
+                <div class="text-sm font-medium text-white mb-1">
+                  Prototyping
+                </div>
+                <div
+                  class="w-full bg-slate-700 h-2 rounded-full overflow-hidden"
+                >
+                  <div class="bg-indigo-500 h-full w-[85%] rounded-full"></div>
+                </div>
+                <div class="text-xs text-slate-500 mt-1">Advanced</div>
+              </div>
+              <div
+                class="bg-white/5 border border-white/10 rounded-lg p-3 text-center"
+              >
+                <div class="text-sm font-medium text-white mb-1">
+                  Design Systems
+                </div>
+                <div
+                  class="w-full bg-slate-700 h-2 rounded-full overflow-hidden"
+                >
+                  <div class="bg-indigo-500 h-full w-[88%] rounded-full"></div>
+                </div>
+                <div class="text-xs text-slate-500 mt-1">Advanced</div>
+              </div>
+              <div
+                class="bg-white/5 border border-white/10 rounded-lg p-3 text-center"
+              >
+                <div class="text-sm font-medium text-white mb-1">React</div>
+                <div
+                  class="w-full bg-slate-700 h-2 rounded-full overflow-hidden"
+                >
+                  <div class="bg-indigo-500 h-full w-[75%] rounded-full"></div>
+                </div>
+                <div class="text-xs text-slate-500 mt-1">Intermediate</div>
+              </div>
+              <div
+                class="bg-white/5 border border-white/10 rounded-lg p-3 text-center"
+              >
+                <div class="text-sm font-medium text-white mb-1">
+                  Leadership
+                </div>
+                <div
+                  class="w-full bg-slate-700 h-2 rounded-full overflow-hidden"
+                >
+                  <div class="bg-indigo-500 h-full w-[80%] rounded-full"></div>
+                </div>
+                <div class="text-xs text-slate-500 mt-1">Advanced</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Certifications & Portfolio -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="glass-panel rounded-xl p-6">
+              <div class="flex items-center gap-3 mb-4">
+                <div
+                  class="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center"
+                >
+                  <span
+                    class="iconify text-indigo-400"
+                    data-icon="lucide:award"
+                    data-width="16"
+                  ></span>
+                </div>
+                <h2 class="text-lg font-semibold text-white tracking-tight">
+                  Certifications
+                </h2>
+              </div>
+
+              <div class="space-y-3">
+                <div class="bg-white/5 border border-white/10 rounded-lg p-3">
+                  <div class="flex items-center gap-3">
+                    <span
+                      class="iconify text-emerald-400"
+                      data-icon="lucide:check-circle"
+                      data-width="16"
+                    ></span>
+                    <div>
+                      <div class="text-sm font-medium text-white">
+                        Google UX Design Certificate
+                      </div>
+                      <div class="text-xs text-slate-500">Issued 2022</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="bg-white/5 border border-white/10 rounded-lg p-3">
+                  <div class="flex items-center gap-3">
+                    <span
+                      class="iconify text-emerald-400"
+                      data-icon="lucide:check-circle"
+                      data-width="16"
+                    ></span>
+                    <div>
+                      <div class="text-sm font-medium text-white">
+                        Certified Usability Analyst
+                      </div>
+                      <div class="text-xs text-slate-500">Issued 2021</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="glass-panel rounded-xl p-6">
+              <div class="flex items-center gap-3 mb-4">
+                <div
+                  class="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center"
+                >
+                  <span
+                    class="iconify text-indigo-400"
+                    data-icon="lucide:link"
+                    data-width="16"
+                  ></span>
+                </div>
+                <h2 class="text-lg font-semibold text-white tracking-tight">
+                  Portfolio
+                </h2>
+              </div>
+
+              <div class="space-y-3">
+                <a
+                  href="#"
+                  class="bg-white/5 border border-white/10 rounded-lg p-3 hover:bg-white/10 transition-colors block"
+                >
+                  <div class="flex items-center gap-3">
+                    <span
+                      class="iconify text-indigo-400"
+                      data-icon="lucide:external-link"
+                      data-width="16"
+                    ></span>
+                    <div>
+                      <div class="text-sm font-medium text-white">
+                        Portfolio Website
+                      </div>
+                      <div class="text-xs text-slate-500">sarahchen.design</div>
+                    </div>
+                  </div>
+                </a>
+                <a
+                  href="#"
+                  class="bg-white/5 border border-white/10 rounded-lg p-3 hover:bg-white/10 transition-colors block"
+                >
+                  <div class="flex items-center gap-3">
+                    <span
+                      class="iconify text-indigo-400"
+                      data-icon="lucide:external-link"
+                      data-width="16"
+                    ></span>
+                    <div>
+                      <div class="text-sm font-medium text-white">
+                        Dribbble Profile
+                      </div>
+                      <div class="text-xs text-slate-500">
+                        dribbble.com/sarahchen
+                      </div>
+                    </div>
+                  </div>
+                </a>
+                <a
+                  href="#"
+                  class="bg-white/5 border border-white/10 rounded-lg p-3 hover:bg-white/10 transition-colors block"
+                >
+                  <div class="flex items-center gap-3">
+                    <span
+                      class="iconify text-indigo-400"
+                      data-icon="lucide:external-link"
+                      data-width="16"
+                    ></span>
+                    <div>
+                      <div class="text-sm font-medium text-white">
+                        LinkedIn Profile
+                      </div>
+                      <div class="text-xs text-slate-500">
+                        linkedin.com/in/sarahchen
+                      </div>
+                    </div>
+                  </div>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SIDEBAR -->
+        <div class="lg:col-span-4 space-y-6">
+          <!-- Actions -->
+          <div class="glass-panel rounded-xl p-6">
+            <h3 class="text-lg font-semibold text-white tracking-tight mb-4">
+              Actions
+            </h3>
+
+            <div class="space-y-3">
+              <button
+                class="w-full flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-lg hover:shadow-[0_0_20px_rgba(79,70,229,0.3)] hover:scale-[1.02] transition-all border border-white/10"
+              >
+                <span
+                  class="iconify"
+                  data-icon="lucide:download"
+                  data-width="16"
+                ></span>
+                Download Resume
+              </button>
+
+              <button
+                class="w-full flex items-center gap-3 px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-slate-300 hover:bg-white/10 hover:border-white/20 transition-colors"
+              >
+                <span
+                  class="iconify"
+                  data-icon="lucide:star"
+                  data-width="16"
+                ></span>
+                Add to Shortlist
+              </button>
+
+              <button
+                class="w-full flex items-center gap-3 px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-slate-300 hover:bg-white/10 hover:border-white/20 transition-colors"
+              >
+                <span
+                  class="iconify"
+                  data-icon="lucide:mail"
+                  data-width="16"
+                ></span>
+                Send Message
+              </button>
+
+              <button
+                class="w-full flex items-center gap-3 px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-slate-300 hover:bg-white/10 hover:border-white/20 transition-colors"
+              >
+                <span
+                  class="iconify"
+                  data-icon="lucide:calendar"
+                  data-width="16"
+                ></span>
+                Schedule Interview
+              </button>
+            </div>
+          </div>
+
+          <!-- Notes & Tags -->
+          <div class="glass-panel rounded-xl p-6">
+            <div class="flex items-center gap-3 mb-4">
+              <div
+                class="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center"
+              >
+                <span
+                  class="iconify text-indigo-400"
+                  data-icon="lucide:sticky-note"
+                  data-width="16"
+                ></span>
+              </div>
+              <h3 class="text-lg font-semibold text-white tracking-tight">
+                Notes & Tags
+              </h3>
+            </div>
+
+            <div class="space-y-4">
+              <div class="bg-white/5 border border-white/10 rounded-lg p-3">
+                <textarea
+                  placeholder="Add private notes about this candidate..."
+                  class="w-full bg-transparent border-none text-slate-300 placeholder-slate-500 focus:outline-none resize-none"
+                  rows="3"
+                ></textarea>
+                <div class="flex justify-end mt-2">
+                  <button
+                    class="text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
+                  >
+                    Save Note
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <div class="text-sm text-slate-400 mb-2">Tags</div>
+                <div class="flex flex-wrap gap-2">
+                  <span
+                    class="text-xs bg-indigo-500/10 text-indigo-300 px-2 py-1 rounded border border-indigo-500/20"
+                    >Top Candidate</span
+                  >
+                  <span
+                    class="text-xs bg-emerald-500/10 text-emerald-300 px-2 py-1 rounded border border-emerald-500/20"
+                    >Design Systems Expert</span
+                  >
+                  <button
+                    class="text-xs text-slate-400 hover:text-white transition-colors px-2 py-1 rounded border border-slate-600 hover:border-slate-500"
+                  >
+                    + Add Tag
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Match Details -->
+          <div class="glass-panel rounded-xl p-6 border border-indigo-500/30">
+            <div class="flex items-center gap-3 mb-4">
+              <div
+                class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center shadow-[0_0_15px_rgba(79,70,229,0.5)] animate-pulse-slow"
+              >
+                <span
+                  class="iconify text-white"
+                  data-icon="lucide:sparkles"
+                  data-width="16"
+                ></span>
+              </div>
+              <h3 class="text-lg font-semibold text-white tracking-tight">
+                Match Analysis
+              </h3>
+            </div>
+
+            <div class="space-y-4">
+              <div
+                class="bg-indigo-500/5 border border-indigo-500/20 rounded-lg p-3"
+              >
+                <div class="text-sm text-indigo-100 mb-2">Skills Match</div>
+                <div
+                  class="w-full bg-slate-700 h-2 rounded-full overflow-hidden mb-1"
+                >
+                  <div class="bg-indigo-500 h-full w-[95%] rounded-full"></div>
+                </div>
+                <div class="text-xs text-indigo-400">9/10 required skills</div>
+              </div>
+
+              <div
+                class="bg-purple-500/5 border border-purple-500/20 rounded-lg p-3"
+              >
+                <div class="text-sm text-purple-100 mb-2">Experience Match</div>
+                <div
+                  class="w-full bg-slate-700 h-2 rounded-full overflow-hidden mb-1"
+                >
+                  <div class="bg-purple-500 h-full w-[92%] rounded-full"></div>
+                </div>
+                <div class="text-xs text-purple-400">7+ years experience</div>
+              </div>
+
+              <div
+                class="bg-emerald-500/5 border border-emerald-500/20 rounded-lg p-3"
+              >
+                <div class="text-sm text-emerald-100 mb-2">Location Match</div>
+                <div
+                  class="w-full bg-slate-700 h-2 rounded-full overflow-hidden mb-1"
+                >
+                  <div
+                    class="bg-emerald-500 h-full w-[100%] rounded-full"
+                  ></div>
+                </div>
+                <div class="text-xs text-emerald-400">
+                  Perfect location match
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Visual Illustration -->
+          <div class="glass-panel rounded-xl p-6 text-center">
+            <div class="mb-4">
+              <svg
+                class="w-24 h-24 mx-auto opacity-80"
+                viewBox="0 0 100 100"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <circle cx="50" cy="35" r="12" fill="#6366f1" opacity="0.8" />
+                <path
+                  d="M35 55 L50 40 L65 55"
+                  stroke="#e2e8f0"
+                  stroke-width="2"
+                  fill="none"
+                />
+                <rect
+                  x="30"
+                  y="55"
+                  width="40"
+                  height="30"
+                  rx="3"
+                  fill="#334155"
+                  stroke="#475569"
+                  stroke-width="1"
+                />
+                <circle cx="42" cy="65" r="2" fill="#10b981" />
+                <circle cx="50" cy="65" r="2" fill="#10b981" />
+                <circle cx="58" cy="65" r="2" fill="#10b981" />
+                <path
+                  d="M45 75 Q50 80 55 75"
+                  stroke="#e2e8f0"
+                  stroke-width="1"
+                  fill="none"
+                />
+                <circle cx="75" cy="25" r="8" fill="#e2e8f0" opacity="0.3" />
+                <path
+                  d="M70 25 L75 30 L80 25"
+                  stroke="#6366f1"
+                  stroke-width="2"
+                  fill="none"
+                />
+              </svg>
+            </div>
+            <h4 class="text-sm font-medium text-white mb-2">Review Profile</h4>
+            <p class="text-xs text-slate-400">Detailed candidate insights</p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>

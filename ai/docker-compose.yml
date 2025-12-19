@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  resume-parser:
+    build: ./resume_parser
+    ports:
+      - "8000:8000"
+    environment:
+      - HF_API_KEY=${HF_API_KEY}
+      - MODEL_CACHE_DIR=/app/models
+    volumes:
+      - model_cache:/app/models
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+
+  matching-engine:
+    build: ./matching_engine
+    ports:
+      - "8001:8000"
+    environment:
+      - HF_API_KEY=${HF_API_KEY}
+      - MODEL_CACHE_DIR=/app/models
+    volumes:
+      - model_cache:/app/models
+    depends_on:
+      resume-parser:
+        condition: service_healthy
+    restart: unless-stopped
+
+  career-coach:
+    build: ./career_coach
+    ports:
+      - "8002:8000"
+    environment:
+      - HF_API_KEY=${HF_API_KEY}
+      - MODEL_CACHE_DIR=/app/models
+    volumes:
+      - model_cache:/app/models
+    depends_on:
+      resume-parser:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  model_cache:
+    driver: local
+
+networks:
+  default:
+    name: careerforge-ai-network
