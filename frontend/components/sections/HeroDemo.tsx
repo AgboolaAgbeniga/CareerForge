@@ -116,7 +116,7 @@ const HeroDemo: React.FC<HeroDemoProps> = ({
     };
 
     sequence();
-  }, [isPlaying, loop, candidateProgress, jobProgress, connectorPath, badgesOpacity, prefersReducedMotion]);
+  }, [isPlaying, loop, candidateProgress, jobProgress, connectorPath, badgesOpacity, prefersReducedMotion, isMobile, onAnimationComplete]);
 
   const handlePlayPause = () => {
     setIsPlaying(!isPlaying);
