@@ -10,9 +10,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import uvicorn
 
-from ai.resume_parser.parser import ResumeParser
-from ai.shared.config import config
-from ai.shared.utils import get_logger
+from parser import ResumeParser
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from shared.config import config
+from shared.utils import get_logger
 
 logger = get_logger(__name__)
 

@@ -3,8 +3,10 @@ Shared utilities for AI services
 """
 import logging
 import time
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 from functools import wraps
+import requests
+from huggingface_hub import HfApi
 
 # Configure logging
 logging.basicConfig(
@@ -74,3 +76,79 @@ class ModelCache:
 
 # Global cache instance
 model_cache = ModelCache()
+
+class HuggingFaceAPIClient:
+    """Client for Hugging Face Inference API"""
+
+    def __init__(self, api_key: Optional[str] = None):
+        self.api_key = api_key or config.HF_API_KEY
+        self.base_url = "https://api-inference.huggingface.co/models"
+        self.headers = {"Authorization": f"Bearer {self.api_key}"} if self.api_key else {}
+        self.logger = get_logger(__name__)
+
+    def _make_request(self, model: str, inputs: Any, parameters: Optional[Dict] = None) -> Dict[str, Any]:
+        """Make a request to Hugging Face Inference API"""
+        url = f"{self.base_url}/{model}"
+        payload = {"inputs": inputs}
+        if parameters:
+            payload["parameters"] = parameters
+
+        try:
+            response = requests.post(url, headers=self.headers, json=payload, timeout=30)
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.RequestException as e:
+            self.logger.error(f"HF API request failed: {e}")
+            raise
+
+    def text_generation(self, model: str, prompt: str, max_length: int = 100, temperature: float = 0.7) -> str:
+        """Generate text using Hugging Face models"""
+        try:
+            result = self._make_request(model, prompt, {
+                "max_length": max_length,
+                "temperature": temperature,
+                "do_sample": True
+            })
+            if isinstance(result, list) and result:
+                return result[0].get("generated_text", "")
+            return ""
+        except Exception as e:
+            self.logger.error(f"Text generation failed: {e}")
+            return ""
+
+    def text_classification(self, model: str, text: str) -> List[Dict[str, Any]]:
+        """Classify text using Hugging Face models"""
+        try:
+            result = self._make_request(model, text)
+            if isinstance(result, list) and result:
+                return result[0] if isinstance(result[0], list) else result
+            return []
+        except Exception as e:
+            self.logger.error(f"Text classification failed: {e}")
+            return []
+
+    def question_answering(self, model: str, question: str, context: str) -> Dict[str, Any]:
+        """Answer questions using Hugging Face models"""
+        try:
+            result = self._make_request(model, {
+                "question": question,
+                "context": context
+            })
+            return result if isinstance(result, dict) else {}
+        except Exception as e:
+            self.logger.error(f"Question answering failed: {e}")
+            return {}
+
+    def get_embeddings(self, model: str, texts: List[str]) -> List[List[float]]:
+        """Get embeddings for texts (if supported by model)"""
+        try:
+            result = self._make_request(model, texts)
+            if isinstance(result, list):
+                return [item.get("embedding", []) for item in result if isinstance(item, dict)]
+            return []
+        except Exception as e:
+            self.logger.error(f"Embedding generation failed: {e}")
+            return []
+
+# Global HF API client instance
+hf_client = HuggingFaceAPIClient()

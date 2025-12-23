@@ -6,9 +6,14 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import swaggerUi from 'swagger-ui-express';
 import swaggerJsdoc from 'swagger-jsdoc';
+import cookieParser from 'cookie-parser';
+import logger from './utils/logger';
 
 // Load environment variables
 dotenv.config();
+
+// Validate environment variables before starting server
+import './config/env';
 
 // Swagger configuration
 const swaggerOptions = {
@@ -36,15 +41,40 @@ const server = createServer(app);
 const io = new Server(server, {
   cors: {
     origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-    methods: ['GET', 'POST']
+    methods: ['GET', 'POST'],
+    credentials: true
   }
 });
 
 // Middleware
 app.use(helmet());
-app.use(cors());
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  credentials: true
+}));
+app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Rate limiting
+import { globalLimiter, apiLimiter } from './middleware/rateLimiter';
+app.use('/api/', apiLimiter); // Apply to all API routes
+
+// Request logging middleware
+app.use((req, res, next) => {
+  const start = Date.now();
+  logger.info(`Incoming request: ${req.method} ${req.url}`, {
+    ip: req.ip,
+    userAgent: req.get('User-Agent'),
+  });
+
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    logger.info(`Request completed: ${req.method} ${req.url} ${res.statusCode} in ${duration}ms`);
+  });
+
+  next();
+});
 
 // Routes
 /**
@@ -65,14 +95,21 @@ app.get('/health', (req, res) => {
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // API routes
-app.use('/api/auth', require('./api/auth').default);
+import authRoutes from './modules/auth/auth.routes';
+import healthRoutes from './api/health';
+
+app.use('/health', healthRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/dashboard', require('./api/dashboard').default);
 app.use('/api/resume', require('./api/resume').default);
 app.use('/api/matching', require('./api/matching').default);
 app.use('/api/messages', require('./api/messages').default);
+app.use('/api/notifications', require('./api/notifications').default);
+app.use('/api/analytics', require('./api/analytics').default);
+app.use('/api/experiments', require('./api/experiments').default);
 // Add other routes as implemented
 
-// AI routes
-// app.use('/api/ai', require('./api/ai').default);
+app.use('/api/ai', require('./api/ai').default);
 
 // Messages routes already included above
 
@@ -87,26 +124,41 @@ app.use('/api/messages', require('./api/messages').default);
 
 // Socket.io for real-time messaging
 io.on('connection', (socket) => {
-  console.log('User connected:', socket.id);
+  logger.info('User connected:', { socketId: socket.id });
 
   socket.on('join', (userId) => {
     socket.join(userId);
+    logger.info('User joined room:', { userId, socketId: socket.id });
   });
 
   socket.on('sendMessage', (data) => {
     // Handle message sending
     io.to(data.recipientId).emit('newMessage', data);
+    logger.info('Message sent:', { from: data.senderId, to: data.recipientId });
   });
 
   socket.on('disconnect', () => {
-    console.log('User disconnected:', socket.id);
+    logger.info('User disconnected:', { socketId: socket.id });
   });
+});
+
+import { errorHandler } from './middleware/error';
+
+// ... (other imports)
+
+// Global error handling middleware
+app.use(errorHandler);
+
+// 404 handler
+app.use((req, res) => {
+  logger.warn('404 Not Found:', { url: req.url, method: req.method });
+  res.status(404).json({ error: 'Not Found' });
 });
 
 const PORT = process.env.PORT || 5000;
 
 server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  logger.info(`Server running on port ${PORT}`);
 });
 
 export default app;

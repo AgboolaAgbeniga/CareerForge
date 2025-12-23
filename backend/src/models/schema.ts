@@ -25,6 +25,7 @@ export const users = pgTable('users', {
   emailVerifiedAt: timestamp('email_verified_at'),
   twoFactorEnabled: boolean('two_factor_enabled').default(false),
   twoFactorSecret: varchar('two_factor_secret', { length: 255 }),
+  onboardingCompleted: boolean('onboarding_completed').default(false),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
   lastLoginAt: timestamp('last_login_at'),
@@ -135,6 +136,15 @@ export const messages = pgTable('messages', {
   readAt: timestamp('read_at'),
   sentAt: timestamp('sent_at').defaultNow(),
   attachments: jsonb('attachments'),
+});
+
+export const passwordResetTokens = pgTable('password_reset_tokens', {
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }),
+  token: varchar('token', { length: 255 }).unique().notNull(),
+  expiresAt: timestamp('expires_at').notNull(),
+  usedAt: timestamp('used_at'),
+  createdAt: timestamp('created_at').defaultNow(),
 });
 
 export const notifications = pgTable('notifications', {

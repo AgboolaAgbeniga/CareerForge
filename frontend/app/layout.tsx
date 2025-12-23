@@ -7,6 +7,7 @@ import {
   ToastProvider,
   ThemeProvider,
 } from '@/components';
+import { AuthProvider } from '@/lib/authContext';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -87,11 +88,13 @@ export default function RootLayout({
     <html lang="en" dir="ltr" className={`${rethinkSans.variable} ${inter.variable}`}>
       <body className="font-sans text-slate-600 antialiased selection:bg-indigo-100 selection:text-indigo-700 dark:text-slate-400 dark:selection:bg-indigo-900 dark:selection:text-indigo-100">
         <ThemeProvider>
-          <ToastProvider>
-            <Header />
-            <main>{children}</main>
-            <Footer />
-          </ToastProvider>
+          <AuthProvider>
+            <ToastProvider>
+              <Header />
+              <main>{children}</main>
+              <Footer />
+            </ToastProvider>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

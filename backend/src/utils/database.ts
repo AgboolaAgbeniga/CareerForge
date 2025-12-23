@@ -3,7 +3,7 @@ import postgres from 'postgres';
 import * as schema from '../models/schema';
 
 // Create the connection
-const client = postgres(process.env.DATABASE_URL || 'postgresql://postgres:password@localhost:5432/careerforge');
+const client = postgres(process.env.DATABASE_URL || 'postgresql://postgres:Jesuschrist@2@localhost:5432/careerforge');
 
 // Create the drizzle instance
 export const db = drizzle(client, { schema });

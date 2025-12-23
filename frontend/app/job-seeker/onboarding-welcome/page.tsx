@@ -44,8 +44,24 @@ export default function OnboardingWelcomePage() {
     // setProgress(33);
   };
 
-  const handleLaunch = () => {
-    router.push('/job-seeker/dashboard');
+  const handleLaunch = async () => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      await fetch('/api/auth/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          onboardingCompleted: true,
+        }),
+      });
+      router.push('/job-seeker/dashboard');
+    } catch (error) {
+      console.error('Failed to update onboarding status:', error);
+      router.push('/job-seeker/dashboard');
+    }
   };
 
   const handleSalaryChange = (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Bell, FileCheck, Briefcase, Eye } from 'lucide-react';
-import { formatRelativeTime } from '@/lib/dateUtils';
+import { formatRelativeTime } from '@/lib/utils/dateUtils';
 
 interface Activity {
   id: string;

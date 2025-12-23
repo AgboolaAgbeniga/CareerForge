@@ -10,9 +10,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import uvicorn
 
-from ai.matching_engine.matcher import JobMatcher, MatchResult, CandidateAnalysis
-from ai.shared.config import config
-from ai.shared.utils import get_logger
+from matcher import JobMatcher, MatchResult, CandidateAnalysis
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from shared.config import config
+from shared.utils import get_logger
 
 logger = get_logger(__name__)
 

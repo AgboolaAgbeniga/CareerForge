@@ -10,9 +10,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import uvicorn
 
-from ai.career_coach.coach import CareerCoach, CareerAdvice, LinkedInOptimization, CoverLetter
-from ai.shared.config import config
-from ai.shared.utils import get_logger
+from coach import CareerCoach, CareerAdvice, LinkedInOptimization, CoverLetter
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from shared.config import config
+from shared.utils import get_logger
 
 logger = get_logger(__name__)
 

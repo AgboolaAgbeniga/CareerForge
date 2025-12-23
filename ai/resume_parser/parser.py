@@ -2,6 +2,8 @@
 Resume Parser using Hugging Face models
 """
 import re
+import sys
+import os
 from typing import Dict, List, Any, Optional
 from pathlib import Path
 
@@ -10,8 +12,10 @@ from sentence_transformers import SentenceTransformer
 import layoutparser as lp
 from PIL import Image
 
-from ai.shared.config import config
-from ai.shared.utils import get_logger, timing_decorator, safe_model_call, validate_text_input
+# Add shared modules to path
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from shared.config import config
+from shared.utils import get_logger, timing_decorator, safe_model_call, validate_text_input
 
 logger = get_logger(__name__)
 

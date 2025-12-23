@@ -2,7 +2,8 @@ import express from 'express';
 import { z } from 'zod';
 import { db } from '../utils/database';
 import { messages, users } from '../models/schema';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, or, count } from 'drizzle-orm';
+import { authenticateToken, AuthRequest } from '../middleware/auth';
 
 const router = express.Router();
 
@@ -44,22 +45,25 @@ const markReadSchema = z.object({
  *       200:
  *         description: Messages retrieved successfully
  */
-router.get('/', async (req, res) => {
+router.get('/', authenticateToken, async (req: AuthRequest, res) => {
   try {
-    const userId = 'placeholder-user-id'; // TODO: From auth middleware
+    const userId = req.user!.id;
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 20;
     const offset = (page - 1) * limit;
 
     // Get messages where user is sender or recipient
     const userMessages = await db.select().from(messages)
-      .where(eq(messages.senderId, userId) || eq(messages.recipientId, userId))
+      .where(or(eq(messages.senderId, userId), eq(messages.recipientId, userId)))
       .orderBy(desc(messages.sentAt))
       .limit(limit)
       .offset(offset);
 
-    // Get total count (simplified - would need proper OR query)
-    const totalResult = userMessages.length; // TODO: Implement proper count query
+    // Get total count
+    const totalCount = await db.select({ count: count() }).from(messages)
+      .where(or(eq(messages.senderId, userId), eq(messages.recipientId, userId)));
+
+    const totalResult = totalCount[0]?.count || 0;
 
     res.json({
       messages: userMessages,
@@ -67,6 +71,7 @@ router.get('/', async (req, res) => {
         page,
         limit,
         total: totalResult,
+        totalPages: Math.ceil(totalResult / limit),
       },
     });
     return;
@@ -109,10 +114,10 @@ router.get('/', async (req, res) => {
  *       200:
  *         description: Message sent successfully
  */
-router.post('/', async (req, res) => {
+router.post('/', authenticateToken, async (req: AuthRequest, res) => {
   try {
     const { recipientId, subject, content, applicationId, attachments } = sendMessageSchema.parse(req.body);
-    const senderId = 'placeholder-user-id'; // TODO: From auth
+    const senderId = req.user!.id;
 
     const newMessage = await db.insert(messages).values({
       senderId,
@@ -161,9 +166,13 @@ router.post('/', async (req, res) => {
  *       404:
  *         description: Message not found
  */
-router.put('/:id/read', async (req, res) => {
+router.put('/:id/read', authenticateToken, async (req: AuthRequest, res) => {
   try {
     const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({ error: 'Message ID is required' });
+    }
 
     const existingMessages = await db.select().from(messages).where(eq(messages.id, id)).limit(1);
     if (existingMessages.length === 0) {

@@ -7,7 +7,8 @@ import AuthLayout from '@/components/layout/AuthLayout';
 
 export default function SignupPage() {
   const [role, setRole] = useState<'recruiter' | 'job_seeker'>('recruiter');
-  const [fullName, setFullName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -18,11 +19,35 @@ export default function SignupPage() {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          password,
+          role,
+          role,
+          firstName,
+          lastName,
+        }),
+      });
+
+      if (response.ok) {
+        // Since verification is skipped, redirect to login
+        router.push('/auth/login');
+      } else {
+        const error = await response.json();
+        alert(error.error || 'Registration failed');
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      alert('Registration failed');
+    } finally {
       setIsLoading(false);
-      router.push('/auth/email-verification');
-    }, 1500);
+    }
   };
 
   return (
@@ -65,16 +90,29 @@ export default function SignupPage() {
           </label>
         </div>
 
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-slate-300">Full Name</label>
-          <input
-            type="text"
-            placeholder="Sarah Connor"
-            className="w-full bg-slate-950 border border-slate-800 rounded-lg py-2.5 px-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all"
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            required
-          />
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-slate-300">First Name</label>
+            <input
+              type="text"
+              placeholder="Sarah"
+              className="w-full bg-slate-950 border border-slate-800 rounded-lg py-2.5 px-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              required
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-slate-300">Last Name</label>
+            <input
+              type="text"
+              placeholder="Connor"
+              className="w-full bg-slate-950 border border-slate-800 rounded-lg py-2.5 px-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              required
+            />
+          </div>
         </div>
 
         <div className="space-y-1.5">

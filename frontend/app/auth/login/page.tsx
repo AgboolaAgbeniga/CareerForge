@@ -4,23 +4,37 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import AuthLayout from '@/components/layout/AuthLayout';
+import { useAuth } from '@/lib/authContext';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const { login } = useAuth();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError('');
 
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      const user = await login(email, password);
+
+      if (user.role === 'job_seeker') {
+        router.push('/job-seeker/dashboard');
+      } else if (user.role === 'recruiter') {
+        router.push('/recruiter/recruiter-dashboard');
+      } else {
+        router.push('/');
+      }
+    } catch (err) {
+      setError('Invalid credentials');
+    } finally {
       setIsLoading(false);
-      router.push('/job-seeker/dashboard');
-    }, 1500);
+    }
   };
 
   return (
@@ -28,6 +42,11 @@ export default function LoginPage() {
       title="Welcome back to CareerForge"
       subtitle="Enter your credentials to access the workspace."
     >
+      {error && (
+        <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm p-3 rounded-lg">
+          {error}
+        </div>
+      )}
       <form onSubmit={handleSubmit} className="space-y-5">
         <div className="space-y-1.5">
           <label className="text-xs font-medium text-slate-300">Email or Username</label>

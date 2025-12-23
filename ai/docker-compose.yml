@@ -5,9 +5,12 @@ services:
     build: ./resume_parser
     ports:
       - "8000:8000"
+    env_file:
+      - .env
     environment:
       - HF_API_KEY=${HF_API_KEY}
       - MODEL_CACHE_DIR=/app/models
+      - RESUME_PARSER_PORT=8000
     volumes:
       - model_cache:/app/models
     healthcheck:
@@ -22,28 +25,46 @@ services:
     build: ./matching_engine
     ports:
       - "8001:8000"
+    env_file:
+      - .env
     environment:
       - HF_API_KEY=${HF_API_KEY}
       - MODEL_CACHE_DIR=/app/models
+      - MATCHING_ENGINE_PORT=8001
     volumes:
       - model_cache:/app/models
     depends_on:
       resume-parser:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     restart: unless-stopped
 
   career-coach:
     build: ./career_coach
     ports:
       - "8002:8000"
+    env_file:
+      - .env
     environment:
       - HF_API_KEY=${HF_API_KEY}
       - MODEL_CACHE_DIR=/app/models
+      - CAREER_COACH_PORT=8002
     volumes:
       - model_cache:/app/models
     depends_on:
       resume-parser:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     restart: unless-stopped
 
 volumes:
