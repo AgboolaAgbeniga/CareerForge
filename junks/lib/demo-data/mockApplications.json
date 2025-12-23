@@ -1,0 +1,46 @@
+[
+  {
+    "id": "app001",
+    "jobId": "1",
+    "jobTitle": "Senior Product Designer",
+    "company": "Access Bank PLC",
+    "status": "interview",
+    "appliedDate": "2024-12-05",
+    "lastUpdate": "2024-12-08",
+    "nextStep": "Technical Interview - Dec 12, 2024",
+    "matchScore": 95
+  },
+  {
+    "id": "app002",
+    "jobId": "2",
+    "jobTitle": "Frontend Engineer",
+    "company": "Flutterwave",
+    "status": "pending",
+    "appliedDate": "2024-12-07",
+    "lastUpdate": "2024-12-07",
+    "nextStep": "Application Review",
+    "matchScore": 88
+  },
+  {
+    "id": "app003",
+    "jobId": "3",
+    "jobTitle": "UX Researcher",
+    "company": "Andela",
+    "status": "accepted",
+    "appliedDate": "2024-11-28",
+    "lastUpdate": "2024-12-03",
+    "nextStep": "Offer Extended",
+    "matchScore": 92
+  },
+  {
+    "id": "app004",
+    "jobId": "4",
+    "jobTitle": "Product Manager",
+    "company": "Interswitch",
+    "status": "rejected",
+    "appliedDate": "2024-11-20",
+    "lastUpdate": "2024-11-25",
+    "nextStep": "Position Filled",
+    "matchScore": 78
+  }
+]

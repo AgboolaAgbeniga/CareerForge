@@ -1,0 +1,56 @@
+[
+  {
+    "id": "msg001",
+    "sender": "Adanna Okoro",
+    "senderRole": "Recruiter",
+    "company": "Flutterwave",
+    "subject": "Interview Invitation for Senior Product Designer Role",
+    "content": "Dear Oluwaseun, We were impressed by your application and would like to invite you for an interview. The position involves working on our fintech products serving millions of users across Africa. Please let us know your availability for next week.",
+    "timestamp": "2024-12-08T10:30:00Z",
+    "read": false,
+    "type": "interview"
+  },
+  {
+    "id": "msg002",
+    "sender": "Emeka Nwosu",
+    "senderRole": "Hiring Manager",
+    "company": "Andela",
+    "subject": "Application Update - UX Researcher Position",
+    "content": "Hello Oluwaseun, Thank you for applying to our UX Researcher position. Your background in user research and experience with African markets caught our attention. We're currently reviewing applications and will be in touch soon.",
+    "timestamp": "2024-12-07T14:15:00Z",
+    "read": true,
+    "type": "update"
+  },
+  {
+    "id": "msg003",
+    "sender": "Ngozi Adebayo",
+    "senderRole": "Technical Lead",
+    "company": "Interswitch",
+    "subject": "Follow-up on Frontend Engineer Application",
+    "content": "Hi Oluwaseun, I reviewed your application for the Frontend Engineer role. Your experience with payment systems and React is exactly what we're looking for. Would you be available for a technical discussion this Friday?",
+    "timestamp": "2024-12-06T09:45:00Z",
+    "read": true,
+    "type": "followup"
+  },
+  {
+    "id": "msg004",
+    "sender": "Chioma Okoye",
+    "senderRole": "Product Manager",
+    "company": "Flutterwave",
+    "subject": "Thank you for your interest",
+    "content": "Dear Oluwaseun, Thank you for your interest in Flutterwave. While we don't have an immediate match for your current profile, we'd love to keep your resume on file for future opportunities in our growing Lagos office.",
+    "timestamp": "2024-12-05T16:20:00Z",
+    "read": true,
+    "type": "general"
+  },
+  {
+    "id": "msg005",
+    "sender": "Oluwaseun Adeyemi",
+    "senderRole": "Job Seeker",
+    "subject": "Application for Senior Product Designer",
+    "content": "Dear Hiring Team, I am excited to apply for the Senior Product Designer position at Access Bank PLC. With my 6+ years of experience in fintech UX design and deep understanding of African user behaviors, I am confident I can contribute significantly to your digital transformation initiatives.",
+    "timestamp": "2024-12-05T08:00:00Z",
+    "read": true,
+    "type": "application"
+  }
+]

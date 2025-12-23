@@ -1,0 +1,247 @@
+@import url('https://fonts.googleapis.com/css2?family=Rethink+Sans:ital,wght@0,400..800;1,400..800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: var(--font-rethink-sans), sans-serif;
+  background-color: #ffffff;
+  overflow-x: hidden;
+}
+
+/* Dark theme styles for recruiter pages */
+.dark body {
+  font-family: var(--font-rethink-sans), sans-serif;
+  background-color: #0f172a;
+  color: #e2e8f0;
+}
+
+.dark .glass-panel {
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.dark .glass-header {
+  background: rgba(2, 6, 23, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.dark .text-gradient {
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-image: linear-gradient(to right, #818cf8, #c084fc, #2dd4bf);
+}
+
+.dark .custom-checkbox {
+  appearance: none;
+  background-color: rgba(255, 255, 255, 0.05);
+  margin: 0;
+  font: inherit;
+  color: currentColor;
+  width: 1.15em;
+  height: 1.15em;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 0.25em;
+  display: grid;
+  place-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.dark .custom-checkbox::before {
+  content: '';
+  width: 0.65em;
+  height: 0.65em;
+  transform: scale(0);
+  transition: 120ms transform ease-in-out;
+  box-shadow: inset 1em 1em #818cf8;
+  transform-origin: center;
+  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+}
+
+.dark .custom-checkbox:checked::before {
+  transform: scale(1);
+}
+
+.dark .custom-checkbox:checked {
+  border-color: #818cf8;
+  background-color: rgba(129, 140, 248, 0.1);
+}
+
+.dark .sparkline path {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  animation: draw 2s ease-out forwards;
+}
+
+@keyframes draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #e5e7eb;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #d1d5db;
+}
+
+/* Gradient Text */
+.text-gradient {
+  background: linear-gradient(135deg, #2563eb, #9333ea);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-teal {
+  background: linear-gradient(135deg, #0d9488, #2563eb);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Soft Glow Backgrounds */
+.hero-glow {
+  background:
+    radial-gradient(
+      circle at 15% 50%,
+      rgba(99, 102, 241, 0.08) 0%,
+      transparent 25%
+    ),
+    radial-gradient(
+      circle at 85% 30%,
+      rgba(147, 51, 234, 0.08) 0%,
+      transparent 25%
+    );
+}
+
+/* Curve Utilities */
+.curve-bottom {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  overflow: hidden;
+  line-height: 0;
+  transform: rotate(180deg);
+}
+.curve-bottom svg {
+  position: relative;
+  display: block;
+  width: calc(100% + 1.3px);
+  height: 80px;
+}
+
+.curve-top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  overflow: hidden;
+  line-height: 0;
+}
+.curve-top svg {
+  position: relative;
+  display: block;
+  width: calc(100% + 1.3px);
+  height: 80px;
+}
+
+/* Smooth fade up animation */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fade-up {
+  animation: fadeUp 0.8s ease-out forwards;
+}
+
+/* Recruiter Onboarding Styles */
+.onboarding-body {
+  font-family: 'Rethink Sans', sans-serif;
+  background-color: #020617;
+  background-image:
+    radial-gradient(
+      circle at 15% 0%,
+      rgba(99, 102, 241, 0.08) 0%,
+      transparent 40%
+    ),
+    radial-gradient(
+      circle at 85% 0%,
+      rgba(168, 85, 247, 0.08) 0%,
+      transparent 40%
+    );
+}
+
+/* Custom Scrollbar for onboarding */
+.onboarding-body ::-webkit-scrollbar {
+  width: 6px;
+}
+.onboarding-body ::-webkit-scrollbar-track {
+  background: transparent;
+}
+.onboarding-body ::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 3px;
+}
+.onboarding-body ::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+/* Animations */
+.fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+  opacity: 0;
+  transform: translateY(5px);
+}
+.delay-100 {
+  animation-delay: 0.1s;
+}
+.delay-200 {
+  animation-delay: 0.2s;
+}
+.delay-300 {
+  animation-delay: 0.3s;
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Custom Toggle Switch Class */
+.toggle-checkbox:checked {
+  right: 0;
+  border-color: #6366f1;
+}
+.toggle-checkbox:checked + .toggle-label {
+  background-color: #6366f1;
+}
+
+/* Subtle Glow Utility */
+.glow-border:hover {
+  box-shadow: 0 0 20px -5px rgba(99, 102, 241, 0.15);
+  border-color: rgba(99, 102, 241, 0.3);
+}

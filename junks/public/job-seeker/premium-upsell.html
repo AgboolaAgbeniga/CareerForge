@@ -1,0 +1,647 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Upgrade to Premium - CareerForge</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+      body {
+        font-family: 'Inter', sans-serif;
+        background-color: #f8f9fc;
+        color: #111827;
+      }
+
+      ::-webkit-scrollbar {
+        width: 5px;
+        height: 5px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 10px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+      }
+
+      .text-gradient {
+        background: linear-gradient(135deg, #4f46e5 0%, #9333ea 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .glass-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(226, 232, 240, 0.8);
+      }
+
+      .premium-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+      }
+
+      .hover-lift {
+        transition:
+          transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+          box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .hover-lift:hover {
+        transform: translateY(-4px);
+        box-shadow:
+          0 20px 25px -5px rgba(0, 0, 0, 0.1),
+          0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      }
+
+      .feature-highlight {
+        position: relative;
+      }
+      .feature-highlight::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(
+          135deg,
+          rgba(79, 70, 229, 0.1) 0%,
+          rgba(147, 51, 234, 0.1) 100%
+        );
+        border-radius: inherit;
+        z-index: -1;
+      }
+    </style>
+  </head>
+  <body
+    class="selection:bg-indigo-100 selection:text-indigo-700 overflow-x-hidden"
+  >
+    <!-- Top Navigation Bar -->
+    <nav class="sticky top-0 z-50 glass-card border-b border-gray-200/50">
+      <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16 items-center">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-8 h-8 rounded-xl bg-gradient-to-br from-gray-900 to-gray-700 flex items-center justify-center text-white font-bold tracking-tighter shadow-lg"
+            >
+              AI
+            </div>
+            <span class="font-bold text-lg tracking-tight text-gray-900"
+              >Career<span class="text-indigo-600">OS</span></span
+            >
+          </div>
+
+          <div
+            class="hidden md:flex items-center space-x-1 bg-gray-100/50 p-1 rounded-full border border-gray-200/50"
+          >
+            <a
+              href="dashboard-job_seekers.html"
+              class="px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors"
+              >Dashboard</a
+            >
+            <a
+              href="#"
+              class="px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors"
+              >Resumes</a
+            >
+            <a
+              href="#"
+              class="px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors"
+              >Jobs</a
+            >
+            <a
+              href="#"
+              class="px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors"
+              >Applications</a
+            >
+            <a
+              href="#"
+              class="px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors"
+              >Learn</a
+            >
+          </div>
+
+          <div class="flex items-center gap-4">
+            <button
+              class="relative p-2 text-gray-500 hover:text-indigo-600 transition-colors"
+            >
+              <i data-lucide="bell" class="w-5 h-5"></i>
+              <span
+                class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"
+              ></span>
+            </button>
+            <div class="h-6 w-px bg-gray-200"></div>
+            <button class="flex items-center gap-2 group">
+              <img
+                src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"
+                alt="Profile"
+                class="w-8 h-8 rounded-full border border-gray-200 group-hover:border-indigo-300 transition-colors"
+              />
+              <i
+                data-lucide="chevron-down"
+                class="w-4 h-4 text-gray-400 group-hover:text-gray-600"
+              ></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-[1600px] mx-auto p-4 lg:p-8">
+      <!-- Header -->
+      <div class="text-center mb-12">
+        <div
+          class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-full text-sm font-medium text-indigo-700 mb-6"
+        >
+          <i data-lucide="crown" class="w-4 h-4"></i>
+          Unlock Premium Features
+        </div>
+        <h1 class="text-4xl font-bold text-gray-900 mb-4">
+          Supercharge Your Career
+        </h1>
+        <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+          Get unlimited access to AI-powered tools, priority support, and
+          exclusive features that will accelerate your job search.
+        </p>
+      </div>
+
+      <!-- Pricing Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+        <!-- Free Plan -->
+        <div class="glass-card rounded-3xl p-8 text-center">
+          <div class="mb-6">
+            <h3 class="text-2xl font-bold text-gray-900 mb-2">Free</h3>
+            <div class="text-4xl font-bold text-gray-900 mb-2">$0</div>
+            <p class="text-gray-600">Perfect for getting started</p>
+          </div>
+
+          <ul class="space-y-4 mb-8 text-left">
+            <li class="flex items-center gap-3">
+              <i
+                data-lucide="check"
+                class="w-5 h-5 text-green-500 flex-shrink-0"
+              ></i>
+              <span class="text-gray-700">Basic resume analysis</span>
+            </li>
+            <li class="flex items-center gap-3">
+              <i
+                data-lucide="check"
+                class="w-5 h-5 text-green-500 flex-shrink-0"
+              ></i>
+              <span class="text-gray-700">5 job applications/month</span>
+            </li>
+            <li class="flex items-center gap-3">
+              <i
+                data-lucide="check"
+                class="w-5 h-5 text-green-500 flex-shrink-0"
+              ></i>
+              <span class="text-gray-700">Basic job matching</span>
+            </li>
+            <li class="flex items-center gap-3">
+              <i
+                data-lucide="x"
+                class="w-5 h-5 text-gray-400 flex-shrink-0"
+              ></i>
+              <span class="text-gray-400">AI resume generation</span>
+            </li>
+            <li class="flex items-center gap-3">
+              <i
+                data-lucide="x"
+                class="w-5 h-5 text-gray-400 flex-shrink-0"
+              ></i>
+              <span class="text-gray-400">Priority support</span>
+            </li>
+          </ul>
+
+          <button
+            class="w-full bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
+          >
+            Current Plan
+          </button>
+        </div>
+
+        <!-- Pro Plan -->
+        <div
+          class="premium-card rounded-3xl p-8 text-center hover-lift relative"
+        >
+          <div
+            class="absolute -top-4 left-1/2 -translate-x-1/2 bg-yellow-400 text-black px-4 py-1 rounded-full text-sm font-bold"
+          >
+            Most Popular
+          </div>
+
+          <div class="mb-6">
+            <h3 class="text-2xl font-bold text-white mb-2">Pro</h3>
+            <div class="text-4xl font-bold text-white mb-2">$29</div>
+            <p class="text-white/80">per month</p>
+          </div>
+
+          <ul class="space-y-4 mb-8 text-left">
+            <li class="flex items-center gap-3">
+              <i
+                data-lucide="check"
+                class="w-5 h-5 text-yellow-300 flex-shrink-0"
+              ></i>
+              <span class="text-white">Unlimited resume analysis</span>
+            </li>
+            <li class="flex items-center gap-3">
+              <i
+                data-lucide="check"
+                class="w-5 h-5 text-yellow-300 flex-shrink-0"
+              ></i>
+              <span class="text-white">Unlimited applications</span>
+            </li>
+            <li class="flex items-center gap-3">
+              <i
+                data-lucide="check"
+                class="w-5 h-5 text-yellow-300 flex-shrink-0"
+              ></i>
+              <span class="text-white">AI resume generation</span>
+            </li>
+            <li class="flex items-center gap-3">
+              <i
+                data-lucide="check"
+                class="w-5 h-5 text-yellow-300 flex-shrink-0"
+              ></i>
+              <span class="text-white">Advanced job matching</span>
+            </li>
+            <li class="flex items-center gap-3">
+              <i
+                data-lucide="check"
+                class="w-5 h-5 text-yellow-300 flex-shrink-0"
+              ></i>
+              <span class="text-white">Priority email support</span>
+            </li>
+            <li class="flex items-center gap-3">
+              <i
+                data-lucide="check"
+                class="w-5 h-5 text-yellow-300 flex-shrink-0"
+              ></i>
+              <span class="text-white">Career coaching sessions</span>
+            </li>
+          </ul>
+
+          <button
+            class="w-full bg-white text-indigo-600 py-3 rounded-xl font-semibold hover:bg-gray-50 transition-colors"
+          >
+            Upgrade to Pro
+          </button>
+        </div>
+
+        <!-- Enterprise Plan -->
+        <div
+          class="glass-card rounded-3xl p-8 text-center border-2 border-indigo-200"
+        >
+          <div class="mb-6">
+            <h3 class="text-2xl font-bold text-gray-900 mb-2">Enterprise</h3>
+            <div class="text-4xl font-bold text-gray-900 mb-2">$99</div>
+            <p class="text-gray-600">per month</p>
+          </div>
+
+          <ul class="space-y-4 mb-8 text-left">
+            <li class="flex items-center gap-3">
+              <i
+                data-lucide="check"
+                class="w-5 h-5 text-indigo-500 flex-shrink-0"
+              ></i>
+              <span class="text-gray-700">Everything in Pro</span>
+            </li>
+            <li class="flex items-center gap-3">
+              <i
+                data-lucide="check"
+                class="w-5 h-5 text-indigo-500 flex-shrink-0"
+              ></i>
+              <span class="text-gray-700">Dedicated account manager</span>
+            </li>
+            <li class="flex items-center gap-3">
+              <i
+                data-lucide="check"
+                class="w-5 h-5 text-indigo-500 flex-shrink-0"
+              ></i>
+              <span class="text-gray-700">Custom integrations</span>
+            </li>
+            <li class="flex items-center gap-3">
+              <i
+                data-lucide="check"
+                class="w-5 h-5 text-indigo-500 flex-shrink-0"
+              ></i>
+              <span class="text-gray-700">Advanced analytics</span>
+            </li>
+            <li class="flex items-center gap-3">
+              <i
+                data-lucide="check"
+                class="w-5 h-5 text-indigo-500 flex-shrink-0"
+              ></i>
+              <span class="text-gray-700">White-label solutions</span>
+            </li>
+            <li class="flex items-center gap-3">
+              <i
+                data-lucide="check"
+                class="w-5 h-5 text-indigo-500 flex-shrink-0"
+              ></i>
+              <span class="text-gray-700">24/7 phone support</span>
+            </li>
+          </ul>
+
+          <button
+            class="w-full bg-indigo-600 text-white py-3 rounded-xl font-semibold hover:bg-indigo-700 transition-colors"
+          >
+            Contact Sales
+          </button>
+        </div>
+      </div>
+
+      <!-- Feature Comparison -->
+      <div class="glass-card rounded-3xl p-8 mb-12">
+        <h2 class="text-2xl font-bold text-gray-900 mb-8 text-center">
+          Why Upgrade to Premium?
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <!-- AI Resume Generation -->
+          <div class="feature-highlight rounded-2xl p-6">
+            <div
+              class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mb-4"
+            >
+              <i data-lucide="sparkles" class="w-6 h-6 text-white"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-3">
+              AI Resume Generation
+            </h3>
+            <p class="text-gray-600 mb-4">
+              Let AI create tailored resumes for specific job applications.
+              Automatically optimize keywords and structure for maximum impact.
+            </p>
+            <div
+              class="flex items-center gap-2 text-sm text-indigo-600 font-medium"
+            >
+              <i data-lucide="trending-up" class="w-4 h-4"></i>
+              3x more interview callbacks
+            </div>
+          </div>
+
+          <!-- Unlimited Applications -->
+          <div class="feature-highlight rounded-2xl p-6">
+            <div
+              class="w-12 h-12 bg-gradient-to-br from-green-500 to-teal-600 rounded-2xl flex items-center justify-center mb-4"
+            >
+              <i data-lucide="send" class="w-6 h-6 text-white"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-3">
+              Unlimited Applications
+            </h3>
+            <p class="text-gray-600 mb-4">
+              Apply to as many jobs as you want. Track all your applications in
+              one place and never miss an opportunity.
+            </p>
+            <div
+              class="flex items-center gap-2 text-sm text-green-600 font-medium"
+            >
+              <i data-lucide="target" class="w-4 h-4"></i>
+              Apply to 50+ jobs/month
+            </div>
+          </div>
+
+          <!-- Career Coaching -->
+          <div class="feature-highlight rounded-2xl p-6">
+            <div
+              class="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center mb-4"
+            >
+              <i data-lucide="users" class="w-6 h-6 text-white"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-3">
+              Career Coaching
+            </h3>
+            <p class="text-gray-600 mb-4">
+              Get personalized career advice from experienced coaches. Develop
+              leadership skills and advance your career faster.
+            </p>
+            <div
+              class="flex items-center gap-2 text-sm text-purple-600 font-medium"
+            >
+              <i data-lucide="award" class="w-4 h-4"></i>
+              1-on-1 coaching sessions
+            </div>
+          </div>
+
+          <!-- Advanced Analytics -->
+          <div class="feature-highlight rounded-2xl p-6">
+            <div
+              class="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-2xl flex items-center justify-center mb-4"
+            >
+              <i data-lucide="bar-chart-3" class="w-6 h-6 text-white"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-3">
+              Advanced Analytics
+            </h3>
+            <p class="text-gray-600 mb-4">
+              Track your job search progress with detailed analytics. See which
+              strategies work and optimize your approach.
+            </p>
+            <div
+              class="flex items-center gap-2 text-sm text-blue-600 font-medium"
+            >
+              <i data-lucide="eye" class="w-4 h-4"></i>
+              Detailed insights
+            </div>
+          </div>
+
+          <!-- Priority Support -->
+          <div class="feature-highlight rounded-2xl p-6">
+            <div
+              class="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl flex items-center justify-center mb-4"
+            >
+              <i data-lucide="headphones" class="w-6 h-6 text-white"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-3">
+              Priority Support
+            </h3>
+            <p class="text-gray-600 mb-4">
+              Get help when you need it most. Skip the queues and get direct
+              access to our expert support team.
+            </p>
+            <div
+              class="flex items-center gap-2 text-sm text-orange-600 font-medium"
+            >
+              <i data-lucide="clock" class="w-4 h-4"></i>
+              <24/7 support
+            </div>
+          </div>
+
+          <!-- Exclusive Content -->
+          <div class="feature-highlight rounded-2xl p-6">
+            <div
+              class="w-12 h-12 bg-gradient-to-br from-pink-500 to-rose-600 rounded-2xl flex items-center justify-center mb-4"
+            >
+              <i data-lucide="star" class="w-6 h-6 text-white"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-3">
+              Exclusive Content
+            </h3>
+            <p class="text-gray-600 mb-4">
+              Access premium courses, templates, and resources. Stay ahead with
+              the latest industry insights and trends.
+            </p>
+            <div
+              class="flex items-center gap-2 text-sm text-pink-600 font-medium"
+            >
+              <i data-lucide="unlock" class="w-4 h-4"></i>
+              Premium resources
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Testimonials -->
+      <div class="glass-card rounded-3xl p-8 mb-12">
+        <h2 class="text-2xl font-bold text-gray-900 mb-8 text-center">
+          What Our Premium Users Say
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div class="text-center">
+            <div
+              class="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4"
+            >
+              <span class="text-white font-bold text-lg">SJ</span>
+            </div>
+            <p class="text-gray-700 mb-4 italic">
+              "The AI resume generation saved me hours of work. I got 3
+              interviews in my first week!"
+            </p>
+            <div class="text-sm text-gray-500">
+              <div class="font-semibold text-gray-900">Sarah Johnson</div>
+              <div>Product Manager at Google</div>
+            </div>
+          </div>
+
+          <div class="text-center">
+            <div
+              class="w-16 h-16 bg-gradient-to-br from-green-500 to-teal-600 rounded-full flex items-center justify-center mx-auto mb-4"
+            >
+              <span class="text-white font-bold text-lg">MR</span>
+            </div>
+            <p class="text-gray-700 mb-4 italic">
+              "The career coaching sessions helped me negotiate a 40% salary
+              increase."
+            </p>
+            <div class="text-sm text-gray-500">
+              <div class="font-semibold text-gray-900">Mike Rodriguez</div>
+              <div>Senior Engineer at Meta</div>
+            </div>
+          </div>
+
+          <div class="text-center">
+            <div
+              class="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-4"
+            >
+              <span class="text-white font-bold text-lg">AL</span>
+            </div>
+            <p class="text-gray-700 mb-4 italic">
+              "Premium analytics showed me exactly what was working. My
+              application success rate doubled!"
+            </p>
+            <div class="text-sm text-gray-500">
+              <div class="font-semibold text-gray-900">Anna Liu</div>
+              <div>UX Designer at Airbnb</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FAQ -->
+      <div class="glass-card rounded-3xl p-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-8 text-center">
+          Frequently Asked Questions
+        </h2>
+
+        <div class="space-y-6 max-w-3xl mx-auto">
+          <div class="border-b border-gray-200 pb-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-3">
+              Can I cancel my subscription anytime?
+            </h3>
+            <p class="text-gray-600">
+              Yes, you can cancel your subscription at any time. You'll continue
+              to have access to premium features until the end of your billing
+              period.
+            </p>
+          </div>
+
+          <div class="border-b border-gray-200 pb-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-3">
+              Is there a free trial for premium features?
+            </h3>
+            <p class="text-gray-600">
+              We offer a 7-day free trial for all premium plans. No credit card
+              required to start your trial.
+            </p>
+          </div>
+
+          <div class="border-b border-gray-200 pb-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-3">
+              What payment methods do you accept?
+            </h3>
+            <p class="text-gray-600">
+              We accept all major credit cards, PayPal, and bank transfers for
+              annual plans.
+            </p>
+          </div>
+
+          <div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-3">
+              Do you offer discounts for students or teams?
+            </h3>
+            <p class="text-gray-600">
+              Yes! We offer 50% off for students and custom enterprise pricing
+              for teams of 5 or more.
+            </p>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer
+      class="mt-12 bg-gray-900 text-white py-8 rounded-t-[40px] relative overflow-hidden"
+    >
+      <div
+        class="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-50 blur-sm"
+      ></div>
+      <div
+        class="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6"
+      >
+        <div class="flex items-center gap-2">
+          <div
+            class="w-6 h-6 rounded bg-gray-800 flex items-center justify-center text-xs font-bold"
+          >
+            AI
+          </div>
+          <span class="text-sm font-semibold tracking-tight">CareerForge</span>
+        </div>
+        <div class="flex gap-6 text-xs text-gray-400">
+          <a href="#" class="hover:text-white transition-colors">Help Center</a>
+          <a href="#" class="hover:text-white transition-colors"
+            >Privacy Policy</a
+          >
+          <a href="#" class="hover:text-white transition-colors">Terms</a>
+        </div>
+        <p class="text-[10px] text-gray-600">
+          Built for professionals, powered by AI.
+        </p>
+      </div>
+    </footer>
+
+    <script>
+      lucide.createIcons();
+    </script>
+  </body>
+</html>
