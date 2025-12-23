@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Icon } from '@iconify/react';
-import { formatRelativeTime } from '../../../lib/dateUtils';
+import { formatRelativeTime } from '@/lib/utils/dateUtils';
 
 interface Candidate {
   id: string;
