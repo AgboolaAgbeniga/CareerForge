@@ -43,4 +43,5 @@ export function getLogger(serviceName: string): Logger {
   return new ConsoleLogger(serviceName);
 }
 
-export default new ConsoleLogger('careerforge-backend');
+const logger = new ConsoleLogger('careerforge-backend');
+export default logger;
