@@ -289,8 +289,10 @@ export class AuthService {
         // 2. If TOTP fails, try backup codes
         if (!verified && user.backupCodes) {
             const backupCodes = user.backupCodes as string[];
+            logger.info(`Backup codes type: ${typeof backupCodes}, length: ${backupCodes.length}`);
             for (let i = 0; i < backupCodes.length; i++) {
                 const backupCode = backupCodes[i];
+                logger.info(`Backup code at ${i}: ${typeof backupCode}, value: ${backupCode}`);
                 if (backupCode !== undefined) {
                     const isMatch = await bcrypt.compare(data.code, backupCode);
                     if (isMatch) {
@@ -428,6 +430,9 @@ export class AuthService {
         if (!user) {
             throw new AppError('User not found', 404);
         }
+
+        // Debug log to check if sanitizeText is available
+        logger.info(`sanitizeText function available: ${typeof sanitizeText}`);
 
         // Sanitize user updates
         const sanitizedUserUpdates = { ...userUpdates };

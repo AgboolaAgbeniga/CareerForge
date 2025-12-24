@@ -1,55 +1,22 @@
 """
-FastAPI application for Career Coach service
+Career Coach router for combined AI service
 """
-import asyncio
-from contextlib import asynccontextmanager
 from typing import List, Dict, Any
 
-from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-import uvicorn
-
-from coach import CareerCoach, CareerAdvice, LinkedInOptimization, CoverLetter
 import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from shared.config import config
 from shared.utils import get_logger
 
 logger = get_logger(__name__)
 
 # Global coach instance
-coach: CareerCoach = None
+coach = None
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """Application lifespan manager"""
-    global coach
-    logger.info("Starting Career Coach service...")
-
-    # Initialize coach
-    coach = CareerCoach()
-
-    yield
-
-    logger.info("Shutting down Career Coach service...")
-
-app = FastAPI(
-    title="Career Coach API",
-    description="AI-powered career coaching using Hugging Face models",
-    version="1.0.0",
-    lifespan=lifespan
-)
-
-# CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Configure for production
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# Router
+career_router = APIRouter()
 
 # Pydantic models
 class UserProfile(BaseModel):
@@ -88,19 +55,25 @@ class CoverLetterResponse(BaseModel):
     key_points: List[str]
     customization_notes: str
 
-@app.get("/health")
-async def health_check():
-    """Health check endpoint"""
-    return {"status": "healthy", "service": "career-coach"}
+async def init_coach():
+    """Initialize the career coach"""
+    global coach
+    from coach import CareerCoach
+    logger.info("Initializing Career Coach...")
+    coach = CareerCoach()
 
-@app.post("/advice", response_model=AdviceResponse)
-async def get_career_advice(request: AdviceRequest):
+@career_router.post("/career-coach/advice", response_model=AdviceResponse)
+async def get_career_advice(data: dict):
     """Get personalized career advice"""
     try:
         if not coach:
             raise HTTPException(status_code=503, detail="Coach not initialized")
 
-        result = coach.provide_advice(request.user_profile.dict(), request.context)
+        # Convert data to AdviceRequest format
+        user_profile = UserProfile(**data.get('userContext', {}))
+        context = data.get('query', '')
+
+        result = coach.provide_advice(user_profile.dict(), context)
 
         return AdviceResponse(**result.__dict__)
 
@@ -108,46 +81,53 @@ async def get_career_advice(request: AdviceRequest):
         logger.error(f"Advice error: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
-@app.post("/linkedin-optimize", response_model=LinkedInResponse)
-async def optimize_linkedin(request: LinkedInRequest):
+@career_router.post("/career-coach/linkedin")
+async def optimize_linkedin(data: dict):
     """Optimize LinkedIn profile headline"""
     try:
         if not coach:
             raise HTTPException(status_code=503, detail="Coach not initialized")
 
-        result = coach.optimize_linkedin_profile(request.current_headline, request.target_role)
+        current_headline = data.get('currentHeadline', '')
+        target_role = data.get('targetRole', '')
 
-        return LinkedInResponse(**result.__dict__)
+        result = coach.optimize_linkedin_profile(current_headline, target_role)
+
+        return result.__dict__
 
     except Exception as e:
         logger.error(f"LinkedIn optimization error: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
-@app.post("/cover-letter", response_model=CoverLetterResponse)
-async def generate_cover_letter(request: CoverLetterRequest):
+@career_router.post("/resume/cover-letter")
+async def generate_cover_letter(data: dict):
     """Generate personalized cover letter"""
     try:
         if not coach:
             raise HTTPException(status_code=503, detail="Coach not initialized")
 
-        result = coach.generate_cover_letter(request.job_id, request.resume_data)
+        job_id = data.get('jobId')
+        resume_data = data.get('resumeData', {})
 
-        return CoverLetterResponse(**result.__dict__)
+        result = coach.generate_cover_letter(job_id, resume_data)
+
+        return result.__dict__
 
     except Exception as e:
         logger.error(f"Cover letter generation error: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
-@app.get("/skill-gaps/{job_seeker_id}")
-async def analyze_skill_gaps(job_seeker_id: int, roles: str = ""):
+@career_router.post("/career-coach/skill-gaps")
+async def analyze_skill_gaps(data: dict):
     """Analyze skill gaps for target roles"""
     try:
         if not coach:
             raise HTTPException(status_code=503, detail="Coach not initialized")
 
-        target_roles = roles.split(",") if roles else ["software engineer"]
+        user_id = data.get('userId')
+        roles = data.get('roles', ["software engineer"])
 
-        result = coach.analyze_skill_gaps(job_seeker_id, target_roles)
+        result = coach.analyze_skill_gaps(user_id, roles)
 
         return result
 
@@ -155,7 +135,7 @@ async def analyze_skill_gaps(job_seeker_id: int, roles: str = ""):
         logger.error(f"Skill gap analysis error: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
-@app.get("/resources")
+@career_router.get("/career-coach/resources")
 async def get_learning_resources(category: str = "general"):
     """Get learning resources by category"""
     try:
@@ -189,11 +169,11 @@ async def get_learning_resources(category: str = "general"):
         logger.error(f"Resources error: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
-@app.post("/feedback")
-async def submit_feedback(feedback: Dict[str, Any]):
+@career_router.post("/career-coach/feedback")
+async def submit_feedback(data: dict):
     """Submit user feedback for model improvement"""
     try:
-        logger.info("Received feedback", feedback)
+        logger.info("Received feedback", data)
 
         # Store feedback for model improvement
         # This would be saved to database in production
@@ -206,12 +186,3 @@ async def submit_feedback(feedback: Dict[str, Any]):
     except Exception as e:
         logger.error(f"Feedback submission error: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
-
-if __name__ == "__main__":
-    uvicorn.run(
-        "app:app",
-        host="0.0.0.0",
-        port=config.CAREER_COACH_PORT,
-        reload=True,
-        log_level="info"
-    )
