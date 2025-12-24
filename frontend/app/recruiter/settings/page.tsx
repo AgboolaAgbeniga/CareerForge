@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Button, Input, Select } from '@/components';
 import {
   User,
@@ -223,7 +223,7 @@ export default function RecruiterSettings() {
                     <Input
                       type="text"
                       value={accountSettings.name}
-                      onChange={(e) =>
+                      onChange={(e: any) =>
                         setAccountSettings((prev) => ({
                           ...prev,
                           name: e.target.value,
@@ -239,7 +239,7 @@ export default function RecruiterSettings() {
                     <Input
                       type="email"
                       value={accountSettings.email}
-                      onChange={(e) =>
+                      onChange={(e: any) =>
                         setAccountSettings((prev) => ({
                           ...prev,
                           email: e.target.value,
@@ -255,7 +255,7 @@ export default function RecruiterSettings() {
                     <Input
                       type="tel"
                       value={accountSettings.phone}
-                      onChange={(e) =>
+                      onChange={(e: any) =>
                         setAccountSettings((prev) => ({
                           ...prev,
                           phone: e.target.value,
@@ -288,7 +288,7 @@ export default function RecruiterSettings() {
                         { value: 'de', label: 'German' },
                       ]}
                       value={accountSettings.language}
-                      onChange={(e) =>
+                      onChange={(e: any) =>
                         setAccountSettings((prev) => ({
                           ...prev,
                           language: e.target.value,
@@ -312,7 +312,7 @@ export default function RecruiterSettings() {
                         { value: 'Asia/Tokyo', label: 'JST' },
                       ]}
                       value={accountSettings.timezone}
-                      onChange={(e) =>
+                      onChange={(e: any) =>
                         setAccountSettings((prev) => ({
                           ...prev,
                           timezone: e.target.value,
@@ -370,7 +370,7 @@ export default function RecruiterSettings() {
                         <Input
                           type="text"
                           value={companySettings.name}
-                          onChange={(e) =>
+                          onChange={(e: any) =>
                             setCompanySettings((prev) => ({
                               ...prev,
                               name: e.target.value,
@@ -395,7 +395,7 @@ export default function RecruiterSettings() {
                             { value: 'E-commerce', label: 'E-commerce' },
                           ]}
                           value={companySettings.industry}
-                          onChange={(e) =>
+                          onChange={(e: any) =>
                             setCompanySettings((prev) => ({
                               ...prev,
                               industry: e.target.value,
@@ -422,7 +422,7 @@ export default function RecruiterSettings() {
                           { value: '500+', label: '500+ Employees' },
                         ]}
                         value={companySettings.size}
-                        onChange={(e) =>
+                        onChange={(e: any) =>
                           setCompanySettings((prev) => ({
                             ...prev,
                             size: e.target.value,
@@ -440,7 +440,7 @@ export default function RecruiterSettings() {
                     </label>
                     <textarea
                       value={companySettings.description}
-                      onChange={(e) =>
+                      onChange={(e: any) =>
                         setCompanySettings((prev) => ({
                           ...prev,
                           description: e.target.value,
@@ -466,7 +466,7 @@ export default function RecruiterSettings() {
                     </label>
                     <textarea
                       value={companySettings.emailSignature}
-                      onChange={(e) =>
+                      onChange={(e: any) =>
                         setCompanySettings((prev) => ({
                           ...prev,
                           emailSignature: e.target.value,

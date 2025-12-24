@@ -1,6 +1,6 @@
 'use client';
 
-import { SelectProps } from './types';
+import { SelectProps } from '../types';
 
 export default function Select({
   options,

@@ -7,7 +7,7 @@ import {
   useCallback,
   ReactNode,
 } from 'react';
-import { ToastProps, ToastContextType } from './types';
+import { ToastProps, ToastContextType } from '../types';
 
 interface ToastWithId extends ToastProps {
   id: string;
