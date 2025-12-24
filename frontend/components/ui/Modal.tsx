@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { ModalProps } from './types';
+import { ModalProps } from '../types';
 
 export default function Modal({
   isOpen,

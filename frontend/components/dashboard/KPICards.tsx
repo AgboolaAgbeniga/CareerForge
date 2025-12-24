@@ -3,9 +3,12 @@
 import React from 'react';
 import { Icon } from '@iconify/react';
 
-interface KPICardsProps {}
+interface KPICardsProps {
+  applicationsCount?: number;
+  activeJobsCount?: number;
+}
 
-export function KPICards({}: KPICardsProps) {
+export function KPICards({ applicationsCount = 0, activeJobsCount = 0 }: KPICardsProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       {/* Active Jobs */}
@@ -24,22 +27,9 @@ export function KPICards({}: KPICardsProps) {
         <div className="space-y-1">
           <p className="text-sm text-slate-500 font-medium">Active Jobs</p>
           <h3 className="text-2xl font-semibold text-white tracking-tight">
-            14
+            {activeJobsCount}
           </h3>
         </div>
-        <svg
-          className="w-full h-8 mt-2 opacity-50 sparkline"
-          viewBox="0 0 100 20"
-          fill="none"
-        >
-          <path
-            d="M0 15 Q 10 18, 20 10 T 40 12 T 60 5 T 80 8 T 100 2"
-            stroke="#6366f1"
-            strokeWidth="2"
-            fill="none"
-            vectorEffect="non-scaling-stroke"
-          />
-        </svg>
       </div>
 
       {/* Candidates Matched */}
@@ -52,15 +42,15 @@ export function KPICards({}: KPICardsProps) {
             <Icon icon="lucide:users" width={18} />
           </div>
           <span className="text-xs font-medium text-emerald-400 flex items-center gap-1 bg-emerald-400/10 px-2 py-0.5 rounded-full border border-emerald-400/20">
-            +85 <Icon icon="lucide:user-plus" width={10} />
+            +{applicationsCount} <Icon icon="lucide:user-plus" width={10} />
           </span>
         </div>
         <div className="space-y-1">
           <p className="text-sm text-slate-500 font-medium">
-            Candidates Matched
+            Total Applications
           </p>
           <h3 className="text-2xl font-semibold text-white tracking-tight">
-            1,204
+            {applicationsCount}
           </h3>
         </div>
         <div className="mt-3 text-xs text-slate-500">
@@ -112,19 +102,6 @@ export function KPICards({}: KPICardsProps) {
             18d
           </h3>
         </div>
-        <svg
-          className="w-full h-8 mt-2 opacity-50 sparkline"
-          viewBox="0 0 100 20"
-          fill="none"
-        >
-          <path
-            d="M0 5 L 20 5 L 40 15 L 60 10 L 80 18 L 100 12"
-            stroke="#2dd4bf"
-            strokeWidth="2"
-            fill="none"
-            vectorEffect="non-scaling-stroke"
-          />
-        </svg>
       </div>
     </div>
   );

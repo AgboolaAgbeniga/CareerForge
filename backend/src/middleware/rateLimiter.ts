@@ -23,3 +23,10 @@ export const apiLimiter = rateLimit({
     max: 30,
     message: 'API rate limit exceeded, please slow down.',
 });
+
+// AI rate limiter: 5 requests per minute (intensive operations)
+export const aiLimiter = rateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    max: 5,
+    message: 'AI processing limit exceeded. Please wait a minute before trying again.',
+});

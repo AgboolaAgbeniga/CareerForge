@@ -1,5 +1,19 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
+class APIError extends Error {
+    status: number;
+    code?: string;
+    details?: any;
+
+    constructor(message: string, status: number, code?: string, details?: any) {
+        super(message);
+        this.name = 'APIError';
+        this.status = status;
+        this.code = code;
+        this.details = details;
+    }
+}
+
 class APIClient {
     private baseURL: string;
 
@@ -25,16 +39,29 @@ class APIClient {
             const response = await fetch(url, config);
 
             if (!response.ok) {
-                const error = await response.json().catch(() => ({ message: 'Request failed' }));
-                throw new Error(error.message || `HTTP ${response.status}`);
+                const errorBody = await response.json().catch(() => ({ message: 'Request failed' }));
+                throw new APIError(
+                    errorBody.message || `HTTP ${response.status}`,
+                    response.status,
+                    errorBody.code,
+                    errorBody.details
+                );
             }
 
-            return await response.json();
+            const result = await response.json();
+            // Automatically unwrap the 'data' key if it exists in our standard format
+            if (result && result.success === true && result.data !== undefined) {
+                return result.data;
+            }
+            return result;
         } catch (error) {
-            if (error instanceof Error) {
+            if (error instanceof APIError) {
                 throw error;
             }
-            throw new Error('An unknown error occurred');
+            if (error instanceof Error) {
+                throw new APIError(error.message, 0);
+            }
+            throw new APIError('An unknown error occurred', 0);
         }
     }
 
@@ -94,6 +121,18 @@ class APIClient {
             this.request('/auth/verify-2fa', {
                 method: 'POST',
                 body: JSON.stringify({ code }),
+            }),
+
+        disable2FA: (data: { password: string; code?: string }) =>
+            this.request('/auth/disable-2fa', {
+                method: 'POST',
+                body: JSON.stringify(data),
+            }),
+
+        regenerateBackupCodes: (data: { password: string }) =>
+            this.request('/auth/backup-codes/regenerate', {
+                method: 'POST',
+                body: JSON.stringify(data),
             }),
 
         getProfile: () => this.request('/auth/profile', { method: 'GET' }),

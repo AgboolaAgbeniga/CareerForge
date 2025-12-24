@@ -67,4 +67,12 @@ export class AuthRepository {
         const result = await db.select().from(recruiters).where(eq(recruiters.id, userId)).limit(1);
         return result[0];
     }
+
+    async updateUserOnboarding(userId: string, completed: boolean) {
+        await db.update(users).set({ onboardingCompleted: completed }).where(eq(users.id, userId));
+    }
+
+    async updateUserBackupCodes(userId: string, backupCodes: string[]) {
+        await db.update(users).set({ backupCodes }).where(eq(users.id, userId));
+    }
 }

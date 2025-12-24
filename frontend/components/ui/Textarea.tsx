@@ -1,6 +1,6 @@
 'use client';
 
-import { TextareaProps } from './types';
+import { TextareaProps } from '../types';
 
 export default function Textarea({
   placeholder,

@@ -1,8 +1,19 @@
 import { z } from 'zod';
+import { isCommonPassword } from '../../utils/passwordBlacklist';
+
+const passwordSchema = z.string()
+    .min(12, 'Password must be at least 12 characters')
+    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+    .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
+    .regex(/[0-9]/, 'Password must contain at least one number')
+    .regex(/[^A-Za-z0-9]/, 'Password must contain at least one special character')
+    .refine((password) => !isCommonPassword(password), {
+        message: 'This password is too common and easily guessable. Please choose a more unique password.'
+    });
 
 export const registerSchema = z.object({
     email: z.string().email(),
-    password: z.string().min(8),
+    password: passwordSchema,
     role: z.enum(['job_seeker', 'recruiter']),
     firstName: z.string(),
     lastName: z.string(),
@@ -19,11 +30,15 @@ export const forgotPasswordSchema = z.object({
 
 export const resetPasswordSchema = z.object({
     token: z.string(),
-    newPassword: z.string().min(8),
+    newPassword: passwordSchema,
 });
 
 export const verifyEmailSchema = z.object({
     token: z.string(),
+});
+
+export const resendEmailVerificationSchema = z.object({
+    email: z.string().email(),
 });
 
 export const setup2FASchema = z.object({
@@ -32,6 +47,15 @@ export const setup2FASchema = z.object({
 
 export const verify2FASchema = z.object({
     code: z.string(),
+});
+
+export const disable2FASchema = z.object({
+    password: z.string(),
+    code: z.string().optional(),
+});
+
+export const regenerateBackupCodesSchema = z.object({
+    password: z.string(),
 });
 
 export const updateUserProfileSchema = z.object({
@@ -94,6 +118,15 @@ export interface Setup2FADTO {
 
 export interface Verify2FADTO {
     code: string;
+}
+
+export interface Disable2FADTO {
+    password: string;
+    code?: string;
+}
+
+export interface RegenerateBackupCodesDTO {
+    password: string;
 }
 
 export type UpdateUserProfileDTO = z.infer<typeof updateUserProfileSchema>;

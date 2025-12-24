@@ -1,8 +1,6 @@
 import axios from 'axios';
 import FormData from 'form-data';
 
-const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
-
 interface ResumeData {
   skills: string[];
   experience: Array<{
@@ -31,23 +29,40 @@ interface JobMatch {
   missingSkills: string[];
 }
 
-class AIService {
-  private baseURL: string;
+export class AIService {
+  private baseUrl: string;
 
-  constructor(baseURL: string) {
-    this.baseURL = baseURL;
+  constructor() {
+    this.baseUrl = process.env.AI_SERVICE_URL || 'http://localhost:8000';
+  }
+
+  private async callAiService(endpoint: string, data: any, timeout: number = 10000) {
+    if (!process.env.AI_SERVICE_URL) {
+      console.warn(`⚠️ AI Service called but URL not set: ${endpoint}`);
+      throw new Error('AI services are currently unavailable');
+    }
+    try {
+      const response = await axios.post(`${this.baseUrl}/${endpoint}`, data, { timeout });
+      return response.data;
+    } catch (error) {
+      console.error(`AI Service Error (${endpoint}):`, error);
+      throw new Error('AI service failed to process request');
+    }
   }
 
   /**
    * Parse resume PDF/DOCX and extract structured data
    */
   async parseResume(fileBuffer: Buffer, filename: string): Promise<ResumeData> {
+    if (!process.env.AI_SERVICE_URL) {
+      throw new Error('AI parsing service is currently unavailable');
+    }
     try {
       const formData = new FormData();
       formData.append('file', fileBuffer, filename);
 
       const response = await axios.post<ResumeData>(
-        `${this.baseURL}/resume/parse`,
+        `${this.baseUrl}/resume/parse`,
         formData,
         {
           headers: formData.getHeaders(),
@@ -71,22 +86,13 @@ class AIService {
     preferences: any
   ): Promise<JobMatch[]> {
     try {
-      const response = await axios.post<JobMatch[]>(
-        `${this.baseURL}/matching/jobs`,
-        {
-          jobSeekerId,
-          skills,
-          preferences,
-        },
-        {
-          timeout: 10000,
-        }
-      );
-
-      return response.data;
+      return await this.callAiService('matching/jobs', {
+        jobSeekerId,
+        skills,
+        preferences,
+      });
     } catch (error) {
       console.error('Job matching error:', error);
-      // Return empty array on failure (graceful degradation)
       return [];
     }
   }
@@ -95,7 +101,6 @@ class AIService {
    * Find job matches for a job seeker (alias for matchJobs)
    */
   async findJobMatches(jobSeekerId: string): Promise<any[]> {
-    // Placeholder - would need to fetch user skills/preferences
     return this.matchJobs(jobSeekerId, [], {});
   }
 
@@ -104,12 +109,7 @@ class AIService {
    */
   async matchCandidates(jobId: string): Promise<any[]> {
     try {
-      const response = await axios.post(
-        `${this.baseURL}/matching/candidates`,
-        { jobId },
-        { timeout: 10000 }
-      );
-      return response.data;
+      return await this.callAiService('matching/candidates', { jobId });
     } catch (error) {
       console.error('Candidate matching error:', error);
       return [];
@@ -128,18 +128,11 @@ class AIService {
     }
   ): Promise<string> {
     try {
-      const response = await axios.post<{ advice: string }>(
-        `${this.baseURL}/career-coach/advice`,
-        {
-          query,
-          context: userContext,
-        },
-        {
-          timeout: 15000,
-        }
-      );
-
-      return response.data.advice;
+      const response = await this.callAiService('career-coach/advice', {
+        query,
+        context: userContext,
+      }, 15000);
+      return response.advice;
     } catch (error) {
       console.error('Career coach error:', error);
       return 'Sorry, I am currently unavailable. Please try again later.';
@@ -151,12 +144,7 @@ class AIService {
    */
   async optimizeResume(resumeData: any, jobRequirements: string): Promise<any> {
     try {
-      const response = await axios.post(
-        `${this.baseURL}/resume/optimize`,
-        { resumeData, jobRequirements },
-        { timeout: 20000 }
-      );
-      return response.data;
+      return await this.callAiService('resume/optimize', { resumeData, jobRequirements }, 20000);
     } catch (error) {
       console.error('Resume optimization error:', error);
       return { error: 'Service unavailable' };
@@ -168,12 +156,7 @@ class AIService {
    */
   async optimizeLinkedInProfile(currentHeadline: string, targetRole: string): Promise<any> {
     try {
-      const response = await axios.post(
-        `${this.baseURL}/career-coach/linkedin`,
-        { currentHeadline, targetRole },
-        { timeout: 15000 }
-      );
-      return response.data;
+      return await this.callAiService('career-coach/linkedin', { currentHeadline, targetRole }, 15000);
     } catch (error) {
       console.error('LinkedIn optimization error:', error);
       return { error: 'Service unavailable' };
@@ -185,12 +168,7 @@ class AIService {
    */
   async generateCoverLetter(jobId: string, resumeId: string): Promise<any> {
     try {
-      const response = await axios.post(
-        `${this.baseURL}/resume/cover-letter`,
-        { jobId, resumeId },
-        { timeout: 20000 }
-      );
-      return response.data;
+      return await this.callAiService('resume/cover-letter', { jobId, resumeId }, 20000);
     } catch (error) {
       console.error('Cover letter generation error:', error);
       return { error: 'Service unavailable' };
@@ -202,12 +180,7 @@ class AIService {
    */
   async analyzeSkillGaps(userId: string, roles: string[]): Promise<any> {
     try {
-      const response = await axios.post(
-        `${this.baseURL}/career-coach/skill-gaps`,
-        { userId, roles },
-        { timeout: 15000 }
-      );
-      return response.data;
+      return await this.callAiService('career-coach/skill-gaps', { userId, roles }, 15000);
     } catch (error) {
       console.error('Skill gap analysis error:', error);
       return { error: 'Service unavailable' };
@@ -219,12 +192,7 @@ class AIService {
    */
   async getHiringSuggestions(jobDraft: any): Promise<any> {
     try {
-      const response = await axios.post(
-        `${this.baseURL}/hiring/suggestions`,
-        jobDraft,
-        { timeout: 15000 }
-      );
-      return response.data;
+      return await this.callAiService('hiring/suggestions', jobDraft, 15000);
     } catch (error) {
       console.error('Hiring suggestions error:', error);
       return { error: 'Service unavailable' };
@@ -236,12 +204,7 @@ class AIService {
    */
   async analyzeResumeForRecruiter(candidateId: string, jobId: string): Promise<any> {
     try {
-      const response = await axios.post(
-        `${this.baseURL}/hiring/analyze-resume`,
-        { candidateId, jobId },
-        { timeout: 15000 }
-      );
-      return response.data;
+      return await this.callAiService('hiring/analyze-resume', { candidateId, jobId }, 15000);
     } catch (error) {
       console.error('Resume analysis error:', error);
       return { error: 'Service unavailable' };
@@ -252,8 +215,9 @@ class AIService {
    * Health check for AI services
    */
   async healthCheck(): Promise<boolean> {
+    if (!process.env.AI_SERVICE_URL) return false;
     try {
-      const response = await axios.get(`${this.baseURL}/health`, {
+      const response = await axios.get(`${this.baseUrl}/health`, {
         timeout: 5000,
       });
       return response.status === 200;
@@ -264,5 +228,5 @@ class AIService {
   }
 }
 
-export const aiService = new AIService(AI_SERVICE_URL);
+export const aiService = new AIService();
 export default aiService;

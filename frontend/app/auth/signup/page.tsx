@@ -29,7 +29,6 @@ export default function SignupPage() {
           email,
           password,
           role,
-          role,
           firstName,
           lastName,
         }),
@@ -40,7 +39,7 @@ export default function SignupPage() {
         router.push('/auth/login');
       } else {
         const error = await response.json();
-        alert(error.error || 'Registration failed');
+        alert(error.message || 'Registration failed');
       }
     } catch (error) {
       console.error('Registration error:', error);

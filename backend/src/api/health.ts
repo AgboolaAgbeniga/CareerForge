@@ -1,7 +1,8 @@
-import express from 'express';
+import express, { Response } from 'express';
 import { db } from '../utils/database';
 import { sql } from 'drizzle-orm';
-import aiService from '../services/aiService';
+import { aiService } from '../services/aiService';
+import { catchAsync } from '../utils/catchAsync';
 
 const router = express.Router();
 
@@ -10,8 +11,9 @@ const startTime = Date.now();
 /**
  * Basic health check - Fast, no dependencies
  */
-router.get('/', (req, res) => {
+router.get('/', (req, res: Response) => {
     res.json({
+        success: true,
         status: 'OK',
         timestamp: new Date().toISOString(),
         uptime: Math.floor((Date.now() - startTime) / 1000)
@@ -21,50 +23,46 @@ router.get('/', (req, res) => {
 /**
  * Detailed health check - Checks all external dependencies
  */
-router.get('/detailed', async (req, res) => {
-    const health = {
-        status: 'healthy',
-        timestamp: new Date().toISOString(),
-        uptime: Math.floor((Date.now() - startTime) / 1000),
-        services: {
-            database: 'unknown',
-            aiService: 'unknown',
-        },
+router.get('/detailed', catchAsync(async (req, res: Response) => {
+    const services = {
+        database: 'healthy',
+        aiService: 'healthy',
     };
+
+    let status = 'healthy';
 
     // Check database connectivity
     try {
         await db.execute(sql`SELECT 1`);
-        health.services.database = 'healthy';
     } catch (error) {
-        health.services.database = 'unhealthy';
-        health.status = 'degraded';
+        services.database = 'unhealthy';
+        status = 'unhealthy';
     }
 
-    // Check AI service (optional, don't fail if unavailable)
+    // Check AI service
     try {
-        const aiHealthy = await aiService.healthCheck();
-        health.services.aiService = aiHealthy ? 'healthy' : 'unhealthy';
+        const aiHealth = await aiService.healthCheck();
+        const aiHealthy = Object.values(aiHealth).every(s => s);
+        services.aiService = aiHealthy ? 'healthy' : 'degraded';
+        if (!aiHealthy) status = (status === 'unhealthy' ? 'unhealthy' : 'degraded');
     } catch (error) {
-        health.services.aiService = 'not_configured';
+        services.aiService = 'not_available';
     }
 
-    // Overall status
-    if (health.services.database === 'unhealthy') {
-        health.status = 'unhealthy';
-        return res.status(503).json(health);
-    }
-
-    return res.json(health);
-});
+    res.status(status === 'unhealthy' ? 503 : 200).json({
+        success: status !== 'unhealthy',
+        status,
+        timestamp: new Date().toISOString(),
+        uptime: Math.floor((Date.now() - startTime) / 1000),
+        services,
+    });
+}));
 
 /**
  * Kubernetes readiness probe
- * Returns 200 if the app is ready to accept traffic
  */
-router.get('/ready', async (req, res) => {
+router.get('/ready', async (req, res: Response) => {
     try {
-        // Check if database is accessible
         await db.execute(sql`SELECT 1`);
         res.status(200).json({ ready: true });
     } catch (error) {
@@ -74,9 +72,8 @@ router.get('/ready', async (req, res) => {
 
 /**
  * Kubernetes liveness probe
- * Returns 200 if the app is alive (doesn't check dependencies)
  */
-router.get('/live', (req, res) => {
+router.get('/live', (req, res: Response) => {
     res.status(200).json({ alive: true });
 });
 

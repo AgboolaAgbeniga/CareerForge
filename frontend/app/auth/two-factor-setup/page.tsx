@@ -1,25 +1,51 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { CheckCircle2, Smartphone } from 'lucide-react';
+import { CheckCircle2, Smartphone, Loader2, Copy, AlertTriangle } from 'lucide-react';
+import { apiClient } from '@/lib/api/client';
 
 export default function TwoFactorSetupPage() {
   const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [verifying, setVerifying] = useState(false);
+  const [qrCode, setQrCode] = useState('');
+  const [secret, setSecret] = useState('');
+  const [backupCodes, setBackupCodes] = useState<string[]>([]);
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
   const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    const fetch2FASetup = async () => {
+      try {
+        const data = await apiClient.auth.setup2FA() as any;
+        setQrCode(data.qrCode);
+        setSecret(data.secret);
+        setBackupCodes(data.backupCodes);
+      } catch (err: any) {
+        setError(err.message || 'Failed to initialize 2FA setup');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetch2FASetup();
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setVerifying(true);
 
-    if (code.length === 6 && /^\d+$/.test(code)) {
-      // Simulate successful verification
-      setStep(2);
-    } else {
-      setError('Invalid code. Please try again.');
+    try {
+      await apiClient.auth.verify2FA(code);
+      setStep(3); // Backup codes view
+    } catch (err: any) {
+      setError(err.message || 'Verification failed. Please check the code.');
+    } finally {
+      setVerifying(false);
     }
   };
 
@@ -27,27 +53,67 @@ export default function TwoFactorSetupPage() {
     router.push('/job-seeker/dashboard');
   };
 
-  if (step === 2) {
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4 bg-gray-100">
+        <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+      </div>
+    );
+  }
+
+  if (step === 3) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4 bg-gray-100 text-gray-800">
         <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden">
-          <div className="p-8 sm:p-12 text-center">
+          <div className="p-8 sm:p-12">
             <div className="flex justify-center mb-6">
               <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center">
                 <CheckCircle2 className="w-8 h-8" />
               </div>
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            <h1 className="text-2xl font-bold text-gray-900 mb-2 text-center">
               Setup Complete!
             </h1>
-            <p className="text-gray-600 text-sm mb-6">
-              Two-factor authentication is now enabled. Your account is more secure.
+            <p className="text-gray-600 text-sm mb-6 text-center">
+              Two-factor authentication is now enabled.
             </p>
+
+            <div className="bg-amber-50 border border-amber-200 p-4 rounded-lg mb-6">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="w-5 h-5 text-amber-600 mt-0.5" />
+                <div>
+                  <h3 className="text-sm font-semibold text-amber-900">Save your backup codes</h3>
+                  <p className="text-xs text-amber-800 mt-1">
+                    If you lose access to your phone, these codes are the ONLY way to recover your account. Store them securely.
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 mt-4 font-mono text-sm uppercase">
+                {backupCodes.map((bc, i) => (
+                  <div key={i} className="bg-white p-2 border border-amber-200 text-center rounded">
+                    {bc}
+                  </div>
+                ))}
+              </div>
+
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(backupCodes.join('\n'));
+                  alert('Backup codes copied to clipboard');
+                }}
+                className="flex items-center justify-center gap-2 w-full mt-4 text-amber-900 hover:text-amber-700 text-sm font-medium transition-colors"
+              >
+                <Copy className="w-4 h-4" />
+                Copy all codes
+              </button>
+            </div>
+
             <Link
               href="/job-seeker/dashboard"
               className="w-full inline-block bg-indigo-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-indigo-700 transition-colors text-center"
             >
-              Continue to Dashboard
+              Finish Setup
             </Link>
           </div>
         </div>
@@ -75,17 +141,22 @@ export default function TwoFactorSetupPage() {
               Scan the QR code below with your authenticator app (e.g., Google Authenticator, Authy).
             </p>
             <div className="flex justify-center mb-4">
-              <div className="w-40 h-40 bg-gray-100 border-2 border-gray-200 rounded-lg flex items-center justify-center">
-                {/* Placeholder QR Code */}
-                <Smartphone className="w-16 h-16 text-gray-400" />
+              <div className="p-4 bg-white border-2 border-gray-100 rounded-xl shadow-inner">
+                {qrCode ? (
+                  <img src={qrCode} alt="QR Code for 2FA" className="w-48 h-48" />
+                ) : (
+                  <div className="w-48 h-48 bg-gray-50 flex items-center justify-center">
+                    <Smartphone className="w-12 h-12 text-gray-300" />
+                  </div>
+                )}
               </div>
             </div>
             <div className="bg-gray-100 p-3 rounded-lg text-center mb-6">
               <p className="text-xs text-gray-500 mb-1">
                 Can't scan? Enter this code manually:
               </p>
-              <code className="text-sm font-semibold tracking-widest">
-                JBSWY3DPEHPK3PXP
+              <code className="text-sm font-semibold tracking-widest text-indigo-700">
+                {secret || 'LOADING...'}
               </code>
             </div>
             <form onSubmit={handleSubmit}>
@@ -115,9 +186,11 @@ export default function TwoFactorSetupPage() {
               )}
               <button
                 type="submit"
-                className="w-full mt-4 bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors"
+                disabled={verifying || code.length !== 6}
+                className="w-full mt-4 bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 disabled:bg-gray-400 transition-colors flex items-center justify-center gap-2"
               >
-                Verify & Activate
+                {verifying && <Loader2 className="w-4 h-4 animate-spin" />}
+                {verifying ? 'Verifying...' : 'Verify & Activate'}
               </button>
             </form>
           </div>

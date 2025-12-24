@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, text, integer, boolean, timestamp, decimal, jsonb, pgEnum, inet } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, text, integer, boolean, timestamp, decimal, jsonb, pgEnum, inet, index, uniqueIndex } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 
 // Enums
@@ -25,11 +25,15 @@ export const users = pgTable('users', {
   emailVerifiedAt: timestamp('email_verified_at'),
   twoFactorEnabled: boolean('two_factor_enabled').default(false),
   twoFactorSecret: varchar('two_factor_secret', { length: 255 }),
+  backupCodes: text('backup_codes').array(), // Hashed backup codes
   onboardingCompleted: boolean('onboarding_completed').default(false),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
   lastLoginAt: timestamp('last_login_at'),
-});
+}, (table) => ({
+  roleIdx: index('users_role_idx').on(table.role),
+  emailIdx: index('users_email_idx').on(table.email),
+}));
 
 export const jobSeekers = pgTable('job_seekers', {
   id: uuid('id').primaryKey().references(() => users.id, { onDelete: 'cascade' }),
@@ -76,7 +80,7 @@ export const companies = pgTable('companies', {
 export const jobs = pgTable('jobs', {
   id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
   recruiterId: uuid('recruiter_id').references(() => recruiters.id, { onDelete: 'cascade' }),
-  companyId: uuid('company_id').references(() => companies.id),
+  companyId: uuid('company_id').references(() => companies.id, { onDelete: 'set null' }),
   title: varchar('title', { length: 255 }).notNull(),
   description: text('description'),
   requirements: text('requirements'),
@@ -90,11 +94,16 @@ export const jobs = pgTable('jobs', {
   status: jobStatus('status').default('draft'),
   viewsCount: integer('views_count').default(0),
   applicationsCount: integer('applications_count').default(0),
-  postedAt: timestamp('posted_at').defaultNow(),
+  postedAt: timestamp('posted_at'),
   expiresAt: timestamp('expires_at'),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
-});
+}, (table) => ({
+  statusIdx: index('jobs_status_idx').on(table.status),
+  postedAtIdx: index('jobs_posted_at_idx').on(table.postedAt),
+  recruiterIdx: index('jobs_recruiter_id_idx').on(table.recruiterId),
+  companyIdx: index('jobs_company_id_idx').on(table.companyId),
+}));
 
 export const applications = pgTable('applications', {
   id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
@@ -109,7 +118,10 @@ export const applications = pgTable('applications', {
   nextStep: varchar('next_step', { length: 255 }),
   notes: text('notes'),
 }, (table) => ({
-  uniqueJobSeekerJob: sql`UNIQUE(${table.jobSeekerId}, ${table.jobId})`,
+  uniqueJobSeekerJob: uniqueIndex('unique_job_seeker_job_idx').on(table.jobSeekerId, table.jobId),
+  statusIdx: index('applications_status_idx').on(table.status),
+  seekerIdx: index('applications_job_seeker_idx').on(table.jobSeekerId),
+  jobIdx: index('applications_job_idx').on(table.jobId),
 }));
 
 export const resumes = pgTable('resumes', {
@@ -122,7 +134,9 @@ export const resumes = pgTable('resumes', {
   isActive: boolean('is_active').default(true),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
-});
+}, (table) => ({
+  seekerIdx: index('resumes_job_seeker_idx').on(table.jobSeekerId),
+}));
 
 export const messages = pgTable('messages', {
   id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
@@ -136,7 +150,11 @@ export const messages = pgTable('messages', {
   readAt: timestamp('read_at'),
   sentAt: timestamp('sent_at').defaultNow(),
   attachments: jsonb('attachments'),
-});
+}, (table) => ({
+  senderIdx: index('messages_sender_idx').on(table.senderId),
+  recipientIdx: index('messages_recipient_idx').on(table.recipientId),
+  applicationIdx: index('messages_application_idx').on(table.applicationId),
+}));
 
 export const passwordResetTokens = pgTable('password_reset_tokens', {
   id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
@@ -145,7 +163,10 @@ export const passwordResetTokens = pgTable('password_reset_tokens', {
   expiresAt: timestamp('expires_at').notNull(),
   usedAt: timestamp('used_at'),
   createdAt: timestamp('created_at').defaultNow(),
-});
+}, (table) => ({
+  userIdIdx: index('token_user_id_idx').on(table.userId),
+  tokenIdx: uniqueIndex('token_value_idx').on(table.token),
+}));
 
 export const notifications = pgTable('notifications', {
   id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
@@ -158,7 +179,10 @@ export const notifications = pgTable('notifications', {
   readAt: timestamp('read_at'),
   createdAt: timestamp('created_at').defaultNow(),
   expiresAt: timestamp('expires_at'),
-});
+}, (table) => ({
+  userIdIdx: index('notifications_user_id_idx').on(table.userId),
+  createdAtIdx: index('notifications_created_at_idx').on(table.createdAt),
+}));
 
 export const analyticsEvents = pgTable('analytics_events', {
   id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
@@ -169,7 +193,10 @@ export const analyticsEvents = pgTable('analytics_events', {
   userAgent: text('user_agent'),
   ipAddress: inet('ip_address'),
   createdAt: timestamp('created_at').defaultNow(),
-});
+}, (table) => ({
+  userIdIdx: index('analytics_user_id_idx').on(table.userId),
+  eventTypeIdx: index('analytics_event_type_idx').on(table.eventType),
+}));
 
 export const experiments = pgTable('experiments', {
   id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
@@ -192,4 +219,6 @@ export const experimentParticipants = pgTable('experiment_participants', {
   enrolledAt: timestamp('enrolled_at').defaultNow(),
   completedAt: timestamp('completed_at'),
   conversionEvents: jsonb('conversion_events'),
-});
+}, (table) => ({
+  uniqueParticipant: uniqueIndex('unique_experiment_participant_idx').on(table.experimentId, table.userId),
+}));

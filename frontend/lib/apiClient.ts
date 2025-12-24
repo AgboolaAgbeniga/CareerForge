@@ -29,7 +29,11 @@ class ApiClient {
     // Response interceptor
     this.axiosInstance.interceptors.response.use(
       (response: AxiosResponse) => {
-        return response;
+        // Automatically unwrap the 'data' key if it exists in our standard format
+        if (response.data && response.data.success === true && response.data.data !== undefined) {
+          return response.data.data; // Return the inner data
+        }
+        return response.data; // Return the raw data payload if not in standard format
       },
       (error: AxiosError) => {
         if (error.response?.status === 401) {

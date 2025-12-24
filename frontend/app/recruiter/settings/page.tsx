@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Button, Input, Select } from '@/components';
 import {
   User,
@@ -21,6 +21,7 @@ import {
   Sparkles,
   ArrowRight,
 } from 'lucide-react';
+import SecuritySettings from '@/components/shared/SecuritySettings';
 
 type SettingsTab =
   | 'account'
@@ -182,11 +183,10 @@ export default function RecruiterSettings() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-all ${
-                    activeTab === tab.id
-                      ? 'bg-indigo-500/10 border border-indigo-500/20 text-indigo-300'
-                      : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
-                  }`}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-all ${activeTab === tab.id
+                    ? 'bg-indigo-500/10 border border-indigo-500/20 text-indigo-300'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+                    }`}
                 >
                   <tab.icon size={18} />
                   <div>
@@ -223,7 +223,7 @@ export default function RecruiterSettings() {
                     <Input
                       type="text"
                       value={accountSettings.name}
-                      onChange={(e) =>
+                      onChange={(e: any) =>
                         setAccountSettings((prev) => ({
                           ...prev,
                           name: e.target.value,
@@ -239,7 +239,7 @@ export default function RecruiterSettings() {
                     <Input
                       type="email"
                       value={accountSettings.email}
-                      onChange={(e) =>
+                      onChange={(e: any) =>
                         setAccountSettings((prev) => ({
                           ...prev,
                           email: e.target.value,
@@ -255,7 +255,7 @@ export default function RecruiterSettings() {
                     <Input
                       type="tel"
                       value={accountSettings.phone}
-                      onChange={(e) =>
+                      onChange={(e: any) =>
                         setAccountSettings((prev) => ({
                           ...prev,
                           phone: e.target.value,
@@ -268,48 +268,7 @@ export default function RecruiterSettings() {
               </div>
 
               {/* Authentication */}
-              <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-6">
-                <h3 className="text-lg font-medium text-white mb-4">
-                  Authentication
-                </h3>
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-slate-700 flex items-center justify-center">
-                        <span className="text-sm">🔐</span>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-white">
-                          Two-Factor Authentication
-                        </p>
-                        <p className="text-xs text-slate-500">
-                          Add an extra layer of security
-                        </p>
-                      </div>
-                    </div>
-                    <div className="relative inline-block w-10 h-6 align-middle select-none transition duration-200 ease-in">
-                      <input
-                        type="checkbox"
-                        checked={accountSettings.twoFactorEnabled}
-                        onChange={() =>
-                          setAccountSettings((prev) => ({
-                            ...prev,
-                            twoFactorEnabled: !prev.twoFactorEnabled,
-                          }))
-                        }
-                        className="toggle-checkbox absolute block w-4 h-4 rounded-full bg-white border-4 appearance-none cursor-pointer left-1 top-1 transition-all duration-300"
-                      />
-                      <label className="toggle-label block overflow-hidden h-6 rounded-full bg-slate-700 cursor-pointer transition-colors duration-300"></label>
-                    </div>
-                  </div>
-
-                  <div className="pt-4 border-t border-slate-800">
-                    <Button className="bg-slate-800 hover:bg-slate-700 text-white border border-slate-700">
-                      Change Password
-                    </Button>
-                  </div>
-                </div>
-              </div>
+              <SecuritySettings />
 
               {/* Language & Region */}
               <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-6">
@@ -329,7 +288,7 @@ export default function RecruiterSettings() {
                         { value: 'de', label: 'German' },
                       ]}
                       value={accountSettings.language}
-                      onChange={(e) =>
+                      onChange={(e: any) =>
                         setAccountSettings((prev) => ({
                           ...prev,
                           language: e.target.value,
@@ -353,7 +312,7 @@ export default function RecruiterSettings() {
                         { value: 'Asia/Tokyo', label: 'JST' },
                       ]}
                       value={accountSettings.timezone}
-                      onChange={(e) =>
+                      onChange={(e: any) =>
                         setAccountSettings((prev) => ({
                           ...prev,
                           timezone: e.target.value,
@@ -411,7 +370,7 @@ export default function RecruiterSettings() {
                         <Input
                           type="text"
                           value={companySettings.name}
-                          onChange={(e) =>
+                          onChange={(e: any) =>
                             setCompanySettings((prev) => ({
                               ...prev,
                               name: e.target.value,
@@ -436,7 +395,7 @@ export default function RecruiterSettings() {
                             { value: 'E-commerce', label: 'E-commerce' },
                           ]}
                           value={companySettings.industry}
-                          onChange={(e) =>
+                          onChange={(e: any) =>
                             setCompanySettings((prev) => ({
                               ...prev,
                               industry: e.target.value,
@@ -463,7 +422,7 @@ export default function RecruiterSettings() {
                           { value: '500+', label: '500+ Employees' },
                         ]}
                         value={companySettings.size}
-                        onChange={(e) =>
+                        onChange={(e: any) =>
                           setCompanySettings((prev) => ({
                             ...prev,
                             size: e.target.value,
@@ -481,7 +440,7 @@ export default function RecruiterSettings() {
                     </label>
                     <textarea
                       value={companySettings.description}
-                      onChange={(e) =>
+                      onChange={(e: any) =>
                         setCompanySettings((prev) => ({
                           ...prev,
                           description: e.target.value,
@@ -507,7 +466,7 @@ export default function RecruiterSettings() {
                     </label>
                     <textarea
                       value={companySettings.emailSignature}
-                      onChange={(e) =>
+                      onChange={(e: any) =>
                         setCompanySettings((prev) => ({
                           ...prev,
                           emailSignature: e.target.value,
@@ -714,7 +673,7 @@ export default function RecruiterSettings() {
                       <input
                         type="checkbox"
                         checked={true}
-                        onChange={() => {}}
+                        onChange={() => { }}
                         className="toggle-checkbox absolute block w-4 h-4 rounded-full bg-white border-4 appearance-none cursor-pointer left-1 top-1 transition-all duration-300"
                       />
                       <label className="toggle-label block overflow-hidden h-6 rounded-full bg-slate-700 cursor-pointer transition-colors duration-300"></label>
@@ -760,7 +719,7 @@ export default function RecruiterSettings() {
                       <input
                         type="checkbox"
                         checked={true}
-                        onChange={() => {}}
+                        onChange={() => { }}
                         className="toggle-checkbox absolute block w-4 h-4 rounded-full bg-white border-4 appearance-none cursor-pointer left-1 top-1 transition-all duration-300"
                       />
                       <label className="toggle-label block overflow-hidden h-6 rounded-full bg-slate-700 cursor-pointer transition-colors duration-300"></label>
@@ -780,7 +739,7 @@ export default function RecruiterSettings() {
                       <input
                         type="checkbox"
                         checked={false}
-                        onChange={() => {}}
+                        onChange={() => { }}
                         className="toggle-checkbox absolute block w-4 h-4 rounded-full bg-white border-4 appearance-none cursor-pointer left-1 top-1 transition-all duration-300"
                       />
                       <label className="toggle-label block overflow-hidden h-6 rounded-full bg-slate-700 cursor-pointer transition-colors duration-300"></label>
@@ -812,7 +771,7 @@ export default function RecruiterSettings() {
                       <input
                         type="checkbox"
                         checked={true}
-                        onChange={() => {}}
+                        onChange={() => { }}
                         className="toggle-checkbox absolute block w-4 h-4 rounded-full bg-white border-4 appearance-none cursor-pointer left-1 top-1 transition-all duration-300"
                       />
                       <label className="toggle-label block overflow-hidden h-6 rounded-full bg-slate-700 cursor-pointer transition-colors duration-300"></label>
@@ -953,7 +912,7 @@ export default function RecruiterSettings() {
                         <input
                           type="checkbox"
                           checked={true}
-                          onChange={() => {}}
+                          onChange={() => { }}
                           className="toggle-checkbox absolute block w-4 h-4 rounded-full bg-white border-4 appearance-none cursor-pointer left-1 top-1 transition-all duration-300"
                         />
                         <label className="toggle-label block overflow-hidden h-6 rounded-full bg-slate-700 cursor-pointer transition-colors duration-300"></label>
@@ -994,7 +953,7 @@ export default function RecruiterSettings() {
                         <input
                           type="checkbox"
                           checked={true}
-                          onChange={() => {}}
+                          onChange={() => { }}
                           className="toggle-checkbox absolute block w-4 h-4 rounded-full bg-white border-4 appearance-none cursor-pointer left-1 top-1 transition-all duration-300"
                         />
                         <label className="toggle-label block overflow-hidden h-6 rounded-full bg-slate-700 cursor-pointer transition-colors duration-300"></label>
@@ -1160,7 +1119,7 @@ export default function RecruiterSettings() {
                       <input
                         type="checkbox"
                         checked={true}
-                        onChange={() => {}}
+                        onChange={() => { }}
                         className="toggle-checkbox absolute block w-4 h-4 rounded-full bg-white border-4 appearance-none cursor-pointer left-1 top-1 transition-all duration-300"
                       />
                       <label className="toggle-label block overflow-hidden h-6 rounded-full bg-slate-700 cursor-pointer transition-colors duration-300"></label>
@@ -1185,7 +1144,7 @@ export default function RecruiterSettings() {
                       <input
                         type="checkbox"
                         checked={false}
-                        onChange={() => {}}
+                        onChange={() => { }}
                         className="toggle-checkbox absolute block w-4 h-4 rounded-full bg-white border-4 appearance-none cursor-pointer left-1 top-1 transition-all duration-300"
                       />
                       <label className="toggle-label block overflow-hidden h-6 rounded-full bg-slate-700 cursor-pointer transition-colors duration-300"></label>

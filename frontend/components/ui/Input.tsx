@@ -1,6 +1,6 @@
 'use client';
 
-import { InputProps } from './types';
+import { InputProps } from '../types';
 
 export default function Input({
   type = 'text',

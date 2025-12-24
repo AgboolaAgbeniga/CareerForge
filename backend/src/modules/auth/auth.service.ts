@@ -4,6 +4,7 @@ import nodemailer from 'nodemailer';
 import speakeasy from 'speakeasy';
 import qrcode from 'qrcode';
 import { AuthRepository } from './auth.repository';
+import logger from '../../utils/logger';
 import { AppError } from '../../middleware/error';
 import {
     RegisterDTO,
@@ -59,6 +60,7 @@ export class AuthService {
     async register(data: RegisterDTO) {
         const existingUser = await this.authRepository.findUserByEmail(data.email);
         if (existingUser) {
+            logger.warn(`Registration failed: User already exists - ${data.email}`);
             throw new AppError('User already exists', 400);
         }
 
@@ -70,7 +72,7 @@ export class AuthService {
             role: data.role,
             firstName: data.firstName,
             lastName: data.lastName,
-            isVerified: true, // Auto-verify in dev
+            isVerified: false,
         });
 
         if (!newUser) {
@@ -84,6 +86,17 @@ export class AuthService {
         }
 
         const tokens = this.generateTokens(newUser);
+
+        // Send verification email
+        const verificationToken = jwt.sign({ userId: newUser.id }, JWT_SECRET, { expiresIn: '24h' });
+        await transporter.sendMail({
+            from: process.env.EMAIL_USER,
+            to: newUser.email,
+            subject: 'Verify your email',
+            text: `Please verify your email by clicking the link: ${process.env.FRONTEND_URL}/verify-email?token=${verificationToken}`,
+        });
+
+        logger.info(`User registered successfully: ${newUser.id} (${newUser.email})`);
         return { user: newUser, ...tokens };
     }
 
@@ -95,13 +108,41 @@ export class AuthService {
 
         const validPassword = await bcrypt.compare(data.password, user.passwordHash);
         if (!validPassword) {
+            logger.warn(`Login failed: Invalid password - ${data.email}`);
             throw new AppError('Invalid credentials', 400);
+        }
+
+        if (!user.isVerified) {
+            logger.warn(`Login failed: Email not verified - ${data.email}`);
+            throw new AppError('Please verify your email before logging in', 403);
         }
 
         await this.authRepository.updateLastLogin(user.id);
         const tokens = this.generateTokens(user);
 
+        logger.info(`User logged in: ${user.id} (${user.email})`);
         return { user, tokens };
+    }
+
+    async resendVerification(email: string) {
+        const user = await this.authRepository.findUserByEmail(email);
+        if (!user) {
+            return { message: 'If the account exists, a verification link has been sent' };
+        }
+
+        if (user.isVerified) {
+            throw new AppError('Email is already verified', 400);
+        }
+
+        const verificationToken = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '24h' });
+        await transporter.sendMail({
+            from: process.env.EMAIL_USER,
+            to: user.email,
+            subject: 'Verify your email',
+            text: `Please verify your email by clicking the link: ${process.env.FRONTEND_URL}/verify-email?token=${verificationToken}`,
+        });
+
+        return { message: 'Verification link sent' };
     }
 
     async refresh(refreshToken: string) {
@@ -132,7 +173,7 @@ export class AuthService {
             return { message: 'If the email exists, a reset link has been sent' };
         }
 
-        const resetToken = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '1h' });
+        const resetToken = jwt.sign({ userId: user.id }, process.env.JWT_RESET_SECRET || JWT_SECRET, { expiresIn: '1h' });
 
         // Send email
         await transporter.sendMail({
@@ -147,7 +188,7 @@ export class AuthService {
 
     async resetPassword(data: ResetPasswordDTO) {
         try {
-            const decoded = jwt.verify(data.token, JWT_SECRET) as any;
+            const decoded = jwt.verify(data.token, process.env.JWT_RESET_SECRET || JWT_SECRET) as any;
             const user = await this.authRepository.findUserById(decoded.userId);
 
             if (!user) {
@@ -157,8 +198,10 @@ export class AuthService {
             const hashedPassword = await bcrypt.hash(data.newPassword, 10);
             await this.authRepository.updateUserPassword(user.id, hashedPassword);
 
+            logger.info(`Password reset successful for user: ${user.id}`);
             return { message: 'Password reset successful' };
         } catch (err) {
+            logger.error(`Password reset failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
             throw new AppError('Invalid token or input', 400);
         }
     }
@@ -182,10 +225,26 @@ export class AuthService {
     async setup2FA(userId: string) {
         const secret = speakeasy.generateSecret({ name: 'CareerForge', issuer: 'CareerForge' });
         const encryptedSecret = encrypt(secret.base32);
+
+        // Generate 10 backup codes
+        const plainBackupCodes = Array.from({ length: 10 }, () =>
+            Math.random().toString(36).substring(2, 10).toUpperCase()
+        );
+
+        // Hash backup codes before storing
+        const hashedBackupCodes = await Promise.all(
+            plainBackupCodes.map(code => bcrypt.hash(code, 10))
+        );
+
         await this.authRepository.updateUser2FASecret(userId, encryptedSecret);
+        await this.authRepository.updateUserBackupCodes(userId, hashedBackupCodes);
 
         const qrCodeUrl = await qrcode.toDataURL(secret.otpauth_url!);
-        return { secret: secret.base32, qrCode: qrCodeUrl };
+        return {
+            secret: secret.base32,
+            qrCode: qrCodeUrl,
+            backupCodes: plainBackupCodes // User must save these
+        };
     }
 
     async verify2FA(userId: string, data: Verify2FADTO) {
@@ -194,19 +253,125 @@ export class AuthService {
             throw new AppError('2FA not set up', 400);
         }
 
+        let verified = false;
+
+        // 1. Try TOTP verification
         const decryptedSecret = decrypt(user.twoFactorSecret);
-        const verified = speakeasy.totp.verify({
+        verified = speakeasy.totp.verify({
             secret: decryptedSecret,
             encoding: 'base32',
             token: data.code,
         });
 
+        // 2. If TOTP fails, try backup codes
+        if (!verified && user.backupCodes) {
+            const backupCodes = user.backupCodes as string[];
+            for (let i = 0; i < backupCodes.length; i++) {
+                const isMatch = await bcrypt.compare(data.code, backupCodes[i]);
+                if (isMatch) {
+                    verified = true;
+                    // Remove used backup code
+                    const remainingCodes = backupCodes.filter((_, index) => index !== i);
+                    await this.authRepository.updateUserBackupCodes(userId, remainingCodes);
+                    break;
+                }
+            }
+        }
+
         if (!verified) {
+            logger.warn(`2FA verification failed for user: ${userId}`);
             throw new AppError('Invalid code', 400);
         }
 
         await this.authRepository.updateUser2FAEnabled(userId, true);
-        return { message: '2FA enabled' };
+        logger.info(`2FA enabled for user: ${userId}`);
+        return { message: '2FA verified successfully' };
+    }
+
+    async disable2FA(userId: string, data: Disable2FADTO) {
+        const user = await this.authRepository.findUserById(userId);
+        if (!user || !user.passwordHash) {
+            throw new AppError('User not found', 404);
+        }
+
+        // Verify password for security
+        const validPassword = await bcrypt.compare(data.password, user.passwordHash);
+        if (!validPassword) {
+            throw new AppError('Invalid password', 400);
+        }
+
+        // If 2FA is enabled, require a code (either TOTP or Backup Code)
+        if (user.twoFactorEnabled && data.code) {
+            const decryptedSecret = decrypt(user.twoFactorSecret!);
+            let verified = speakeasy.totp.verify({
+                secret: decryptedSecret,
+                encoding: 'base32',
+                token: data.code,
+            });
+
+            if (!verified && user.backupCodes) {
+                const backupCodes = user.backupCodes as string[];
+                for (let i = 0; i < backupCodes.length; i++) {
+                    if (await bcrypt.compare(data.code, backupCodes[i])) {
+                        verified = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!verified) {
+                throw new AppError('Invalid 2FA code', 400);
+            }
+        }
+
+        await this.authRepository.updateUser2FAEnabled(userId, false);
+        await this.authRepository.updateUser2FASecret(userId, null as any); // Clear secret
+        await this.authRepository.updateUserBackupCodes(userId, null as any); // Clear backup codes
+
+        logger.info(`2FA disabled for user: ${userId}`);
+        return { message: '2FA disabled successfully' };
+    }
+
+    async regenerateBackupCodes(userId: string, data: RegenerateBackupCodesDTO) {
+        const user = await this.authRepository.findUserById(userId);
+        if (!user || !user.passwordHash || !user.twoFactorEnabled) {
+            throw new AppError('2FA must be enabled to regenerate backup codes', 400);
+        }
+
+        // Verify password
+        const validPassword = await bcrypt.compare(data.password, user.passwordHash);
+        if (!validPassword) {
+            throw new AppError('Invalid password', 400);
+        }
+
+        // Generate 10 new backup codes
+        const plainBackupCodes = Array.from({ length: 10 }, () =>
+            Math.random().toString(36).substring(2, 10).toUpperCase()
+        );
+
+        const hashedBackupCodes = await Promise.all(
+            plainBackupCodes.map(code => bcrypt.hash(code, 10))
+        );
+
+        await this.authRepository.updateUserBackupCodes(userId, hashedBackupCodes);
+
+        return {
+            backupCodes: plainBackupCodes
+        };
+    }
+
+    async adminDisable2FA(adminId: string, targetUserId: string) {
+        // Verification of admin role is handled by middleware
+        const targetUser = await this.authRepository.findUserById(targetUserId);
+        if (!targetUser) {
+            throw new AppError('Target user not found', 404);
+        }
+
+        await this.authRepository.updateUser2FAEnabled(targetUserId, false);
+        await this.authRepository.updateUser2FASecret(targetUserId, null as any);
+        await this.authRepository.updateUserBackupCodes(targetUserId, null as any);
+
+        return { message: `2FA disabled for user ${targetUser.email}` };
     }
 
     async getProfile(userId: string) {
@@ -225,34 +390,106 @@ export class AuthService {
         return { user, profile };
     }
 
-    async updateProfile(userId: string, userUpdates: UpdateUserProfileDTO, jobSeekerUpdates?: UpdateJobSeekerProfileDTO, recruiterUpdates?: UpdateRecruiterProfileDTO) {
+    async updateProfile(
+        userId: string,
+        userUpdates: UpdateUserProfileDTO,
+        jobSeekerUpdates?: UpdateJobSeekerProfileDTO,
+        recruiterUpdates?: UpdateRecruiterProfileDTO
+    ) {
         const user = await this.authRepository.findUserById(userId);
         if (!user) {
             throw new AppError('User not found', 404);
         }
 
+        // Sanitize user updates
+        const sanitizedUserUpdates = { ...userUpdates };
+        if (sanitizedUserUpdates.firstName) sanitizedUserUpdates.firstName = sanitizeText(sanitizedUserUpdates.firstName);
+        if (sanitizedUserUpdates.lastName) sanitizedUserUpdates.lastName = sanitizeText(sanitizedUserUpdates.lastName);
+        if (sanitizedUserUpdates.location) sanitizedUserUpdates.location = sanitizeText(sanitizedUserUpdates.location);
+
         // Update user table
-        if (Object.keys(userUpdates).length > 0) {
+        if (Object.keys(sanitizedUserUpdates).length > 0) {
             const userUpdatesWithNull = Object.fromEntries(
-                Object.entries(userUpdates).map(([key, value]) => [key, value ?? null])
+                Object.entries(sanitizedUserUpdates).map(([key, value]) => [key, value ?? null])
             );
             await this.authRepository.updateUserProfile(userId, userUpdatesWithNull as any);
         }
 
         // Update role-specific profile
         if (user.role === 'job_seeker' && jobSeekerUpdates && Object.keys(jobSeekerUpdates).length > 0) {
+            const sanitizedJobSeekerUpdates = { ...jobSeekerUpdates };
+            if (sanitizedJobSeekerUpdates.title) sanitizedJobSeekerUpdates.title = sanitizeText(sanitizedJobSeekerUpdates.title);
+            if (sanitizedJobSeekerUpdates.education) sanitizedJobSeekerUpdates.education = sanitizeText(sanitizedJobSeekerUpdates.education);
+
             const jobSeekerUpdatesWithNull = Object.fromEntries(
-                Object.entries(jobSeekerUpdates).map(([key, value]) => [key, value ?? null])
+                Object.entries(sanitizedJobSeekerUpdates).map(([key, value]) => [key, value ?? null])
             );
             await this.authRepository.updateJobSeekerProfile(userId, jobSeekerUpdatesWithNull as any);
         } else if (user.role === 'recruiter' && recruiterUpdates && Object.keys(recruiterUpdates).length > 0) {
+            const sanitizedRecruiterUpdates = { ...recruiterUpdates };
+            if (sanitizedRecruiterUpdates.companyName) sanitizedRecruiterUpdates.companyName = sanitizeText(sanitizedRecruiterUpdates.companyName);
+            if (sanitizedRecruiterUpdates.title) sanitizedRecruiterUpdates.title = sanitizeText(sanitizedRecruiterUpdates.title);
+            if (sanitizedRecruiterUpdates.industry) sanitizedRecruiterUpdates.industry = sanitizeText(sanitizedRecruiterUpdates.industry);
+
             const recruiterUpdatesWithNull = Object.fromEntries(
-                Object.entries(recruiterUpdates).map(([key, value]) => [key, value ?? null])
+                Object.entries(sanitizedRecruiterUpdates).map(([key, value]) => [key, value ?? null])
             );
             await this.authRepository.updateRecruiterProfile(userId, recruiterUpdatesWithNull as any);
         }
 
-        return { message: 'Profile updated successfully' };
+        // Calculate profile completeness and trigger onboarding completion
+        const { user: updatedUser, profile } = await this.getProfile(userId);
+        let completionPercentage = 0;
+
+        if (updatedUser.role === 'job_seeker' && profile) {
+            const jsProfile = profile as any;
+            const fields = [
+                updatedUser.firstName,
+                updatedUser.lastName,
+                updatedUser.phone,
+                updatedUser.location,
+                jsProfile.title,
+                jsProfile.experienceYears,
+                jsProfile.education,
+                jsProfile.resumeFileUrl,
+                jsProfile.skills && jsProfile.skills.length > 0 ? 'skills' : null
+            ];
+
+            const filledFields = fields.filter(f => f !== null && f !== undefined && f !== '').length;
+            completionPercentage = Math.round((filledFields / fields.length) * 100);
+
+            await this.authRepository.updateJobSeekerProfile(userId, {
+                profileCompletionPercentage: completionPercentage
+            });
+
+            // Auto-complete onboarding if >= 80% and resume exists
+            if (completionPercentage >= 80 && jsProfile.resumeFileUrl) {
+                await this.authRepository.updateUserOnboarding(userId, true);
+            }
+        } else if (updatedUser.role === 'recruiter' && profile) {
+            const rProfile = profile as any;
+            const fields = [
+                updatedUser.firstName,
+                updatedUser.lastName,
+                updatedUser.phone,
+                updatedUser.location,
+                rProfile.companyName,
+                rProfile.title,
+                rProfile.industry
+            ];
+            const filledFields = fields.filter(f => f !== null && f !== undefined && f !== '').length;
+            completionPercentage = Math.round((filledFields / fields.length) * 100);
+
+            if (completionPercentage >= 80) {
+                await this.authRepository.updateUserOnboarding(userId, true);
+            }
+        }
+
+        return {
+            message: 'Profile updated successfully',
+            completionPercentage,
+            onboardingCompleted: completionPercentage >= 80
+        };
     }
 
     private generateTokens(user: any) {

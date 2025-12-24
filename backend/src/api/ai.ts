@@ -1,16 +1,37 @@
-import express from 'express';
+import express, { Response } from 'express';
 import { z } from 'zod';
 import { aiService } from '../services/aiService';
-import { authenticateToken, AuthRequest } from '../middleware/auth';
+import { authenticateToken, AuthRequest, requireVerified } from '../middleware/auth';
 import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
+import { catchAsync } from '../utils/catchAsync';
+import { AppError } from '../middleware/error';
 
 const router = express.Router();
 
+// Ensure upload directory exists
+const uploadDir = 'uploads/resumes';
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
 // Configure multer for file uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const cleanName = file.originalname.replace(/[^a-zA-Z0-9.]/g, '_');
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+    cb(null, uniqueSuffix + '-' + cleanName);
+  }
+});
+
 const upload = multer({
+  storage,
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
   fileFilter: (req, file, cb) => {
-    // Allow PDF, DOC, DOCX files
     const allowedTypes = [
       'application/pdf',
       'application/msword',
@@ -19,7 +40,7 @@ const upload = multer({
     if (allowedTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error('Invalid file type. Only PDF and Word documents are allowed.'));
+      cb(new AppError('Invalid file type. Only PDF and Word documents are allowed.', 400, 'INVALID_FILE_TYPE') as any);
     }
   }
 });
@@ -44,12 +65,12 @@ const optimizeLinkedInSchema = z.object({
 });
 
 const generateCoverLetterSchema = z.object({
-  jobId: z.number(),
-  resumeId: z.number(),
+  jobId: z.string().uuid(),
+  resumeId: z.string().uuid(),
 });
 
 const analyzeSkillGapsSchema = z.object({
-  targetRoles: z.array(z.string()).min(1),
+  roles: z.array(z.string()).min(1),
 });
 
 const getHiringSuggestionsSchema = z.object({
@@ -57,8 +78,8 @@ const getHiringSuggestionsSchema = z.object({
 });
 
 const analyzeResumeSchema = z.object({
-  candidateId: z.number(),
-  jobId: z.number().optional(),
+  candidateId: z.string().uuid(),
+  jobId: z.string().uuid().optional(),
 });
 
 /**
@@ -66,31 +87,18 @@ const analyzeResumeSchema = z.object({
  * /api/ai/health:
  *   get:
  *     summary: Check AI services health
- *     tags: [AI]
- *     responses:
- *       200:
- *         description: AI services health status
  */
-router.get('/health', async (req, res) => {
-  try {
-    const healthStatus = await aiService.healthCheck();
-    const allHealthy = Object.values(healthStatus).every(status => status);
+router.get('/health', catchAsync(async (req: AuthRequest, res: Response) => {
+  const healthStatus = await aiService.healthCheck();
+  const allHealthy = Object.values(healthStatus).every(status => status);
 
-    res.json({
-      status: allHealthy ? 'healthy' : 'degraded',
-      services: healthStatus,
-      timestamp: new Date().toISOString(),
-    });
-  } catch (error) {
-    console.error('AI health check error:', error);
-    res.status(500).json({
-      status: 'unhealthy',
-      error: 'Failed to check AI services health',
-      message: error instanceof Error ? error.message : 'Unknown error',
-      timestamp: new Date().toISOString(),
-    });
-  }
-});
+  res.json({
+    success: true,
+    status: allHealthy ? 'healthy' : 'degraded',
+    services: healthStatus,
+    timestamp: new Date().toISOString(),
+  });
+}));
 
 /**
  * @swagger
@@ -99,526 +107,341 @@ router.get('/health', async (req, res) => {
  *     summary: Parse resume text with AI
  *     tags: [AI]
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
- *             required:
- *               - text
+ *             required: [text]
  *             properties:
- *               text:
- *                 type: string
+ *               text: { type: string }
  *     responses:
  *       200:
  *         description: Resume parsed successfully
  */
-router.post('/resume/parse', authenticateToken, async (req: AuthRequest, res) => {
-  try {
-    const { text } = parseResumeSchema.parse(req.body);
-    const result = await aiService.parseResume(Buffer.from(text), 'text-input.txt');
+router.post('/resume/parse', authenticateToken, requireVerified, catchAsync(async (req: AuthRequest, res: Response) => {
+  const { text } = parseResumeSchema.parse(req.body);
+  const result = await aiService.parseResume(Buffer.from(text), 'text-input.txt');
 
-    res.json({
-      success: true,
-      data: result,
-      timestamp: new Date().toISOString(),
-    });
-  } catch (error) {
-    console.error('Resume parsing error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to parse resume',
-      message: error instanceof Error ? error.message : 'Unknown error',
-    });
-    return;
-  }
-});
+  res.json({
+    success: true,
+    data: result,
+    timestamp: new Date().toISOString(),
+  });
+}));
 
 /**
  * @swagger
  * /api/ai/resume/parse-file:
  *   post:
- *     summary: Parse resume file with AI
+ *     summary: Parse resume file (PDF/Word) with AI
  *     tags: [AI]
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     requestBody:
- *       required: true
  *       content:
  *         multipart/form-data:
  *           schema:
  *             type: object
  *             properties:
- *               file:
- *                 type: string
- *                 format: binary
+ *               file: { type: string, format: binary }
  *     responses:
  *       200:
  *         description: Resume file parsed successfully
+ *       400:
+ *         description: Missing file or invalid format
  */
-router.post('/resume/parse-file', authenticateToken, upload.single('file'), async (req: AuthRequest, res): Promise<void> => {
-  try {
-    if (!req.file) {
-      res.status(400).json({
-        success: false,
-        error: 'No file uploaded',
-      });
-      return;
-    }
-
-    const result = await aiService.parseResume(req.file.buffer, req.file.originalname);
-
-    res.json({
-      success: true,
-      data: result,
-      filename: req.file.originalname,
-      timestamp: new Date().toISOString(),
-    });
-  } catch (error) {
-    console.error('Resume file parsing error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to parse resume file',
-      message: error instanceof Error ? error.message : 'Unknown error',
-    });
-    return;
+router.post('/resume/parse-file', authenticateToken, requireVerified, upload.single('file'), catchAsync(async (req: AuthRequest, res: Response) => {
+  if (!req.file) {
+    throw new AppError('No file uploaded', 400, 'MISSING_FILE');
   }
-});
+
+  const fileBuffer = fs.readFileSync(req.file.path);
+  const result = await aiService.parseResume(fileBuffer, req.file.originalname);
+
+  res.json({
+    success: true,
+    data: result,
+    filename: req.file.originalname,
+    timestamp: new Date().toISOString(),
+  });
+}));
 
 /**
  * @swagger
  * /api/ai/resume/optimize:
  *   post:
- *     summary: Optimize resume for job application
+ *     summary: Optimize resume for a specific job
  *     tags: [AI]
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
- *             required:
- *               - resumeData
- *               - jobRequirements
+ *             required: [resumeData, jobRequirements]
  *             properties:
- *               resumeData:
- *                 type: object
- *               jobRequirements:
- *                 type: object
+ *               resumeData: { type: object }
+ *               jobRequirements: { type: object }
  *     responses:
  *       200:
- *         description: Resume optimized successfully
+ *         description: Resume optimization suggestions generated
  */
-router.post('/resume/optimize', authenticateToken, async (req: AuthRequest, res) => {
-  try {
-    const { resumeData, jobRequirements } = optimizeResumeSchema.parse(req.body);
-    const result = await aiService.optimizeResume(resumeData, JSON.stringify(jobRequirements));
+router.post('/resume/optimize', authenticateToken, requireVerified, catchAsync(async (req: AuthRequest, res: Response) => {
+  const { resumeData, jobRequirements } = optimizeResumeSchema.parse(req.body);
+  const result = await aiService.optimizeResume(resumeData, JSON.stringify(jobRequirements));
 
-    res.json({
-      success: true,
-      data: result,
-      timestamp: new Date().toISOString(),
-    });
-  } catch (error) {
-    console.error('Resume optimization error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to optimize resume',
-      message: error instanceof Error ? error.message : 'Unknown error',
-    });
-    return;
-  }
-});
+  res.json({
+    success: true,
+    data: result,
+    timestamp: new Date().toISOString(),
+  });
+}));
 
 /**
  * @swagger
  * /api/ai/matching/job/{jobSeekerId}:
  *   get:
  *     summary: Get job matches for job seeker
- *     tags: [AI]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: jobSeekerId
- *         required: true
- *         schema:
- *           type: integer
- *         description: Job seeker ID
- *     responses:
- *       200:
- *         description: Job matches retrieved successfully
  */
-router.get('/matching/job/:jobSeekerId', authenticateToken, async (req: AuthRequest, res): Promise<void> => {
-  try {
-    const jobSeekerIdParam = req.params.jobSeekerId;
-    if (!jobSeekerIdParam) {
-      res.status(400).json({
-        success: false,
-        error: 'Job seeker ID is required',
-      });
-      return;
-    }
-    const jobSeekerId = parseInt(jobSeekerIdParam);
-    const matches = await aiService.findJobMatches(jobSeekerId.toString());
+router.get('/matching/job/:jobSeekerId', authenticateToken, requireVerified, catchAsync(async (req: AuthRequest, res: Response) => {
+  const jobSeekerId = req.params.jobSeekerId;
 
-    res.json({
-      success: true,
-      data: matches,
-      count: matches.length,
-      timestamp: new Date().toISOString(),
-    });
-  } catch (error) {
-    console.error('Job matching error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to find job matches',
-      message: error instanceof Error ? error.message : 'Unknown error',
-    });
-    return;
+  // Authorization
+  if (req.user!.id !== jobSeekerId) {
+    throw new AppError('Unauthorized', 403, 'FORBIDDEN');
   }
-});
+
+  const matches = await aiService.findJobMatches(jobSeekerId);
+
+  res.json({
+    success: true,
+    data: matches,
+    count: matches.length,
+    timestamp: new Date().toISOString(),
+  });
+}));
 
 /**
  * @swagger
  * /api/ai/matching/candidates/{jobId}:
  *   get:
  *     summary: Get candidate matches for job
- *     tags: [AI]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: jobId
- *         required: true
- *         schema:
- *           type: integer
- *         description: Job ID
- *     responses:
- *       200:
- *         description: Candidate matches retrieved successfully
  */
-router.get('/matching/candidates/:jobId', authenticateToken, async (req: AuthRequest, res): Promise<void> => {
-  try {
-    const jobIdParam = req.params.jobId;
-    if (!jobIdParam) {
-      res.status(400).json({
-        success: false,
-        error: 'Job ID is required',
-      });
-      return;
-    }
-    const jobId = parseInt(jobIdParam);
-    const candidates = await aiService.matchCandidates(jobId.toString());
+router.get('/matching/candidates/:jobId', authenticateToken, requireVerified, catchAsync(async (req: AuthRequest, res: Response) => {
+  const jobId = req.params.jobId;
 
-    res.json({
-      success: true,
-      data: candidates,
-      count: candidates.length,
-      timestamp: new Date().toISOString(),
-    });
-  } catch (error) {
-    console.error('Candidate matching error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to find candidate matches',
-      message: error instanceof Error ? error.message : 'Unknown error',
-    });
-    return;
+  // Authorization: Ideally check if this recruiter posted the job
+  if (!jobId) {
+    throw new AppError('Job ID is required', 400, 'MISSING_PARAM');
   }
-});
+  const candidates = await aiService.matchCandidates(jobId as string);
+
+  res.json({
+    success: true,
+    data: candidates,
+    count: candidates.length,
+    timestamp: new Date().toISOString(),
+  });
+}));
 
 /**
  * @swagger
  * /api/ai/career/advice:
  *   post:
- *     summary: Get career advice
+ *     summary: Get AI career advice
  *     tags: [AI]
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
- *             required:
- *               - context
+ *             required: [context]
  *             properties:
- *               context:
- *                 type: string
+ *               context: { type: string, description: 'User query or career context' }
  *     responses:
  *       200:
- *         description: Career advice generated successfully
+ *         description: AI advice retrieved successfully
  */
-router.post('/career/advice', authenticateToken, async (req: AuthRequest, res) => {
-  try {
-    const { context } = getAdviceSchema.parse(req.body);
-    const userId = parseInt(req.user!.id);
-    const advice = await aiService.getCareerAdvice(context, {});
+router.post('/career/advice', authenticateToken, requireVerified, catchAsync(async (req: AuthRequest, res: Response) => {
+  const { context } = getAdviceSchema.parse(req.body);
+  const advice = await aiService.getCareerAdvice(context, {});
 
-    res.json({
-      success: true,
-      data: advice,
-      timestamp: new Date().toISOString(),
-    });
-  } catch (error) {
-    console.error('Career advice error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to generate career advice',
-      message: error instanceof Error ? error.message : 'Unknown error',
-    });
-    return;
-  }
-});
+  res.json({
+    success: true,
+    data: advice,
+    timestamp: new Date().toISOString(),
+  });
+}));
 
 /**
  * @swagger
  * /api/ai/career/linkedin-optimize:
  *   post:
- *     summary: Optimize LinkedIn profile
+ *     summary: Get LinkedIn profile optimization suggestions
  *     tags: [AI]
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
- *             required:
- *               - currentHeadline
- *               - targetRole
+ *             required: [currentHeadline, targetRole]
  *             properties:
- *               currentHeadline:
- *                 type: string
- *               targetRole:
- *                 type: string
+ *               currentHeadline: { type: string }
+ *               targetRole: { type: string }
  *     responses:
  *       200:
- *         description: LinkedIn profile optimized successfully
+ *         description: LinkedIn optimization tips generated
  */
-router.post('/career/linkedin-optimize', authenticateToken, async (req: AuthRequest, res) => {
-  try {
-    const { currentHeadline, targetRole } = optimizeLinkedInSchema.parse(req.body);
-    const result = await aiService.optimizeLinkedInProfile(currentHeadline, targetRole);
+router.post('/career/linkedin-optimize', authenticateToken, requireVerified, catchAsync(async (req: AuthRequest, res: Response) => {
+  const { currentHeadline, targetRole } = optimizeLinkedInSchema.parse(req.body);
+  const result = await aiService.optimizeLinkedInProfile(currentHeadline, targetRole);
 
-    res.json({
-      success: true,
-      data: result,
-      timestamp: new Date().toISOString(),
-    });
-  } catch (error) {
-    console.error('LinkedIn optimization error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to optimize LinkedIn profile',
-      message: error instanceof Error ? error.message : 'Unknown error',
-    });
-    return;
-  }
-});
+  res.json({
+    success: true,
+    data: result,
+    timestamp: new Date().toISOString(),
+  });
+}));
 
 /**
  * @swagger
  * /api/ai/career/cover-letter:
  *   post:
- *     summary: Generate cover letter
+ *     summary: Generate a tailored cover letter
  *     tags: [AI]
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
- *             required:
- *               - jobId
- *               - resumeId
+ *             required: [jobId, resumeId]
  *             properties:
- *               jobId:
- *                 type: integer
- *               resumeId:
- *                 type: integer
+ *               jobId: { type: string, format: uuid }
+ *               resumeId: { type: string, format: uuid }
  *     responses:
  *       200:
- *         description: Cover letter generated successfully
+ *         description: Tailored cover letter generated
  */
-router.post('/career/cover-letter', authenticateToken, async (req: AuthRequest, res) => {
-  try {
-    const { jobId, resumeId } = generateCoverLetterSchema.parse(req.body);
-    const result = await aiService.generateCoverLetter(jobId.toString(), resumeId.toString());
+router.post('/career/cover-letter', authenticateToken, requireVerified, catchAsync(async (req: AuthRequest, res: Response) => {
+  const { jobId, resumeId } = generateCoverLetterSchema.parse(req.body);
+  const result = await aiService.generateCoverLetter(jobId, resumeId);
 
-    res.json({
-      success: true,
-      data: result,
-      timestamp: new Date().toISOString(),
-    });
-  } catch (error) {
-    console.error('Cover letter generation error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to generate cover letter',
-      message: error instanceof Error ? error.message : 'Unknown error',
-    });
-    return;
-  }
-});
+  res.json({
+    success: true,
+    data: result,
+    timestamp: new Date().toISOString(),
+  });
+}));
 
 /**
  * @swagger
  * /api/ai/career/skill-gaps:
  *   get:
- *     summary: Analyze skill gaps
+ *     summary: Analyze skill gaps for specific roles
  *     tags: [AI]
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     parameters:
  *       - in: query
  *         name: roles
  *         required: true
- *         schema:
- *           type: array
- *           items:
- *             type: string
- *         description: Target roles to analyze
+ *         schema: { type: string, description: 'Comma separated list of roles' }
  *     responses:
  *       200:
- *         description: Skill gaps analyzed successfully
+ *         description: Skill gap analysis retrieved successfully
  */
-router.get('/career/skill-gaps', authenticateToken, async (req: AuthRequest, res): Promise<void> => {
-  try {
-    const roles = req.query.roles as string[];
-    if (!roles || !Array.isArray(roles) || roles.length === 0) {
-      res.status(400).json({
-        success: false,
-        error: 'Roles parameter is required and must be an array',
-      });
-      return;
-    }
+router.get('/career/skill-gaps', authenticateToken, requireVerified, catchAsync(async (req: AuthRequest, res: Response) => {
+  const { roles } = analyzeSkillGapsSchema.parse(req.query);
+  const userId = req.user!.id;
+  const result = await aiService.analyzeSkillGaps(userId, roles);
 
-    const userId = parseInt(req.user!.id);
-    const result = await aiService.analyzeSkillGaps(userId.toString(), roles);
-
-    res.json({
-      success: true,
-      data: result,
-      timestamp: new Date().toISOString(),
-    });
-  } catch (error) {
-    console.error('Skill gap analysis error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to analyze skill gaps',
-      message: error instanceof Error ? error.message : 'Unknown error',
-    });
-    return;
-  }
-});
+  res.json({
+    success: true,
+    data: result,
+    timestamp: new Date().toISOString(),
+  });
+}));
 
 /**
  * @swagger
  * /api/ai/hiring/suggestions:
  *   post:
- *     summary: Get hiring suggestions for job post
+ *     summary: Get AI hiring suggestions for a job draft
  *     tags: [AI]
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
- *             required:
- *               - jobDraft
+ *             required: [jobDraft]
  *             properties:
- *               jobDraft:
- *                 type: object
+ *               jobDraft: { type: object }
  *     responses:
  *       200:
- *         description: Hiring suggestions generated successfully
+ *         description: Hiring suggestions generated
  */
-router.post('/hiring/suggestions', authenticateToken, async (req: AuthRequest, res) => {
-  try {
-    const { jobDraft } = getHiringSuggestionsSchema.parse(req.body);
-    const result = await aiService.getHiringSuggestions(jobDraft);
+router.post('/hiring/suggestions', authenticateToken, requireVerified, catchAsync(async (req: AuthRequest, res: Response) => {
+  const { jobDraft } = getHiringSuggestionsSchema.parse(req.body);
+  const result = await aiService.getHiringSuggestions(jobDraft);
 
-    res.json({
-      success: true,
-      data: result,
-      timestamp: new Date().toISOString(),
-    });
-  } catch (error) {
-    console.error('Hiring suggestions error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to generate hiring suggestions',
-      message: error instanceof Error ? error.message : 'Unknown error',
-    });
-    return;
-  }
-});
+  res.json({
+    success: true,
+    data: result,
+    timestamp: new Date().toISOString(),
+  });
+}));
 
 /**
  * @swagger
  * /api/ai/recruiter/analyze/{candidateId}:
  *   get:
- *     summary: Analyze resume for recruiter
+ *     summary: Analyze a candidate's resume for a recruiter
  *     tags: [AI]
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     parameters:
  *       - in: path
  *         name: candidateId
  *         required: true
- *         schema:
- *           type: integer
- *         description: Candidate ID
+ *         schema: { type: string, format: uuid }
  *       - in: query
  *         name: jobId
- *         schema:
- *           type: integer
- *         description: Job ID for comparison
+ *         schema: { type: string, format: uuid }
  *     responses:
  *       200:
- *         description: Resume analyzed successfully
+ *         description: Candidate analysis retrieved successfully
  */
-router.get('/recruiter/analyze/:candidateId', authenticateToken, async (req: AuthRequest, res): Promise<void> => {
-  try {
-    const candidateIdParam = req.params.candidateId;
-    if (!candidateIdParam) {
-      res.status(400).json({
-        success: false,
-        error: 'Candidate ID is required',
-      });
-      return;
-    }
-    const candidateId = parseInt(candidateIdParam);
-    const jobId = req.query.jobId ? parseInt(req.query.jobId as string) : undefined;
+router.get('/recruiter/analyze/:candidateId', authenticateToken, requireVerified, catchAsync(async (req: AuthRequest, res: Response) => {
+  const candidateId = req.params.candidateId;
+  const jobId = req.query.jobId as string | undefined;
 
-    const result = await aiService.analyzeResumeForRecruiter(candidateId.toString(), jobId?.toString() || '');
-
-    res.json({
-      success: true,
-      data: result,
-      timestamp: new Date().toISOString(),
-    });
-  } catch (error) {
-    console.error('Resume analysis error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to analyze resume',
-      message: error instanceof Error ? error.message : 'Unknown error',
-    });
-    return;
+  if (!candidateId) {
+    throw new AppError('Candidate ID is required', 400, 'MISSING_PARAM');
   }
-});
+  const result = await aiService.analyzeResumeForRecruiter(candidateId as string, (jobId as string) || '');
+
+  res.json({
+    success: true,
+    data: result,
+    timestamp: new Date().toISOString(),
+  });
+}));
 
 export default router;
