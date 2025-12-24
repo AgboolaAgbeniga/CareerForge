@@ -118,7 +118,7 @@ router.get('/health', async (req, res) => {
 router.post('/resume/parse', authenticateToken, async (req: AuthRequest, res) => {
   try {
     const { text } = parseResumeSchema.parse(req.body);
-    const result = await aiService.parseResume(text);
+    const result = await aiService.parseResume(Buffer.from(text), 'text-input.txt');
 
     res.json({
       success: true,
@@ -168,7 +168,7 @@ router.post('/resume/parse-file', authenticateToken, upload.single('file'), asyn
       return;
     }
 
-    const result = await aiService.parseResumeFile(req.file.buffer, req.file.originalname);
+    const result = await aiService.parseResume(req.file.buffer, req.file.originalname);
 
     res.json({
       success: true,
@@ -216,7 +216,7 @@ router.post('/resume/parse-file', authenticateToken, upload.single('file'), asyn
 router.post('/resume/optimize', authenticateToken, async (req: AuthRequest, res) => {
   try {
     const { resumeData, jobRequirements } = optimizeResumeSchema.parse(req.body);
-    const result = await aiService.optimizeResume(resumeData, jobRequirements);
+    const result = await aiService.optimizeResume(resumeData, JSON.stringify(jobRequirements));
 
     res.json({
       success: true,
@@ -264,7 +264,7 @@ router.get('/matching/job/:jobSeekerId', authenticateToken, async (req: AuthRequ
       return;
     }
     const jobSeekerId = parseInt(jobSeekerIdParam);
-    const matches = await aiService.findJobMatches(jobSeekerId);
+    const matches = await aiService.findJobMatches(jobSeekerId.toString());
 
     res.json({
       success: true,
@@ -313,7 +313,7 @@ router.get('/matching/candidates/:jobId', authenticateToken, async (req: AuthReq
       return;
     }
     const jobId = parseInt(jobIdParam);
-    const candidates = await aiService.matchCandidates(jobId);
+    const candidates = await aiService.matchCandidates(jobId.toString());
 
     res.json({
       success: true,
@@ -359,7 +359,7 @@ router.post('/career/advice', authenticateToken, async (req: AuthRequest, res) =
   try {
     const { context } = getAdviceSchema.parse(req.body);
     const userId = parseInt(req.user!.id);
-    const advice = await aiService.getCareerAdvice(userId, context);
+    const advice = await aiService.getCareerAdvice(context, {});
 
     res.json({
       success: true,
@@ -453,7 +453,7 @@ router.post('/career/linkedin-optimize', authenticateToken, async (req: AuthRequ
 router.post('/career/cover-letter', authenticateToken, async (req: AuthRequest, res) => {
   try {
     const { jobId, resumeId } = generateCoverLetterSchema.parse(req.body);
-    const result = await aiService.generateCoverLetter(jobId, resumeId);
+    const result = await aiService.generateCoverLetter(jobId.toString(), resumeId.toString());
 
     res.json({
       success: true,
@@ -504,7 +504,7 @@ router.get('/career/skill-gaps', authenticateToken, async (req: AuthRequest, res
     }
 
     const userId = parseInt(req.user!.id);
-    const result = await aiService.analyzeSkillGaps(userId, roles);
+    const result = await aiService.analyzeSkillGaps(userId.toString(), roles);
 
     res.json({
       success: true,
@@ -603,7 +603,7 @@ router.get('/recruiter/analyze/:candidateId', authenticateToken, async (req: Aut
     const candidateId = parseInt(candidateIdParam);
     const jobId = req.query.jobId ? parseInt(req.query.jobId as string) : undefined;
 
-    const result = await aiService.analyzeResumeForRecruiter(candidateId, jobId);
+    const result = await aiService.analyzeResumeForRecruiter(candidateId.toString(), jobId?.toString() || '');
 
     res.json({
       success: true,
