@@ -13,6 +13,7 @@ import {
     setup2FASchema,
     verify2FASchema,
     disable2FASchema,
+    changePasswordSchema,
     regenerateBackupCodesSchema,
     updateUserProfileSchema,
     updateJobSeekerProfileSchema,
@@ -385,6 +386,40 @@ export class AuthController {
             const userId = req.user!.id;
             const result = await this.authService.regenerateBackupCodes(userId, data);
             res.json({ success: true, data: result });
+        })
+    ];
+
+    /**
+     * @swagger
+     * /api/auth/change-password:
+     *   post:
+     *     summary: Change user password
+     *     tags: [Auth]
+     *     security:
+     *       - cookieAuth: []
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             required: [oldPassword, newPassword]
+     *             properties:
+     *               oldPassword: { type: string }
+     *               newPassword: { type: string, minLength: 12 }
+     *     responses:
+     *       200:
+     *         description: Password changed successfully
+     *       400:
+     *         description: Invalid old password
+     */
+    changePassword = [
+        authenticateToken,
+        catchAsync(async (req: AuthRequest, res: Response) => {
+            const data = changePasswordSchema.parse(req.body);
+            const userId = req.user!.id;
+            const result = await this.authService.changePassword(userId, data);
+            res.json({ success: true, ...result });
         })
     ];
 

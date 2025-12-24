@@ -14,11 +14,15 @@ import {
     VerifyEmailDTO,
     Setup2FADTO,
     Verify2FADTO,
+    Disable2FADTO,
+    RegenerateBackupCodesDTO,
+    ChangePasswordDTO,
     UpdateUserProfileDTO,
     UpdateJobSeekerProfileDTO,
     UpdateRecruiterProfileDTO
 } from './auth.dto';
 import { encrypt, decrypt } from '../../utils/encryption';
+import { sanitizeText } from '../../utils/sanitizer';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'secret';
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'refresh_secret';
@@ -206,6 +210,25 @@ export class AuthService {
         }
     }
 
+    async changePassword(userId: string, data: ChangePasswordDTO) {
+        const user = await this.authRepository.findUserById(userId);
+        if (!user || !user.passwordHash) {
+            throw new AppError('User not found', 404);
+        }
+
+        const validPassword = await bcrypt.compare(data.oldPassword, user.passwordHash);
+        if (!validPassword) {
+            logger.warn(`Password change failed: Invalid old password for user - ${userId}`);
+            throw new AppError('Invalid old password', 400);
+        }
+
+        const hashedPassword = await bcrypt.hash(data.newPassword, 10);
+        await this.authRepository.updateUserPassword(userId, hashedPassword);
+
+        logger.info(`Password changed successfully for user: ${userId}`);
+        return { message: 'Password changed successfully' };
+    }
+
     async verifyEmail(data: VerifyEmailDTO) {
         try {
             const decoded = jwt.verify(data.token, JWT_SECRET) as any;
@@ -247,7 +270,7 @@ export class AuthService {
         };
     }
 
-    async verify2FA(userId: string, data: Verify2FADTO) {
+    async verify2FA(userId: string, data: { code: string }) {
         const user = await this.authRepository.findUserById(userId);
         if (!user || !user.twoFactorSecret) {
             throw new AppError('2FA not set up', 400);
@@ -267,13 +290,16 @@ export class AuthService {
         if (!verified && user.backupCodes) {
             const backupCodes = user.backupCodes as string[];
             for (let i = 0; i < backupCodes.length; i++) {
-                const isMatch = await bcrypt.compare(data.code, backupCodes[i]);
-                if (isMatch) {
-                    verified = true;
-                    // Remove used backup code
-                    const remainingCodes = backupCodes.filter((_, index) => index !== i);
-                    await this.authRepository.updateUserBackupCodes(userId, remainingCodes);
-                    break;
+                const backupCode = backupCodes[i];
+                if (backupCode !== undefined) {
+                    const isMatch = await bcrypt.compare(data.code, backupCode);
+                    if (isMatch) {
+                        verified = true;
+                        // Remove used backup code
+                        const remainingCodes = backupCodes.filter((_, index) => index !== i);
+                        await this.authRepository.updateUserBackupCodes(userId, remainingCodes);
+                        break;
+                    }
                 }
             }
         }
@@ -288,7 +314,7 @@ export class AuthService {
         return { message: '2FA verified successfully' };
     }
 
-    async disable2FA(userId: string, data: Disable2FADTO) {
+    async disable2FA(userId: string, data: { password: string; code?: string | undefined }) {
         const user = await this.authRepository.findUserById(userId);
         if (!user || !user.passwordHash) {
             throw new AppError('User not found', 404);
@@ -302,17 +328,19 @@ export class AuthService {
 
         // If 2FA is enabled, require a code (either TOTP or Backup Code)
         if (user.twoFactorEnabled && data.code) {
+            const code = data.code; // Narrow type
             const decryptedSecret = decrypt(user.twoFactorSecret!);
             let verified = speakeasy.totp.verify({
                 secret: decryptedSecret,
                 encoding: 'base32',
-                token: data.code,
+                token: code,
             });
 
             if (!verified && user.backupCodes) {
                 const backupCodes = user.backupCodes as string[];
                 for (let i = 0; i < backupCodes.length; i++) {
-                    if (await bcrypt.compare(data.code, backupCodes[i])) {
+                    const backupCode = backupCodes[i];
+                    if (backupCode !== undefined && await bcrypt.compare(code, backupCode)) {
                         verified = true;
                         break;
                     }
@@ -332,7 +360,7 @@ export class AuthService {
         return { message: '2FA disabled successfully' };
     }
 
-    async regenerateBackupCodes(userId: string, data: RegenerateBackupCodesDTO) {
+    async regenerateBackupCodes(userId: string, data: { password: string }) {
         const user = await this.authRepository.findUserById(userId);
         if (!user || !user.passwordHash || !user.twoFactorEnabled) {
             throw new AppError('2FA must be enabled to regenerate backup codes', 400);

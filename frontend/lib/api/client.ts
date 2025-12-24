@@ -129,6 +129,12 @@ class APIClient {
                 body: JSON.stringify(data),
             }),
 
+        changePassword: (data: { oldPassword: string; newPassword: string }) =>
+            this.request('/auth/change-password', {
+                method: 'POST',
+                body: JSON.stringify(data),
+            }),
+
         regenerateBackupCodes: (data: { password: string }) =>
             this.request('/auth/backup-codes/regenerate', {
                 method: 'POST',

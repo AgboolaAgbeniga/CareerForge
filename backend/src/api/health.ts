@@ -1,4 +1,4 @@
-import express, { Response } from 'express';
+import express, { Request, Response } from 'express';
 import { db } from '../utils/database';
 import { sql } from 'drizzle-orm';
 import { aiService } from '../services/aiService';
@@ -11,7 +11,7 @@ const startTime = Date.now();
 /**
  * Basic health check - Fast, no dependencies
  */
-router.get('/', (req, res: Response) => {
+router.get('/', (req: Request, res: Response) => {
     res.json({
         success: true,
         status: 'OK',
@@ -23,7 +23,7 @@ router.get('/', (req, res: Response) => {
 /**
  * Detailed health check - Checks all external dependencies
  */
-router.get('/detailed', catchAsync(async (req, res: Response) => {
+router.get('/detailed', catchAsync(async (req: Request, res: Response) => {
     const services = {
         database: 'healthy',
         aiService: 'healthy',
@@ -61,7 +61,7 @@ router.get('/detailed', catchAsync(async (req, res: Response) => {
 /**
  * Kubernetes readiness probe
  */
-router.get('/ready', async (req, res: Response) => {
+router.get('/ready', async (req: Request, res: Response) => {
     try {
         await db.execute(sql`SELECT 1`);
         res.status(200).json({ ready: true });
@@ -73,7 +73,7 @@ router.get('/ready', async (req, res: Response) => {
 /**
  * Kubernetes liveness probe
  */
-router.get('/live', (req, res: Response) => {
+router.get('/live', (req: Request, res: Response) => {
     res.status(200).json({ alive: true });
 });
 

@@ -105,6 +105,10 @@ router.post('/upload', authenticateToken, requireVerified, upload.single('file')
  */
 router.post('/:id/optimize', authenticateToken, requireVerified, catchAsync(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
+  if (!id) {
+    throw new AppError('Resume ID is required', 400, 'BAD_REQUEST');
+  }
+
   const { targetJobId } = optimizeSchema.parse(req.body);
   const userId = req.user!.id;
 

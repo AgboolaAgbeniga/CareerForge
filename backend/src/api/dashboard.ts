@@ -104,7 +104,7 @@ router.get('/job-seeker', authenticateToken, catchAsync(async (req: AuthRequest,
       const range = expMap[job.experienceLevel as keyof typeof expMap];
       if (range) {
         const [min, max] = range;
-        const userExp = jobSeekerProfile.experienceYears || 0;
+        const userExp = jobSeekerProfile.experienceYears ?? 0;
         let expScore = userExp >= min && userExp <= max ? 100 : userExp < min ? Math.max(0, 100 - (min - userExp) * 20) : Math.max(50, 100 - (userExp - max) * 10);
         totalScore += expScore * 30;
         weightSum += 30;
@@ -118,7 +118,7 @@ router.get('/job-seeker', authenticateToken, catchAsync(async (req: AuthRequest,
     weightSum += 10;
 
     // Profile Completeness (10% weight)
-    totalScore += (jobSeekerProfile?.profileCompletionPercentage || 0) * 10;
+    totalScore += (jobSeekerProfile?.profileCompletionPercentage ?? 0) * 10;
     weightSum += 10;
 
     const finalScore = weightSum > 0 ? Math.round(totalScore / weightSum) : 0;

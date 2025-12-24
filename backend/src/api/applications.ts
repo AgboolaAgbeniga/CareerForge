@@ -7,8 +7,8 @@ import express, { Response } from 'express';
 import { z } from 'zod';
 import { authenticateToken, AuthRequest, requireVerified } from '../middleware/auth';
 import { db } from '../utils/database';
-import { applications, jobs, notifications, users, jobSeekers } from '../models/schema';
-import { eq, and, or, desc, inArray } from 'drizzle-orm';
+import { applications, jobs, notifications, users, jobSeekers, companies } from '../models/schema';
+import { eq, and, or, desc, inArray, sql } from 'drizzle-orm';
 import { AppError } from '../middleware/error';
 import { catchAsync } from '../utils/catchAsync';
 import { sanitizeText } from '../utils/sanitizer';
@@ -62,7 +62,7 @@ router.post('/apply', authenticateToken, requireVerified, catchAsync(async (req:
     // Check if user's profile is complete
     const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
 
-    if (!user.onboardingCompleted) {
+    if (!user || !user.onboardingCompleted) {
         throw new AppError('Please complete your profile before applying', 403, 'ONBOARDING_INCOMPLETE');
     }
 
@@ -113,6 +113,10 @@ router.post('/apply', authenticateToken, requireVerified, catchAsync(async (req:
         appliedAt: new Date(),
         lastUpdatedAt: new Date(),
     }).returning();
+
+    if (!newApplication) {
+        throw new AppError('Failed to create application', 500);
+    }
 
     // Create notification
     await db.insert(notifications).values({
@@ -173,12 +177,12 @@ router.get('/user/:userId', authenticateToken, catchAsync(async (req: AuthReques
     const offset = (page - 1) * limit;
 
     // Get total count
-    const [{ count }] = await db
+    const countResult = await db
         .select({ count: sql<number>`count(*)` })
         .from(applications)
         .where(eq(applications.jobSeekerId, userId));
 
-    const total = Number(count);
+    const total = Number(countResult[0]?.count || 0);
     const totalPages = Math.ceil(total / limit);
 
     const userApplications = await db
@@ -241,6 +245,10 @@ router.get('/user/:userId', authenticateToken, catchAsync(async (req: AuthReques
  */
 router.get('/job/:jobId', authenticateToken, catchAsync(async (req: AuthRequest, res: Response) => {
     const { jobId } = req.params;
+    if (!jobId) {
+        throw new AppError('Job ID is required', 400, 'BAD_REQUEST');
+    }
+
     const userId = req.user!.id;
     const userRole = req.user!.role;
 
@@ -262,12 +270,12 @@ router.get('/job/:jobId', authenticateToken, catchAsync(async (req: AuthRequest,
     const offset = (page - 1) * limit;
 
     // Get total count
-    const [{ count }] = await db
+    const countResult = await db
         .select({ count: sql<number>`count(*)` })
         .from(applications)
         .where(eq(applications.jobId, jobId));
 
-    const total = Number(count);
+    const total = Number(countResult[0]?.count || 0);
     const totalPages = Math.ceil(total / limit);
 
     const jobApplications = await db
@@ -332,6 +340,10 @@ router.get('/job/:jobId', authenticateToken, catchAsync(async (req: AuthRequest,
  */
 router.put('/:id/status', authenticateToken, catchAsync(async (req: AuthRequest, res: Response) => {
     const { id } = req.params;
+    if (!id) {
+        throw new AppError('Application ID is required', 400, 'BAD_REQUEST');
+    }
+
     const userId = req.user!.id;
     const userRole = req.user!.role;
 
@@ -426,6 +438,10 @@ router.put('/:id/status', authenticateToken, catchAsync(async (req: AuthRequest,
  */
 router.get('/:id', authenticateToken, catchAsync(async (req: AuthRequest, res: Response) => {
     const { id } = req.params;
+    if (!id) {
+        throw new AppError('Application ID is required', 400, 'BAD_REQUEST');
+    }
+
     const userId = req.user!.id;
 
     const [application] = await db
@@ -487,6 +503,10 @@ router.get('/:id', authenticateToken, catchAsync(async (req: AuthRequest, res: R
  */
 router.delete('/:id', authenticateToken, catchAsync(async (req: AuthRequest, res: Response) => {
     const { id } = req.params;
+    if (!id) {
+        throw new AppError('Application ID is required', 400, 'BAD_REQUEST');
+    }
+
     const userId = req.user!.id;
 
     const [application] = await db
