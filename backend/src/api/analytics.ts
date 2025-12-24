@@ -1,19 +1,29 @@
-import express from 'express';
+import express, { Response } from 'express';
 import { z } from 'zod';
 import { db } from '../utils/database';
 import { analyticsEvents } from '../models/schema';
-import { eq, desc, count, sql } from 'drizzle-orm';
-import { authenticateToken, AuthRequest } from '../middleware/auth';
+import { eq, desc, count, sql, and, gte, lte } from 'drizzle-orm';
+import { authenticateToken, AuthRequest, optionalAuth, requireVerified } from '../middleware/auth';
+import { catchAsync } from '../utils/catchAsync';
+import { AppError } from '../middleware/error';
 
 const router = express.Router();
 
 // Validation schemas
 const trackEventSchema = z.object({
-  eventType: z.string(),
+  eventType: z.string().min(1).max(50),
   eventData: z.record(z.any()).optional(),
   sessionId: z.string().optional(),
   userAgent: z.string().optional(),
   ipAddress: z.string().optional(),
+});
+
+const getEventsSchema = z.object({
+  eventType: z.string().optional(),
+  startDate: z.string().datetime().or(z.string().date()).optional(),
+  endDate: z.string().datetime().or(z.string().date()).optional(),
+  page: z.string().transform(v => parseInt(v) || 1).optional(),
+  limit: z.string().transform(v => parseInt(v) || 50).optional(),
 });
 
 /**
@@ -21,221 +31,117 @@ const trackEventSchema = z.object({
  * /api/analytics/events:
  *   post:
  *     summary: Track an analytics event
- *     tags: [Analytics]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - eventType
- *             properties:
- *               eventType:
- *                 type: string
- *               eventData:
- *                 type: object
- *               sessionId:
- *                 type: string
- *               userAgent:
- *                 type: string
- *               ipAddress:
- *                 type: string
- *     responses:
- *       201:
- *         description: Event tracked successfully
  */
-router.post('/events', async (req, res) => {
-  try {
-    const { eventType, eventData, sessionId, userAgent, ipAddress } = trackEventSchema.parse(req.body);
+router.post('/events', optionalAuth, catchAsync(async (req: AuthRequest, res: Response) => {
+  const { eventType, eventData, sessionId, userAgent, ipAddress } = trackEventSchema.parse(req.body);
+  const userId = req.user?.id;
 
-    // Get user ID from optional auth
-    const userId = (req as AuthRequest).user?.id;
+  await db.insert(analyticsEvents).values({
+    userId: userId || null,
+    eventType,
+    eventData: eventData ? eventData : null,
+    sessionId: sessionId || null,
+    userAgent: userAgent || null,
+    ipAddress: ipAddress || null,
+    createdAt: new Date(),
+  });
 
-    await db.insert(analyticsEvents).values({
-      userId: userId || null,
-      eventType,
-      eventData: eventData ? JSON.stringify(eventData) : null,
-      sessionId: sessionId || null,
-      userAgent: userAgent || null,
-      ipAddress: ipAddress || null,
-    });
-
-    res.status(201).json({ message: 'Event tracked successfully' });
-    return;
-  } catch (error) {
-    console.error('Track event error:', error);
-    res.status(400).json({ error: 'Invalid input' });
-    return;
-  }
-});
+  res.status(201).json({ success: true, message: 'Event tracked successfully' });
+}));
 
 /**
  * @swagger
  * /api/analytics/events:
  *   get:
  *     summary: Get analytics events
- *     tags: [Analytics]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: query
- *         name: eventType
- *         schema:
- *           type: string
- *         description: Filter by event type
- *       - in: query
- *         name: startDate
- *         schema:
- *           type: string
- *           format: date
- *         description: Start date (ISO format)
- *       - in: query
- *         name: endDate
- *         schema:
- *           type: string
- *           format: date
- *         description: End date (ISO format)
- *       - in: query
- *         name: page
- *         schema:
- *           type: integer
- *           default: 1
- *         description: Page number
- *       - in: query
- *         name: limit
- *         schema:
- *           type: integer
- *           default: 50
- *         description: Number of events per page
- *     responses:
- *       200:
- *         description: Events retrieved successfully
  */
-router.get('/events', authenticateToken, async (req: AuthRequest, res) => {
-  try {
-    const { eventType, startDate, endDate, page = 1, limit = 50 } = req.query;
-    const offset = (Number(page) - 1) * Number(limit);
+router.get('/events', authenticateToken, requireVerified, catchAsync(async (req: AuthRequest, res: Response) => {
+  // Only admins or recruiters (for their own data maybe?) should access this. 
+  // For now, let's just ensure they are authenticated.
 
-    let whereConditions = [];
+  const { eventType, startDate, endDate, page, limit } = getEventsSchema.parse(req.query);
+  const offset = (page! - 1) * limit!;
 
-    if (eventType) {
-      whereConditions.push(eq(analyticsEvents.eventType, eventType as string));
-    }
+  const conditions = [];
+  if (eventType) conditions.push(eq(analyticsEvents.eventType, eventType));
+  if (startDate) conditions.push(gte(analyticsEvents.createdAt, new Date(startDate)));
+  if (endDate) conditions.push(lte(analyticsEvents.createdAt, new Date(endDate)));
 
-    if (startDate) {
-      whereConditions.push(sql`${analyticsEvents.createdAt} >= ${startDate}`);
-    }
+  const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
-    if (endDate) {
-      whereConditions.push(sql`${analyticsEvents.createdAt} <= ${endDate}`);
-    }
+  const events = await db.select()
+    .from(analyticsEvents)
+    .where(whereClause)
+    .orderBy(desc(analyticsEvents.createdAt))
+    .limit(limit!)
+    .offset(offset);
 
-    const whereClause = whereConditions.length > 0 ? sql.join(whereConditions, sql` AND `) : undefined;
+  const totalCount = await db.select({ count: count() })
+    .from(analyticsEvents)
+    .where(whereClause);
 
-    const events = await db.select()
-      .from(analyticsEvents)
-      .where(whereClause)
-      .orderBy(desc(analyticsEvents.createdAt))
-      .limit(Number(limit))
-      .offset(offset);
+  const totalResult = Number(totalCount[0]?.count || 0);
 
-    const totalCount = await db.select({ count: count() })
-      .from(analyticsEvents)
-      .where(whereClause);
-
-    res.json({
-      events,
-      pagination: {
-        page: Number(page),
-        limit: Number(limit),
-        total: totalCount[0]?.count || 0,
-        totalPages: Math.ceil((totalCount[0]?.count || 0) / Number(limit)),
-      },
-    });
-    return;
-  } catch (error) {
-    console.error('Get events error:', error);
-    res.status(500).json({ error: 'Failed to retrieve events' });
-    return;
-  }
-});
+  res.json({
+    success: true,
+    events,
+    pagination: {
+      page: page!,
+      limit: limit!,
+      total: totalResult,
+      totalPages: Math.ceil(totalResult / limit!),
+    },
+  });
+}));
 
 /**
  * @swagger
  * /api/analytics/stats:
  *   get:
  *     summary: Get analytics statistics
- *     tags: [Analytics]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: query
- *         name: startDate
- *         schema:
- *           type: string
- *           format: date
- *         description: Start date (ISO format)
- *       - in: query
- *         name: endDate
- *         schema:
- *           type: string
- *           format: date
- *         description: End date (ISO format)
- *     responses:
- *       200:
- *         description: Statistics retrieved successfully
  */
-router.get('/stats', authenticateToken, async (req: AuthRequest, res) => {
-  try {
-    const { startDate, endDate } = req.query;
+router.get('/stats', authenticateToken, requireVerified, catchAsync(async (req: AuthRequest, res: Response) => {
+  const { startDate, endDate } = getEventsSchema.parse(req.query);
 
-    let dateFilter = '';
-    if (startDate && endDate) {
-      dateFilter = `WHERE created_at >= '${startDate}' AND created_at <= '${endDate}'`;
-    } else if (startDate) {
-      dateFilter = `WHERE created_at >= '${startDate}'`;
-    } else if (endDate) {
-      dateFilter = `WHERE created_at <= '${endDate}'`;
-    }
+  const conditions = [];
+  if (startDate) conditions.push(gte(analyticsEvents.createdAt, new Date(startDate)));
+  if (endDate) conditions.push(lte(analyticsEvents.createdAt, new Date(endDate)));
+  const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
-    // Get total events
-    const totalEventsResult = await db.select({ count: count() }).from(analyticsEvents);
-    const totalEvents = totalEventsResult[0]?.count || 0;
+  // Get total events
+  const totalEventsResult = await db.select({ count: count() }).from(analyticsEvents).where(whereClause);
+  const totalEvents = Number(totalEventsResult[0]?.count || 0);
 
-    // Get events by type
-    const eventsByType = await db.execute(sql`
-      SELECT event_type, COUNT(*) as count
-      FROM analytics_events
-      ${sql.raw(dateFilter)}
-      GROUP BY event_type
-      ORDER BY count DESC
-    `);
+  // Get events by type using Drizzle's cleaner syntax where possible, or safe sql tagged templates
+  const eventsByType = await db.select({
+    eventType: analyticsEvents.eventType,
+    count: count(),
+  })
+    .from(analyticsEvents)
+    .where(whereClause)
+    .groupBy(analyticsEvents.eventType)
+    .orderBy(desc(count()));
 
-    // Get daily events for the last 30 days
-    const dailyEvents = await db.execute(sql`
-      SELECT DATE(created_at) as date, COUNT(*) as count
-      FROM analytics_events
-      WHERE created_at >= NOW() - INTERVAL '30 days'
-      GROUP BY DATE(created_at)
-      ORDER BY date DESC
-    `);
+  // Get daily events for the last 30 days
+  const dailyEvents = await db.select({
+    date: sql<string>`DATE(${analyticsEvents.createdAt})`,
+    count: count(),
+  })
+    .from(analyticsEvents)
+    .where(and(whereClause, gte(analyticsEvents.createdAt, sql`NOW() - INTERVAL '30 days'`)))
+    .groupBy(sql`DATE(${analyticsEvents.createdAt})`)
+    .orderBy(desc(sql`DATE(${analyticsEvents.createdAt})`));
 
-    res.json({
-      totalEvents,
-      eventsByType,
-      dailyEvents,
-      period: {
-        startDate: startDate || 'all',
-        endDate: endDate || 'all',
-      },
-    });
-    return;
-  } catch (error) {
-    console.error('Get stats error:', error);
-    res.status(500).json({ error: 'Failed to retrieve statistics' });
-    return;
-  }
-});
+  res.json({
+    success: true,
+    totalEvents,
+    eventsByType,
+    dailyEvents,
+    period: {
+      startDate: startDate || 'all',
+      endDate: endDate || 'all',
+    },
+  });
+}));
 
 export default router;

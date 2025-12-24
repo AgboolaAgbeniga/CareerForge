@@ -1,0 +1,4 @@
+❌ Environment variable validation failed:
+  - JWT_RESET_SECRET: Required
+
+💡 Please check your .env file and ensure all required variables are set.

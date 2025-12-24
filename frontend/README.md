@@ -82,7 +82,6 @@ frontend/
 ├── lib/                         # Utilities and configurations
 │   ├── api/                     # API client and utilities
 │   ├── auth/                    # Authentication utilities
-│   ├── demo-data/               # Mock data for development
 │   ├── hooks/                   # Custom React hooks
 │   ├── utils/                   # Helper functions
 │   └── validations/             # Form validation schemas

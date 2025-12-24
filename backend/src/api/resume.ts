@@ -1,155 +1,155 @@
-import express from 'express';
+import express, { Response } from 'express';
 import multer from 'multer';
 import { z } from 'zod';
 import { db } from '../utils/database';
 import { resumes, jobSeekers } from '../models/schema';
 import { eq } from 'drizzle-orm';
+import { authenticateToken, AuthRequest, requireVerified } from '../middleware/auth';
+import { catchAsync } from '../utils/catchAsync';
+import { AppError } from '../middleware/error';
+import { aiService } from '../services/aiService';
+import fs from 'fs';
+import path from 'path';
 
 const router = express.Router();
 
+// Ensure upload directory exists
+const uploadDir = 'uploads/resumes';
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
 // Multer config for file upload
-const upload = multer({ dest: 'uploads/' });
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const cleanName = file.originalname.replace(/[^a-zA-Z0-9.]/g, '_');
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+    cb(null, uniqueSuffix + '-' + cleanName);
+  }
+});
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = [
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ];
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new AppError('Invalid file type. Only PDF and Word documents are allowed.', 400, 'INVALID_FILE_TYPE') as any);
+    }
+  }
+});
 
 // Validation schemas
-const uploadSchema = z.object({
-  // File handled by multer
-});
-
 const optimizeSchema = z.object({
-  resumeId: z.string(),
-  targetJobId: z.string().optional(),
+  targetJobId: z.string().uuid().optional(),
   optimizationType: z.string().optional(),
 });
-
-// Database operations will be handled by Drizzle ORM
 
 /**
  * @swagger
  * /api/resume/upload:
  *   post:
- *     summary: Upload and parse resume
- *     tags: [Resume]
- *     requestBody:
- *       required: true
- *       content:
- *         multipart/form-data:
- *           schema:
- *             type: object
- *             properties:
- *               file:
- *                 type: string
- *                 format: binary
- *                 description: Resume file (PDF, DOC, DOCX)
- *     responses:
- *       200:
- *         description: Resume uploaded and parsed successfully
- *       400:
- *         description: No file uploaded
+ *     summary: Upload, parse, and save resume
  */
-router.post('/upload', upload.single('file'), async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ error: 'No file uploaded' });
-    }
-
-    // TODO: Get jobSeekerId from authenticated user
-    const jobSeekerId = 'placeholder-user-id'; // From auth middleware
-
-    // Verify job seeker exists
-    const existingJobSeekers = await db.select().from(jobSeekers).where(eq(jobSeekers.id, jobSeekerId)).limit(1);
-    if (existingJobSeekers.length === 0) {
-      return res.status(404).json({ error: 'Job seeker not found' });
-    }
-
-    // Mock parsing - in real app, call AI service
-    const parsedData = {
-      name: 'John Doe',
-      email: 'john@example.com',
-      skills: ['JavaScript', 'React'],
-      experience: '5 years',
-    };
-
-    const newResume = await db.insert(resumes).values({
-      jobSeekerId,
-      originalFileUrl: req.file.path,
-      parsedData: JSON.stringify(parsedData),
-    }).returning();
-
-    if (newResume.length === 0) {
-      throw new Error('Failed to create resume');
-    }
-
-    const resume = newResume[0] as any;
-
-    res.json({ resumeId: resume.id, parsedData });
-    return;
-  } catch (error) {
-    console.error('Resume upload error:', error);
-    res.status(500).json({ error: 'Upload failed' });
-    return;
+router.post('/upload', authenticateToken, requireVerified, upload.single('file'), catchAsync(async (req: AuthRequest, res: Response) => {
+  if (!req.file) {
+    throw new AppError('No file uploaded', 400, 'MISSING_FILE');
   }
-});
+
+  const userId = req.user!.id;
+
+  // Verify job seeker exists
+  const [jobSeeker] = await db.select().from(jobSeekers).where(eq(jobSeekers.id, userId)).limit(1);
+  if (!jobSeeker) {
+    throw new AppError('Job seeker profile not found. Please complete onboarding first.', 404, 'NOT_FOUND');
+  }
+
+  // Call AI service to parse the resume
+  const fileBuffer = fs.readFileSync(req.file.path);
+  const parsedData = await aiService.parseResume(fileBuffer, req.file.originalname);
+
+  // Save to database
+  const [newResume] = await db.insert(resumes).values({
+    jobSeekerId: userId,
+    originalFileUrl: req.file.path,
+    parsedData: parsedData,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  }).returning();
+
+  if (!newResume) {
+    throw new AppError('Failed to save resume record', 500, 'INTERNAL_ERROR');
+  }
+
+  res.status(201).json({
+    success: true,
+    resumeId: newResume.id,
+    parsedData
+  });
+}));
 
 /**
  * @swagger
  * /api/resume/{id}/optimize:
  *   post:
- *     summary: AI optimize resume
- *     tags: [Resume]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: Resume ID
- *     requestBody:
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               targetJobId:
- *                 type: string
- *               optimizationType:
- *                 type: string
- *     responses:
- *       200:
- *         description: Resume optimized successfully
- *       404:
- *         description: Resume not found
+ *     summary: AI optimize an existing resume
  */
-router.post('/:id/optimize', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { targetJobId, optimizationType } = req.body;
+router.post('/:id/optimize', authenticateToken, requireVerified, catchAsync(async (req: AuthRequest, res: Response) => {
+  const { id } = req.params;
+  const { targetJobId } = optimizeSchema.parse(req.body);
+  const userId = req.user!.id;
 
-    const existingResumes = await db.select().from(resumes).where(eq(resumes.id, id)).limit(1);
-    if (existingResumes.length === 0) {
-      return res.status(404).json({ error: 'Resume not found' });
-    }
+  const [resume] = await db.select().from(resumes).where(eq(resumes.id, id)).limit(1);
 
-    const resume = existingResumes[0] as any;
-
-    // Mock optimization - call AI service
-    const parsedData = JSON.parse((resume.parsedData as string) || '{}');
-    const optimizedData = {
-      ...parsedData,
-      optimizedSkills: ['JavaScript', 'React', 'TypeScript'],
-      suggestions: ['Add more keywords', 'Quantify achievements'],
-    };
-
-    await db.update(resumes).set({
-      aiOptimizedData: JSON.stringify(optimizedData),
-    }).where(eq(resumes.id, id));
-
-    res.json({ optimizedResume: optimizedData, suggestions: ['Add more keywords'] });
-    return;
-  } catch (error) {
-    console.error('Resume optimization error:', error);
-    res.status(500).json({ error: 'Optimization failed' });
-    return;
+  if (!resume) {
+    throw new AppError('Resume not found', 404, 'NOT_FOUND');
   }
-});
+
+  if (resume.jobSeekerId !== userId) {
+    throw new AppError('Unauthorized', 403, 'FORBIDDEN');
+  }
+
+  // Call AI service to optimize
+  const optimizedData = await aiService.optimizeResume(resume.parsedData as any, targetJobId || '');
+
+  await db.update(resumes).set({
+    aiOptimizedData: optimizedData,
+    updatedAt: new Date(),
+  }).where(eq(resumes.id, id));
+
+  res.json({
+    success: true,
+    optimizedResume: optimizedData,
+    suggestions: (optimizedData as any).suggestions || []
+  });
+}));
+
+/**
+ * @swagger
+ * /api/resume/my:
+ *   get:
+ *     summary: Get all resumes for the current user
+ */
+router.get('/my', authenticateToken, catchAsync(async (req: AuthRequest, res: Response) => {
+  const userId = req.user!.id;
+
+  const myResumes = await db.select().from(resumes)
+    .where(eq(resumes.jobSeekerId, userId))
+    .orderBy(eq(resumes.isActive, true));
+
+  res.json({
+    success: true,
+    data: myResumes
+  });
+}));
 
 export default router;

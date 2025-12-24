@@ -63,10 +63,11 @@ export default function Dashboard() {
           },
         });
         if (response.ok) {
-          const data = await response.json();
-          setApplications(data.applications || []);
-          setActivities(data.notifications || []);
-          setJobMatches(data.jobMatches || []);
+          const result = await response.json();
+          const dashboardData = result.data || result;
+          setApplications(dashboardData.applications || []);
+          setActivities(dashboardData.notifications || []);
+          setJobMatches(dashboardData.jobMatches || []);
         }
       } catch (error) {
         console.error('Failed to fetch dashboard data:', error);

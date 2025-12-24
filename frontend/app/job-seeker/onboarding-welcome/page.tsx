@@ -47,7 +47,7 @@ export default function OnboardingWelcomePage() {
   const handleLaunch = async () => {
     try {
       const token = localStorage.getItem('accessToken');
-      await fetch('/api/auth/profile', {
+      const response = await fetch('/api/auth/profile', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -57,6 +57,12 @@ export default function OnboardingWelcomePage() {
           onboardingCompleted: true,
         }),
       });
+
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.message || 'Failed to update profile');
+      }
+
       router.push('/job-seeker/dashboard');
     } catch (error) {
       console.error('Failed to update onboarding status:', error);

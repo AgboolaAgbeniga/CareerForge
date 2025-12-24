@@ -1,8 +1,15 @@
 import { z } from 'zod';
 
+const passwordSchema = z.string()
+    .min(12, 'Password must be at least 12 characters')
+    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+    .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
+    .regex(/[0-9]/, 'Password must contain at least one number')
+    .regex(/[^A-Za-z0-9]/, 'Password must contain at least one special character');
+
 export const registerSchema = z.object({
     email: z.string().email(),
-    password: z.string().min(8),
+    password: passwordSchema,
     role: z.enum(['job_seeker', 'recruiter']),
     firstName: z.string(),
     lastName: z.string(),
@@ -19,11 +26,15 @@ export const forgotPasswordSchema = z.object({
 
 export const resetPasswordSchema = z.object({
     token: z.string(),
-    newPassword: z.string().min(8),
+    newPassword: passwordSchema,
 });
 
 export const verifyEmailSchema = z.object({
     token: z.string(),
+});
+
+export const resendEmailVerificationSchema = z.object({
+    email: z.string().email(),
 });
 
 export const setup2FASchema = z.object({

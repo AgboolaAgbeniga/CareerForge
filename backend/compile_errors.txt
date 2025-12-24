@@ -1,0 +1,199 @@
+src/api/ai.ts(186,17): error TS2304: Cannot find name 'AppError'.
+src/api/applications.ts(60,10): error TS18048: 'user' is possibly 'undefined'.
+src/api/applications.ts(119,32): error TS18048: 'newApplication' is possibly 'undefined'.
+src/api/applications.ts(128,17): error TS18048: 'newApplication' is possibly 'undefined'.
+src/api/applications.ts(129,20): error TS18048: 'newApplication' is possibly 'undefined'.
+src/api/applications.ts(130,21): error TS18048: 'newApplication' is possibly 'undefined'.
+src/api/applications.ts(131,24): error TS18048: 'newApplication' is possibly 'undefined'.
+src/api/applications.ts(160,27): error TS2339: Property 'type' does not exist on type 'PgTableWithColumns<{ name: "jobs"; schema: undefined; columns: { id: PgColumn<{ name: "id"; tableName: "jobs"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>; ... 18 more ...; updatedAt: PgColumn<...>;...'.
+src/api/applications.ts(190,54): error TS2769: No overload matches this call.
+  Overload 1 of 3, '(left: PgColumn<{ name: "id"; tableName: "jobs"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>, right: string | SQLWrapper): SQL<...>', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type 'string | SQLWrapper'.
+      Type 'undefined' is not assignable to type 'string | SQLWrapper'.
+  Overload 2 of 3, '(left: Aliased<string | undefined>, right: string | SQLWrapper | undefined): SQL<unknown>', gave the following error.
+    Argument of type 'PgColumn<{ name: "id"; tableName: "jobs"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>' is not assignable to parameter of type 'Aliased<string | undefined>'.
+      Type 'PgColumn<{ name: "id"; tableName: "jobs"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>' is missing the following properties from type 'Aliased<string | undefined>': sql, fieldAlias
+  Overload 3 of 3, '(left: never, right: unknown): SQL<unknown>', gave the following error.
+    Argument of type 'PgColumn<{ name: "id"; tableName: "jobs"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>' is not assignable to parameter of type 'never'.
+src/api/applications.ts(215,16): error TS2769: No overload matches this call.
+  Overload 1 of 3, '(left: PgColumn<{ name: "job_id"; tableName: "applications"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: false; hasDefault: false; enumValues: undefined; baseColumn: never; }, {}, {}>, right: string | SQLWrapper): SQL<...>', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type 'string | SQLWrapper'.
+      Type 'undefined' is not assignable to type 'string | SQLWrapper'.
+  Overload 2 of 3, '(left: Aliased<string | undefined>, right: string | SQLWrapper | undefined): SQL<unknown>', gave the following error.
+    Argument of type 'PgColumn<{ name: "job_id"; tableName: "applications"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: false; hasDefault: false; enumValues: undefined; baseColumn: never; }, {}, {}>' is not assignable to parameter of type 'Aliased<string | undefined>'.
+      Type 'PgColumn<{ name: "job_id"; tableName: "applications"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: false; hasDefault: false; enumValues: undefined; baseColumn: never; }, {}, {}>' is missing the following properties from type 'Aliased<string | undefined>': sql, fieldAlias
+  Overload 3 of 3, '(left: never, right: unknown): SQL<unknown>', gave the following error.
+    Argument of type 'PgColumn<{ name: "job_id"; tableName: "applications"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: false; hasDefault: false; enumValues: undefined; baseColumn: never; }, {}, {}>' is not assignable to parameter of type 'never'.
+src/api/applications.ts(254,16): error TS2769: No overload matches this call.
+  Overload 1 of 3, '(left: PgColumn<{ name: "id"; tableName: "applications"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>, right: string | SQLWrapper): SQL<...>', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type 'string | SQLWrapper'.
+      Type 'undefined' is not assignable to type 'string | SQLWrapper'.
+  Overload 2 of 3, '(left: Aliased<string | undefined>, right: string | SQLWrapper | undefined): SQL<unknown>', gave the following error.
+    Argument of type 'PgColumn<{ name: "id"; tableName: "applications"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>' is not assignable to parameter of type 'Aliased<string | undefined>'.
+      Type 'PgColumn<{ name: "id"; tableName: "applications"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>' is missing the following properties from type 'Aliased<string | undefined>': sql, fieldAlias
+  Overload 3 of 3, '(left: never, right: unknown): SQL<unknown>', gave the following error.
+    Argument of type 'PgColumn<{ name: "id"; tableName: "applications"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>' is not assignable to parameter of type 'never'.
+src/api/applications.ts(284,16): error TS2769: No overload matches this call.
+  Overload 1 of 3, '(left: PgColumn<{ name: "id"; tableName: "applications"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>, right: string | SQLWrapper): SQL<...>', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type 'string | SQLWrapper'.
+      Type 'undefined' is not assignable to type 'string | SQLWrapper'.
+  Overload 2 of 3, '(left: Aliased<string | undefined>, right: string | SQLWrapper | undefined): SQL<unknown>', gave the following error.
+    Argument of type 'PgColumn<{ name: "id"; tableName: "applications"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>' is not assignable to parameter of type 'Aliased<string | undefined>'.
+      Type 'PgColumn<{ name: "id"; tableName: "applications"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>' is missing the following properties from type 'Aliased<string | undefined>': sql, fieldAlias
+  Overload 3 of 3, '(left: never, right: unknown): SQL<unknown>', gave the following error.
+    Argument of type 'PgColumn<{ name: "id"; tableName: "applications"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>' is not assignable to parameter of type 'never'.
+src/api/applications.ts(335,27): error TS2339: Property 'type' does not exist on type 'PgTableWithColumns<{ name: "jobs"; schema: undefined; columns: { id: PgColumn<{ name: "id"; tableName: "jobs"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>; ... 18 more ...; updatedAt: PgColumn<...>;...'.
+src/api/applications.ts(340,16): error TS2769: No overload matches this call.
+  Overload 1 of 3, '(left: PgColumn<{ name: "id"; tableName: "applications"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>, right: string | SQLWrapper): SQL<...>', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type 'string | SQLWrapper'.
+      Type 'undefined' is not assignable to type 'string | SQLWrapper'.
+  Overload 2 of 3, '(left: Aliased<string | undefined>, right: string | SQLWrapper | undefined): SQL<unknown>', gave the following error.
+    Argument of type 'PgColumn<{ name: "id"; tableName: "applications"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>' is not assignable to parameter of type 'Aliased<string | undefined>'.
+      Type 'PgColumn<{ name: "id"; tableName: "applications"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>' is missing the following properties from type 'Aliased<string | undefined>': sql, fieldAlias
+  Overload 3 of 3, '(left: never, right: unknown): SQL<unknown>', gave the following error.
+    Argument of type 'PgColumn<{ name: "id"; tableName: "applications"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>' is not assignable to parameter of type 'never'.
+src/api/applications.ts(372,16): error TS2769: No overload matches this call.
+  Overload 1 of 3, '(left: PgColumn<{ name: "id"; tableName: "applications"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>, right: string | SQLWrapper): SQL<...>', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type 'string | SQLWrapper'.
+      Type 'undefined' is not assignable to type 'string | SQLWrapper'.
+  Overload 2 of 3, '(left: Aliased<string | undefined>, right: string | SQLWrapper | undefined): SQL<unknown>', gave the following error.
+    Argument of type 'PgColumn<{ name: "id"; tableName: "applications"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>' is not assignable to parameter of type 'Aliased<string | undefined>'.
+      Type 'PgColumn<{ name: "id"; tableName: "applications"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>' is missing the following properties from type 'Aliased<string | undefined>': sql, fieldAlias
+  Overload 3 of 3, '(left: never, right: unknown): SQL<unknown>', gave the following error.
+    Argument of type 'PgColumn<{ name: "id"; tableName: "applications"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>' is not assignable to parameter of type 'never'.
+src/api/applications.ts(396,16): error TS2769: No overload matches this call.
+  Overload 1 of 3, '(left: PgColumn<{ name: "id"; tableName: "applications"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>, right: string | SQLWrapper): SQL<...>', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type 'string | SQLWrapper'.
+      Type 'undefined' is not assignable to type 'string | SQLWrapper'.
+  Overload 2 of 3, '(left: Aliased<string | undefined>, right: string | SQLWrapper | undefined): SQL<unknown>', gave the following error.
+    Argument of type 'PgColumn<{ name: "id"; tableName: "applications"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>' is not assignable to parameter of type 'Aliased<string | undefined>'.
+      Type 'PgColumn<{ name: "id"; tableName: "applications"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>' is missing the following properties from type 'Aliased<string | undefined>': sql, fieldAlias
+  Overload 3 of 3, '(left: never, right: unknown): SQL<unknown>', gave the following error.
+    Argument of type 'PgColumn<{ name: "id"; tableName: "applications"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>' is not assignable to parameter of type 'never'.
+src/api/companies.ts(41,43): error TS7030: Not all code paths return a value.
+src/api/companies.ts(54,32): error TS2339: Property 'companyId' does not exist on type '{ id: string; createdAt: Date | null; updatedAt: Date | null; title: string | null; experienceYears: number | null; companyName: string | null; industry: string | null; companySize: string | null; specialization: string | null; billingInfo: unknown; subscriptionPlan: string | null; }'.
+src/api/companies.ts(58,61): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(value: { name: string | SQL<unknown> | Placeholder<string, any>; id?: string | SQL<unknown> | Placeholder<string, any>; createdAt?: Date | SQL<unknown> | Placeholder<...> | null; ... 6 more ...; logoUrl?: string | ... 2 more ... | null; }): PgInsertBase<...>', gave the following error.
+    Argument of type '{ name: string; industry?: string | undefined; headquarters?: string | undefined; size?: string | undefined; description?: string | undefined; websiteUrl?: string | undefined; logoUrl?: string | undefined; }' is not assignable to parameter of type '{ name: string | SQL<unknown> | Placeholder<string, any>; id?: string | SQL<unknown> | Placeholder<string, any>; createdAt?: Date | SQL<unknown> | Placeholder<...> | null; ... 6 more ...; logoUrl?: string | ... 2 more ... | null; }' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+      Types of property 'industry' are incompatible.
+        Type 'string | undefined' is not assignable to type 'string | SQL<unknown> | Placeholder<string, any> | null'.
+          Type 'undefined' is not assignable to type 'string | SQL<unknown> | Placeholder<string, any> | null'.
+  Overload 2 of 2, '(values: { name: string | SQL<unknown> | Placeholder<string, any>; id?: string | SQL<unknown> | Placeholder<string, any>; createdAt?: Date | SQL<unknown> | Placeholder<...> | null; ... 6 more ...; logoUrl?: string | ... 2 more ... | null; }[]): PgInsertBase<...>', gave the following error.
+    Argument of type '{ name: string; industry?: string | undefined; headquarters?: string | undefined; size?: string | undefined; description?: string | undefined; websiteUrl?: string | undefined; logoUrl?: string | undefined; }' is not assignable to parameter of type '{ name: string | SQL<unknown> | Placeholder<string, any>; id?: string | SQL<unknown> | Placeholder<string, any>; createdAt?: Date | SQL<unknown> | Placeholder<...> | null; ... 6 more ...; logoUrl?: string | ... 2 more ... | null; }[]'.
+      Type '{ name: string; industry?: string | undefined; headquarters?: string | undefined; size?: string | undefined; description?: string | undefined; websiteUrl?: string | undefined; logoUrl?: string | undefined; }' is missing the following properties from type '{ name: string | SQL<unknown> | Placeholder<string, any>; id?: string | SQL<unknown> | Placeholder<string, any>; createdAt?: Date | SQL<unknown> | Placeholder<...> | null; ... 6 more ...; logoUrl?: string | ... 2 more ... | null; }[]': length, pop, push, concat, and 28 more.
+src/api/companies.ts(61,43): error TS2353: Object literal may only specify known properties, and 'companyId' does not exist in type '{ id?: string | SQL<unknown>; companyName?: string | SQL<unknown> | null; industry?: string | SQL<unknown> | null; companySize?: string | SQL<unknown> | null; title?: string | SQL<unknown> | null; ... 5 more ...; updatedAt?: Date | ... 1 more ... | null; }'.
+src/api/companies.ts(61,54): error TS18048: 'company' is possibly 'undefined'.
+src/api/companies.ts(84,38): error TS7030: Not all code paths return a value.
+src/api/companies.ts(93,69): error TS2339: Property 'companyId' does not exist on type 'PgTableWithColumns<{ name: "recruiters"; schema: undefined; columns: { id: PgColumn<{ name: "id"; tableName: "recruiters"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: false; enumValues: undefined; baseColumn: never; }, {}, {}>; ... 9 more ...; updatedAt: Pg...'.
+src/api/companies.ts(126,38): error TS7030: Not all code paths return a value.
+src/api/companies.ts(137,69): error TS2339: Property 'companyId' does not exist on type 'PgTableWithColumns<{ name: "recruiters"; schema: undefined; columns: { id: PgColumn<{ name: "id"; tableName: "recruiters"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: false; enumValues: undefined; baseColumn: never; }, {}, {}>; ... 9 more ...; updatedAt: Pg...'.
+src/api/companies.ts(144,18): error TS2379: Argument of type '{ name?: string | undefined; industry?: string | undefined; headquarters?: string | undefined; size?: string | undefined; description?: string | undefined; websiteUrl?: string | undefined; logoUrl?: string | undefined; }' is not assignable to parameter of type '{ id?: string | SQL<unknown>; name?: string | SQL<unknown>; industry?: string | SQL<unknown> | null; headquarters?: string | SQL<unknown> | null; size?: string | SQL<unknown> | null; description?: string | ... 1 more ... | null; websiteUrl?: string | ... 1 more ... | null; logoUrl?: string | ... 1 more ... | null; c...' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+  Types of property 'name' are incompatible.
+    Type 'string | undefined' is not assignable to type 'string | SQL<unknown>'.
+      Type 'undefined' is not assignable to type 'string | SQL<unknown>'.
+src/api/dashboard.ts(57,20): error TS2339: Property 'type' does not exist on type 'PgTableWithColumns<{ name: "jobs"; schema: undefined; columns: { id: PgColumn<{ name: "id"; tableName: "jobs"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>; ... 18 more ...; updatedAt: PgColumn<...>;...'.
+src/api/dashboard.ts(96,15): error TS2488: Type '[number, number] | undefined' must have a '[Symbol.iterator]()' method that returns an iterator.
+src/api/dashboard.ts(98,24): error TS18047: 'userExp' is possibly 'null'.
+src/api/dashboard.ts(98,42): error TS18047: 'userExp' is possibly 'null'.
+src/api/dashboard.ts(98,65): error TS18047: 'userExp' is possibly 'null'.
+src/api/dashboard.ts(98,106): error TS18047: 'userExp' is possibly 'null'.
+src/api/dashboard.ts(98,143): error TS18047: 'userExp' is possibly 'null'.
+src/api/dashboard.ts(110,40): error TS2551: Property 'profileCcompletionPercentage' does not exist on type '{ id: string; createdAt: Date | null; updatedAt: Date | null; title: string | null; experienceYears: number | null; skills: string[] | null; education: string | null; portfolioUrl: string | null; linkedinUrl: string | null; resumeFileUrl: string | null; profileCompletionPercentage: number | null; isProfileVisible: b...'. Did you mean 'profileCompletionPercentage'?
+src/api/jobs.ts(78,36): error TS2339: Property 'companyId' does not exist on type '{ id: string; createdAt: Date | null; updatedAt: Date | null; title: string | null; experienceYears: number | null; companyName: string | null; industry: string | null; companySize: string | null; specialization: string | null; billingInfo: unknown; subscriptionPlan: string | null; }'.
+src/api/jobs.ts(84,45): error TS2339: Property 'companyId' does not exist on type 'PgTableWithColumns<{ name: "recruiters"; schema: undefined; columns: { id: PgColumn<{ name: "id"; tableName: "recruiters"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: false; enumValues: undefined; baseColumn: never; }, {}, {}>; ... 9 more ...; updatedAt: Pg...'.
+src/api/jobs.ts(97,9): error TS2769: No overload matches this call.
+  Overload 2 of 2, '(values: { title: string | SQL<unknown> | Placeholder<string, any>; status?: "draft" | "open" | "closed" | "paused" | SQL<unknown> | Placeholder<string, any> | null; ... 17 more ...; expiresAt?: Date | ... 2 more ... | null; }[]): PgInsertBase<...>', gave the following error.
+    Object literal may only specify known properties, and 'recruiterId' does not exist in type '{ title: string | SQL<unknown> | Placeholder<string, any>; status?: "draft" | "open" | "closed" | "paused" | SQL<unknown> | Placeholder<string, any> | null; ... 17 more ...; expiresAt?: Date | ... 2 more ... | null; }[]'.
+src/api/jobs.ts(120,17): error TS18048: 'newJob' is possibly 'undefined'.
+src/api/jobs.ts(121,20): error TS18048: 'newJob' is possibly 'undefined'.
+src/api/jobs.ts(122,21): error TS18048: 'newJob' is possibly 'undefined'.
+src/api/jobs.ts(123,24): error TS18048: 'newJob' is possibly 'undefined'.
+src/api/jobs.ts(156,33): error TS2339: Property 'type' does not exist on type 'PgTableWithColumns<{ name: "jobs"; schema: undefined; columns: { id: PgColumn<{ name: "id"; tableName: "jobs"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>; ... 18 more ...; updatedAt: PgColumn<...>;...'.
+src/api/jobs.ts(175,24): error TS2339: Property 'type' does not exist on type 'PgTableWithColumns<{ name: "jobs"; schema: undefined; columns: { id: PgColumn<{ name: "id"; tableName: "jobs"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>; ... 18 more ...; updatedAt: PgColumn<...>;...'.
+src/api/jobs.ts(224,36): error TS2339: Property 'responsibilities' does not exist on type 'PgTableWithColumns<{ name: "jobs"; schema: undefined; columns: { id: PgColumn<{ name: "id"; tableName: "jobs"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>; ... 18 more ...; updatedAt: PgColumn<...>;...'.
+src/api/jobs.ts(226,24): error TS2339: Property 'type' does not exist on type 'PgTableWithColumns<{ name: "jobs"; schema: undefined; columns: { id: PgColumn<{ name: "id"; tableName: "jobs"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>; ... 18 more ...; updatedAt: PgColumn<...>;...'.
+src/api/jobs.ts(239,39): error TS2339: Property 'website' does not exist on type 'PgTableWithColumns<{ name: "companies"; schema: undefined; columns: { id: PgColumn<{ name: "id"; tableName: "companies"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>; ... 8 more ...; updatedAt: PgCol...'.
+src/api/jobs.ts(245,16): error TS2769: No overload matches this call.
+  Overload 1 of 3, '(left: PgColumn<{ name: "id"; tableName: "jobs"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>, right: string | SQLWrapper): SQL<...>', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type 'string | SQLWrapper'.
+      Type 'undefined' is not assignable to type 'string | SQLWrapper'.
+  Overload 2 of 3, '(left: Aliased<string | undefined>, right: string | SQLWrapper | undefined): SQL<unknown>', gave the following error.
+    Argument of type 'PgColumn<{ name: "id"; tableName: "jobs"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>' is not assignable to parameter of type 'Aliased<string | undefined>'.
+      Type 'PgColumn<{ name: "id"; tableName: "jobs"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>' is missing the following properties from type 'Aliased<string | undefined>': sql, fieldAlias
+  Overload 3 of 3, '(left: never, right: unknown): SQL<unknown>', gave the following error.
+    Argument of type 'PgColumn<{ name: "id"; tableName: "jobs"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>' is not assignable to parameter of type 'never'.
+src/api/jobs.ts(292,24): error TS2339: Property 'type' does not exist on type 'PgTableWithColumns<{ name: "jobs"; schema: undefined; columns: { id: PgColumn<{ name: "id"; tableName: "jobs"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>; ... 18 more ...; updatedAt: PgColumn<...>;...'.
+src/api/jobs.ts(340,62): error TS2769: No overload matches this call.
+  Overload 1 of 3, '(left: PgColumn<{ name: "id"; tableName: "jobs"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>, right: string | SQLWrapper): SQL<...>', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type 'string | SQLWrapper'.
+      Type 'undefined' is not assignable to type 'string | SQLWrapper'.
+  Overload 2 of 3, '(left: Aliased<string | undefined>, right: string | SQLWrapper | undefined): SQL<unknown>', gave the following error.
+    Argument of type 'PgColumn<{ name: "id"; tableName: "jobs"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>' is not assignable to parameter of type 'Aliased<string | undefined>'.
+      Type 'PgColumn<{ name: "id"; tableName: "jobs"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>' is missing the following properties from type 'Aliased<string | undefined>': sql, fieldAlias
+  Overload 3 of 3, '(left: never, right: unknown): SQL<unknown>', gave the following error.
+    Argument of type 'PgColumn<{ name: "id"; tableName: "jobs"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>' is not assignable to parameter of type 'never'.
+src/api/jobs.ts(377,16): error TS2769: No overload matches this call.
+  Overload 1 of 3, '(left: PgColumn<{ name: "id"; tableName: "jobs"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>, right: string | SQLWrapper): SQL<...>', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type 'string | SQLWrapper'.
+      Type 'undefined' is not assignable to type 'string | SQLWrapper'.
+  Overload 2 of 3, '(left: Aliased<string | undefined>, right: string | SQLWrapper | undefined): SQL<unknown>', gave the following error.
+    Argument of type 'PgColumn<{ name: "id"; tableName: "jobs"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>' is not assignable to parameter of type 'Aliased<string | undefined>'.
+      Type 'PgColumn<{ name: "id"; tableName: "jobs"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>' is missing the following properties from type 'Aliased<string | undefined>': sql, fieldAlias
+  Overload 3 of 3, '(left: never, right: unknown): SQL<unknown>', gave the following error.
+    Argument of type 'PgColumn<{ name: "id"; tableName: "jobs"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>' is not assignable to parameter of type 'never'.
+src/api/jobs.ts(403,62): error TS2769: No overload matches this call.
+  Overload 1 of 3, '(left: PgColumn<{ name: "id"; tableName: "jobs"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>, right: string | SQLWrapper): SQL<...>', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type 'string | SQLWrapper'.
+      Type 'undefined' is not assignable to type 'string | SQLWrapper'.
+  Overload 2 of 3, '(left: Aliased<string | undefined>, right: string | SQLWrapper | undefined): SQL<unknown>', gave the following error.
+    Argument of type 'PgColumn<{ name: "id"; tableName: "jobs"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>' is not assignable to parameter of type 'Aliased<string | undefined>'.
+      Type 'PgColumn<{ name: "id"; tableName: "jobs"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>' is missing the following properties from type 'Aliased<string | undefined>': sql, fieldAlias
+  Overload 3 of 3, '(left: never, right: unknown): SQL<unknown>', gave the following error.
+    Argument of type 'PgColumn<{ name: "id"; tableName: "jobs"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>' is not assignable to parameter of type 'never'.
+src/api/jobs.ts(444,49): error TS2769: No overload matches this call.
+  Overload 1 of 3, '(left: PgColumn<{ name: "id"; tableName: "jobs"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>, right: string | SQLWrapper): SQL<...>', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type 'string | SQLWrapper'.
+      Type 'undefined' is not assignable to type 'string | SQLWrapper'.
+  Overload 2 of 3, '(left: Aliased<string | undefined>, right: string | SQLWrapper | undefined): SQL<unknown>', gave the following error.
+    Argument of type 'PgColumn<{ name: "id"; tableName: "jobs"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>' is not assignable to parameter of type 'Aliased<string | undefined>'.
+      Type 'PgColumn<{ name: "id"; tableName: "jobs"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>' is missing the following properties from type 'Aliased<string | undefined>': sql, fieldAlias
+  Overload 3 of 3, '(left: never, right: unknown): SQL<unknown>', gave the following error.
+    Argument of type 'PgColumn<{ name: "id"; tableName: "jobs"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>' is not assignable to parameter of type 'never'.
+src/api/jobs.ts(461,53): error TS7030: Not all code paths return a value.
+src/api/jobs.ts(470,54): error TS2769: No overload matches this call.
+  Overload 1 of 3, '(left: PgColumn<{ name: "id"; tableName: "jobs"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>, right: string | SQLWrapper): SQL<...>', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type 'string | SQLWrapper'.
+      Type 'undefined' is not assignable to type 'string | SQLWrapper'.
+  Overload 2 of 3, '(left: Aliased<string | undefined>, right: string | SQLWrapper | undefined): SQL<unknown>', gave the following error.
+    Argument of type 'PgColumn<{ name: "id"; tableName: "jobs"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>' is not assignable to parameter of type 'Aliased<string | undefined>'.
+      Type 'PgColumn<{ name: "id"; tableName: "jobs"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>' is missing the following properties from type 'Aliased<string | undefined>': sql, fieldAlias
+  Overload 3 of 3, '(left: never, right: unknown): SQL<unknown>', gave the following error.
+    Argument of type 'PgColumn<{ name: "id"; tableName: "jobs"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>' is not assignable to parameter of type 'never'.
+src/api/jobs.ts(483,37): error TS2769: No overload matches this call.
+  Overload 1 of 3, '(left: PgColumn<{ name: "id"; tableName: "jobs"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>, right: string | SQLWrapper): SQL<...>', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type 'string | SQLWrapper'.
+      Type 'undefined' is not assignable to type 'string | SQLWrapper'.
+  Overload 2 of 3, '(left: Aliased<string | undefined>, right: string | SQLWrapper | undefined): SQL<unknown>', gave the following error.
+    Argument of type 'PgColumn<{ name: "id"; tableName: "jobs"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>' is not assignable to parameter of type 'Aliased<string | undefined>'.
+      Type 'PgColumn<{ name: "id"; tableName: "jobs"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>' is missing the following properties from type 'Aliased<string | undefined>': sql, fieldAlias
+  Overload 3 of 3, '(left: never, right: unknown): SQL<unknown>', gave the following error.
+    Argument of type 'PgColumn<{ name: "id"; tableName: "jobs"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>' is not assignable to parameter of type 'never'.
+src/api/jobs.ts(491,82): error TS2769: No overload matches this call.
+  Overload 1 of 3, '(left: PgColumn<{ name: "id"; tableName: "jobs"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>, right: string | SQLWrapper): SQL<...>', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type 'string | SQLWrapper'.
+      Type 'undefined' is not assignable to type 'string | SQLWrapper'.
+  Overload 2 of 3, '(left: Aliased<string | undefined>, right: string | SQLWrapper | undefined): SQL<unknown>', gave the following error.
+    Argument of type 'PgColumn<{ name: "id"; tableName: "jobs"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>' is not assignable to parameter of type 'Aliased<string | undefined>'.
+      Type 'PgColumn<{ name: "id"; tableName: "jobs"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>' is missing the following properties from type 'Aliased<string | undefined>': sql, fieldAlias
+  Overload 3 of 3, '(left: never, right: unknown): SQL<unknown>', gave the following error.
+    Argument of type 'PgColumn<{ name: "id"; tableName: "jobs"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, {}, {}>' is not assignable to parameter of type 'never'.
+src/modules/auth/auth.service.ts(262,65): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/modules/auth/auth.service.ts(310,78): error TS2304: Cannot find name 'sanitizeText'.
+src/modules/auth/auth.service.ts(311,76): error TS2304: Cannot find name 'sanitizeText'.
+src/modules/auth/auth.service.ts(312,76): error TS2304: Cannot find name 'sanitizeText'.
+src/modules/auth/auth.service.ts(325,84): error TS2304: Cannot find name 'sanitizeText'.
+src/modules/auth/auth.service.ts(326,92): error TS2304: Cannot find name 'sanitizeText'.
+src/modules/auth/auth.service.ts(334,96): error TS2304: Cannot find name 'sanitizeText'.
+src/modules/auth/auth.service.ts(335,84): error TS2304: Cannot find name 'sanitizeText'.
+src/modules/auth/auth.service.ts(336,90): error TS2304: Cannot find name 'sanitizeText'.

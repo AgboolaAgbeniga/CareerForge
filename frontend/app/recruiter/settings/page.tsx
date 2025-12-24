@@ -21,6 +21,7 @@ import {
   Sparkles,
   ArrowRight,
 } from 'lucide-react';
+import SecuritySettings from '@/components/shared/SecuritySettings';
 
 type SettingsTab =
   | 'account'
@@ -182,11 +183,10 @@ export default function RecruiterSettings() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-all ${
-                    activeTab === tab.id
-                      ? 'bg-indigo-500/10 border border-indigo-500/20 text-indigo-300'
-                      : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
-                  }`}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-all ${activeTab === tab.id
+                    ? 'bg-indigo-500/10 border border-indigo-500/20 text-indigo-300'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+                    }`}
                 >
                   <tab.icon size={18} />
                   <div>
@@ -268,48 +268,7 @@ export default function RecruiterSettings() {
               </div>
 
               {/* Authentication */}
-              <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-6">
-                <h3 className="text-lg font-medium text-white mb-4">
-                  Authentication
-                </h3>
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-slate-700 flex items-center justify-center">
-                        <span className="text-sm">🔐</span>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-white">
-                          Two-Factor Authentication
-                        </p>
-                        <p className="text-xs text-slate-500">
-                          Add an extra layer of security
-                        </p>
-                      </div>
-                    </div>
-                    <div className="relative inline-block w-10 h-6 align-middle select-none transition duration-200 ease-in">
-                      <input
-                        type="checkbox"
-                        checked={accountSettings.twoFactorEnabled}
-                        onChange={() =>
-                          setAccountSettings((prev) => ({
-                            ...prev,
-                            twoFactorEnabled: !prev.twoFactorEnabled,
-                          }))
-                        }
-                        className="toggle-checkbox absolute block w-4 h-4 rounded-full bg-white border-4 appearance-none cursor-pointer left-1 top-1 transition-all duration-300"
-                      />
-                      <label className="toggle-label block overflow-hidden h-6 rounded-full bg-slate-700 cursor-pointer transition-colors duration-300"></label>
-                    </div>
-                  </div>
-
-                  <div className="pt-4 border-t border-slate-800">
-                    <Button className="bg-slate-800 hover:bg-slate-700 text-white border border-slate-700">
-                      Change Password
-                    </Button>
-                  </div>
-                </div>
-              </div>
+              <SecuritySettings />
 
               {/* Language & Region */}
               <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-6">
@@ -714,7 +673,7 @@ export default function RecruiterSettings() {
                       <input
                         type="checkbox"
                         checked={true}
-                        onChange={() => {}}
+                        onChange={() => { }}
                         className="toggle-checkbox absolute block w-4 h-4 rounded-full bg-white border-4 appearance-none cursor-pointer left-1 top-1 transition-all duration-300"
                       />
                       <label className="toggle-label block overflow-hidden h-6 rounded-full bg-slate-700 cursor-pointer transition-colors duration-300"></label>
@@ -760,7 +719,7 @@ export default function RecruiterSettings() {
                       <input
                         type="checkbox"
                         checked={true}
-                        onChange={() => {}}
+                        onChange={() => { }}
                         className="toggle-checkbox absolute block w-4 h-4 rounded-full bg-white border-4 appearance-none cursor-pointer left-1 top-1 transition-all duration-300"
                       />
                       <label className="toggle-label block overflow-hidden h-6 rounded-full bg-slate-700 cursor-pointer transition-colors duration-300"></label>
@@ -780,7 +739,7 @@ export default function RecruiterSettings() {
                       <input
                         type="checkbox"
                         checked={false}
-                        onChange={() => {}}
+                        onChange={() => { }}
                         className="toggle-checkbox absolute block w-4 h-4 rounded-full bg-white border-4 appearance-none cursor-pointer left-1 top-1 transition-all duration-300"
                       />
                       <label className="toggle-label block overflow-hidden h-6 rounded-full bg-slate-700 cursor-pointer transition-colors duration-300"></label>
@@ -812,7 +771,7 @@ export default function RecruiterSettings() {
                       <input
                         type="checkbox"
                         checked={true}
-                        onChange={() => {}}
+                        onChange={() => { }}
                         className="toggle-checkbox absolute block w-4 h-4 rounded-full bg-white border-4 appearance-none cursor-pointer left-1 top-1 transition-all duration-300"
                       />
                       <label className="toggle-label block overflow-hidden h-6 rounded-full bg-slate-700 cursor-pointer transition-colors duration-300"></label>
@@ -953,7 +912,7 @@ export default function RecruiterSettings() {
                         <input
                           type="checkbox"
                           checked={true}
-                          onChange={() => {}}
+                          onChange={() => { }}
                           className="toggle-checkbox absolute block w-4 h-4 rounded-full bg-white border-4 appearance-none cursor-pointer left-1 top-1 transition-all duration-300"
                         />
                         <label className="toggle-label block overflow-hidden h-6 rounded-full bg-slate-700 cursor-pointer transition-colors duration-300"></label>
@@ -994,7 +953,7 @@ export default function RecruiterSettings() {
                         <input
                           type="checkbox"
                           checked={true}
-                          onChange={() => {}}
+                          onChange={() => { }}
                           className="toggle-checkbox absolute block w-4 h-4 rounded-full bg-white border-4 appearance-none cursor-pointer left-1 top-1 transition-all duration-300"
                         />
                         <label className="toggle-label block overflow-hidden h-6 rounded-full bg-slate-700 cursor-pointer transition-colors duration-300"></label>
@@ -1160,7 +1119,7 @@ export default function RecruiterSettings() {
                       <input
                         type="checkbox"
                         checked={true}
-                        onChange={() => {}}
+                        onChange={() => { }}
                         className="toggle-checkbox absolute block w-4 h-4 rounded-full bg-white border-4 appearance-none cursor-pointer left-1 top-1 transition-all duration-300"
                       />
                       <label className="toggle-label block overflow-hidden h-6 rounded-full bg-slate-700 cursor-pointer transition-colors duration-300"></label>
@@ -1185,7 +1144,7 @@ export default function RecruiterSettings() {
                       <input
                         type="checkbox"
                         checked={false}
-                        onChange={() => {}}
+                        onChange={() => { }}
                         className="toggle-checkbox absolute block w-4 h-4 rounded-full bg-white border-4 appearance-none cursor-pointer left-1 top-1 transition-all duration-300"
                       />
                       <label className="toggle-label block overflow-hidden h-6 rounded-full bg-slate-700 cursor-pointer transition-colors duration-300"></label>

@@ -1,9 +1,11 @@
-import express from 'express';
+import express, { Response } from 'express';
 import { z } from 'zod';
 import { db } from '../utils/database';
 import { experiments, experimentParticipants } from '../models/schema';
 import { eq, desc, and, count } from 'drizzle-orm';
-import { authenticateToken, requireRole, AuthRequest } from '../middleware/auth';
+import { authenticateToken, requireRole, AuthRequest, requireVerified } from '../middleware/auth';
+import { catchAsync } from '../utils/catchAsync';
+import { AppError } from '../middleware/error';
 
 const router = express.Router();
 
@@ -14,22 +16,20 @@ const createExperimentSchema = z.object({
   status: z.enum(['draft', 'running', 'completed', 'stopped']).default('draft'),
   variants: z.record(z.any()),
   targetAudience: z.record(z.any()).optional(),
-  startDate: z.string().optional(),
-  endDate: z.string().optional(),
+  startDate: z.string().datetime().or(z.string().date()).optional(),
+  endDate: z.string().datetime().or(z.string().date()).optional(),
 });
 
-const updateExperimentSchema = z.object({
-  name: z.string().min(1).optional(),
-  description: z.string().optional(),
-  status: z.enum(['draft', 'running', 'completed', 'stopped']).optional(),
-  variants: z.record(z.any()).optional(),
-  targetAudience: z.record(z.any()).optional(),
-  startDate: z.string().optional(),
-  endDate: z.string().optional(),
-});
+const updateExperimentSchema = createExperimentSchema.partial();
 
 const enrollParticipantSchema = z.object({
-  variantAssigned: z.string(),
+  variantAssigned: z.string().min(1),
+});
+
+const getExperimentsSchema = z.object({
+  status: z.enum(['draft', 'running', 'completed', 'stopped']).optional(),
+  page: z.string().transform(v => parseInt(v) || 1).optional(),
+  limit: z.string().transform(v => parseInt(v) || 20).optional(),
 });
 
 /**
@@ -37,409 +37,215 @@ const enrollParticipantSchema = z.object({
  * /api/experiments:
  *   get:
  *     summary: Get all experiments
- *     tags: [Experiments]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: query
- *         name: status
- *         schema:
- *           type: string
- *           enum: [draft, running, completed, stopped]
- *         description: Filter by status
- *       - in: query
- *         name: page
- *         schema:
- *           type: integer
- *           default: 1
- *         description: Page number
- *       - in: query
- *         name: limit
- *         schema:
- *           type: integer
- *           default: 20
- *         description: Number of experiments per page
- *     responses:
- *       200:
- *         description: Experiments retrieved successfully
  */
-router.get('/', authenticateToken, async (req: AuthRequest, res) => {
-  try {
-    const { status, page = 1, limit = 20 } = req.query;
-    const offset = (Number(page) - 1) * Number(limit);
+router.get('/', authenticateToken, requireVerified, catchAsync(async (req: AuthRequest, res: Response) => {
+  const { status, page, limit } = getExperimentsSchema.parse(req.query);
+  const offset = (page! - 1) * limit!;
 
-    let whereCondition = undefined;
-    if (status) {
-      whereCondition = eq(experiments.status, status as 'draft' | 'running' | 'completed' | 'stopped');
-    }
+  const whereCondition = status ? eq(experiments.status, status) : undefined;
 
-    const experimentList = await db.select()
-      .from(experiments)
-      .where(whereCondition)
-      .orderBy(desc(experiments.createdAt))
-      .limit(Number(limit))
-      .offset(offset);
+  const experimentList = await db.select()
+    .from(experiments)
+    .where(whereCondition)
+    .orderBy(desc(experiments.createdAt))
+    .limit(limit!)
+    .offset(offset);
 
-    const totalCount = await db.select({ count: count() })
-      .from(experiments)
-      .where(whereCondition);
+  const totalCount = await db.select({ count: count() })
+    .from(experiments)
+    .where(whereCondition);
 
-    res.json({
-      experiments: experimentList,
-      pagination: {
-        page: Number(page),
-        limit: Number(limit),
-        total: totalCount[0]?.count || 0,
-        totalPages: Math.ceil((totalCount[0]?.count || 0) / Number(limit)),
-      },
-    });
-    return;
-  } catch (error) {
-    console.error('Fetch experiments error:', error);
-    res.status(500).json({ error: 'Failed to fetch experiments' });
-    return;
-  }
-});
+  const totalResult = Number(totalCount[0]?.count || 0);
+
+  res.json({
+    success: true,
+    experiments: experimentList,
+    pagination: {
+      page: page!,
+      limit: limit!,
+      total: totalResult,
+      totalPages: Math.ceil(totalResult / limit!),
+    },
+  });
+}));
 
 /**
  * @swagger
  * /api/experiments:
  *   post:
  *     summary: Create a new experiment
- *     tags: [Experiments]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - name
- *               - variants
- *             properties:
- *               name:
- *                 type: string
- *               description:
- *                 type: string
- *               status:
- *                 type: string
- *                 enum: [draft, running, completed, stopped]
- *               variants:
- *                 type: object
- *               targetAudience:
- *                 type: object
- *               startDate:
- *                 type: string
- *                 format: date
- *               endDate:
- *                 type: string
- *                 format: date
- *     responses:
- *       201:
- *         description: Experiment created successfully
  */
-router.post('/', authenticateToken, requireRole(['recruiter']), async (req: AuthRequest, res) => {
-  try {
-    const experimentData = createExperimentSchema.parse(req.body);
+router.post('/', authenticateToken, requireVerified, requireRole(['recruiter']), catchAsync(async (req: AuthRequest, res: Response) => {
+  const experimentData = createExperimentSchema.parse(req.body);
 
-    const newExperiment = await db.insert(experiments).values({
-      name: experimentData.name,
-      description: experimentData.description || null,
-      status: experimentData.status,
-      variants: JSON.stringify(experimentData.variants),
-      targetAudience: experimentData.targetAudience ? JSON.stringify(experimentData.targetAudience) : null,
-      startDate: experimentData.startDate ? new Date(experimentData.startDate) : null,
-      endDate: experimentData.endDate ? new Date(experimentData.endDate) : null,
-    }).returning();
+  const [newExperiment] = await db.insert(experiments).values({
+    name: experimentData.name,
+    description: experimentData.description || null,
+    status: experimentData.status,
+    variants: experimentData.variants,
+    targetAudience: experimentData.targetAudience || null,
+    startDate: experimentData.startDate ? new Date(experimentData.startDate) : null,
+    endDate: experimentData.endDate ? new Date(experimentData.endDate) : null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  }).returning();
 
-    if (newExperiment.length === 0) {
-      throw new Error('Failed to create experiment');
-    }
-
-    res.status(201).json({ experiment: newExperiment[0] });
-    return;
-  } catch (error) {
-    console.error('Create experiment error:', error);
-    res.status(400).json({ error: 'Invalid input or failed to create experiment' });
-    return;
+  if (!newExperiment) {
+    throw new AppError('Failed to create experiment', 500, 'INTERNAL_ERROR');
   }
-});
+
+  res.status(201).json({ success: true, experiment: newExperiment });
+}));
 
 /**
  * @swagger
  * /api/experiments/{id}:
  *   get:
  *     summary: Get experiment by ID
- *     tags: [Experiments]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: Experiment ID
- *     responses:
- *       200:
- *         description: Experiment retrieved successfully
- *       404:
- *         description: Experiment not found
  */
-router.get('/:id', authenticateToken, async (req: AuthRequest, res) => {
-  try {
-    const { id } = req.params;
+router.get('/:id', authenticateToken, requireVerified, catchAsync(async (req: AuthRequest, res: Response) => {
+  const { id } = req.params;
 
-    const experimentList = await db.select()
-      .from(experiments)
-      .where(eq(experiments.id, id!))
-      .limit(1);
+  const [experiment] = await db.select()
+    .from(experiments)
+    .where(eq(experiments.id, id))
+    .limit(1);
 
-    if (experimentList.length === 0) {
-      return res.status(404).json({ error: 'Experiment not found' });
-    }
-
-    res.json({ experiment: experimentList[0] });
-    return;
-  } catch (error) {
-    console.error('Fetch experiment error:', error);
-    res.status(500).json({ error: 'Failed to fetch experiment' });
-    return;
+  if (!experiment) {
+    throw new AppError('Experiment not found', 404, 'NOT_FOUND');
   }
-});
+
+  res.json({ success: true, experiment });
+}));
 
 /**
  * @swagger
  * /api/experiments/{id}:
  *   put:
  *     summary: Update experiment
- *     tags: [Experiments]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: Experiment ID
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               name:
- *                 type: string
- *               description:
- *                 type: string
- *               status:
- *                 type: string
- *                 enum: [draft, running, completed, stopped]
- *               variants:
- *                 type: object
- *               targetAudience:
- *                 type: object
- *               startDate:
- *                 type: string
- *                 format: date
- *               endDate:
- *                 type: string
- *                 format: date
- *     responses:
- *       200:
- *         description: Experiment updated successfully
  */
-router.put('/:id', authenticateToken, requireRole(['recruiter']), async (req: AuthRequest, res) => {
-  try {
-    const { id } = req.params;
-    if (!id) {
-      return res.status(400).json({ error: 'Experiment ID is required' });
-    }
-    const updateData = updateExperimentSchema.parse(req.body);
+router.put('/:id', authenticateToken, requireVerified, requireRole(['recruiter']), catchAsync(async (req: AuthRequest, res: Response) => {
+  const { id } = req.params;
+  const updateData = updateExperimentSchema.parse(req.body);
 
-    const updateValues: any = {};
-    if (updateData.name) updateValues.name = updateData.name;
-    if (updateData.description !== undefined) updateValues.description = updateData.description;
-    if (updateData.status) updateValues.status = updateData.status as 'draft' | 'running' | 'completed' | 'stopped';
-    if (updateData.variants) updateValues.variants = JSON.stringify(updateData.variants);
-    if (updateData.targetAudience) updateValues.targetAudience = JSON.stringify(updateData.targetAudience);
-    if (updateData.startDate) updateValues.startDate = new Date(updateData.startDate);
-    if (updateData.endDate) updateValues.endDate = new Date(updateData.endDate);
-    updateValues.updatedAt = new Date();
-
-    await db.update(experiments)
-      .set(updateValues)
-      .where(eq(experiments.id, id!));
-
-    const updatedExperiment = await db.select()
-      .from(experiments)
-      .where(eq(experiments.id, id!))
-      .limit(1);
-
-    res.json({ experiment: updatedExperiment[0] });
-    return;
-  } catch (error) {
-    console.error('Update experiment error:', error);
-    res.status(400).json({ error: 'Invalid input or failed to update experiment' });
-    return;
+  const [existingExperiment] = await db.select().from(experiments).where(eq(experiments.id, id)).limit(1);
+  if (!existingExperiment) {
+    throw new AppError('Experiment not found', 404, 'NOT_FOUND');
   }
-});
+
+  const [updatedExperiment] = await db.update(experiments)
+    .set({
+      ...updateData,
+      startDate: updateData.startDate ? new Date(updateData.startDate) : undefined,
+      endDate: updateData.endDate ? new Date(updateData.endDate) : undefined,
+      updatedAt: new Date(),
+    })
+    .where(eq(experiments.id, id))
+    .returning();
+
+  res.json({ success: true, experiment: updatedExperiment });
+}));
 
 /**
  * @swagger
  * /api/experiments/{id}:
  *   delete:
  *     summary: Delete experiment
- *     tags: [Experiments]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: Experiment ID
- *     responses:
- *       200:
- *         description: Experiment deleted successfully
  */
-router.delete('/:id', authenticateToken, requireRole(['recruiter']), async (req: AuthRequest, res) => {
-  try {
-    const { id } = req.params;
+router.delete('/:id', authenticateToken, requireVerified, requireRole(['recruiter']), catchAsync(async (req: AuthRequest, res: Response) => {
+  const { id } = req.params;
 
-    // Delete participants first (cascade should handle this, but being explicit)
-    await db.delete(experimentParticipants).where(eq(experimentParticipants.experimentId, id!));
-
-    // Delete experiment
-    await db.delete(experiments).where(eq(experiments.id, id!));
-
-    res.json({ message: 'Experiment deleted successfully' });
-    return;
-  } catch (error) {
-    console.error('Delete experiment error:', error);
-    res.status(500).json({ error: 'Failed to delete experiment' });
-    return;
+  const [existingExperiment] = await db.select().from(experiments).where(eq(experiments.id, id)).limit(1);
+  if (!existingExperiment) {
+    throw new AppError('Experiment not found', 404, 'NOT_FOUND');
   }
-});
+
+  // Cascade delete handles participants
+  await db.delete(experiments).where(eq(experiments.id, id));
+
+  res.json({ success: true, message: 'Experiment deleted successfully' });
+}));
 
 /**
  * @swagger
  * /api/experiments/{id}/enroll:
  *   post:
  *     summary: Enroll user in experiment
- *     tags: [Experiments]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: Experiment ID
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - variantAssigned
- *             properties:
- *               variantAssigned:
- *                 type: string
- *     responses:
- *       201:
- *         description: User enrolled successfully
  */
-router.post('/:id/enroll', authenticateToken, async (req: AuthRequest, res) => {
+router.post('/:id/enroll', authenticateToken, requireVerified, catchAsync(async (req: AuthRequest, res: Response) => {
+  const { id } = req.params;
+  const { variantAssigned } = enrollParticipantSchema.parse(req.body);
+  const userId = req.user!.id;
+
+  // Check if experiment exists and is running
+  const [experiment] = await db.select()
+    .from(experiments)
+    .where(eq(experiments.id, id))
+    .limit(1);
+
+  if (!experiment) {
+    throw new AppError('Experiment not found', 404, 'NOT_FOUND');
+  }
+
+  if (experiment.status !== 'running') {
+    throw new AppError('Experiment is not currently active', 400, 'INACTIVE_EXPERIMENT');
+  }
+
+  // Attempt enrollment
   try {
-    const { id } = req.params;
-    if (!id) {
-      return res.status(400).json({ error: 'Experiment ID is required' });
-    }
-    const { variantAssigned } = enrollParticipantSchema.parse(req.body);
-    const userId = req.user!.id;
-
-    // Check if experiment exists
-    const experimentList = await db.select()
-      .from(experiments)
-      .where(eq(experiments.id, id))
-      .limit(1);
-
-    if (experimentList.length === 0) {
-      return res.status(404).json({ error: 'Experiment not found' });
-    }
-
-    // Check if user is already enrolled
-    const existingParticipant = await db.select()
-      .from(experimentParticipants)
-      .where(and(
-        eq(experimentParticipants.experimentId, id!),
-        eq(experimentParticipants.userId, userId)
-      ))
-      .limit(1);
-
-    if (existingParticipant.length > 0) {
-      return res.status(400).json({ error: 'User already enrolled in this experiment' });
-    }
-
-    // Enroll user
-    const participant = await db.insert(experimentParticipants).values({
-      experimentId: id!,
+    const [participant] = await db.insert(experimentParticipants).values({
+      experimentId: id,
       userId,
       variantAssigned,
+      enrolledAt: new Date(),
     }).returning();
 
-    res.status(201).json({ participant: participant[0] });
-    return;
-  } catch (error) {
-    console.error('Enroll participant error:', error);
-    res.status(400).json({ error: 'Invalid input or failed to enroll' });
-    return;
+    res.status(201).json({ success: true, participant });
+  } catch (error: any) {
+    if (error.code === '23505') { // Unique violation
+      throw new AppError('User already enrolled in this experiment', 400, 'ALREADY_ENROLLED');
+    }
+    throw error;
   }
-});
+}));
 
 /**
  * @swagger
  * /api/experiments/{id}/participants:
  *   get:
  *     summary: Get experiment participants
- *     tags: [Experiments]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: Experiment ID
- *     responses:
- *       200:
- *         description: Participants retrieved successfully
  */
-router.get('/:id/participants', authenticateToken, requireRole(['recruiter']), async (req: AuthRequest, res) => {
-  try {
-    const { id } = req.params;
+router.get('/:id/participants', authenticateToken, requireVerified, requireRole(['recruiter']), catchAsync(async (req: AuthRequest, res: Response) => {
+  const { id } = req.params;
+  const { page, limit } = getExperimentsSchema.parse(req.query);
+  const offset = (page! - 1) * limit!;
 
-    const participants = await db.select()
-      .from(experimentParticipants)
-      .where(eq(experimentParticipants.experimentId, id!))
-      .orderBy(desc(experimentParticipants.enrolledAt));
+  const whereCondition = eq(experimentParticipants.experimentId, id);
 
-    res.json({ participants });
-    return;
-  } catch (error) {
-    console.error('Fetch participants error:', error);
-    res.status(500).json({ error: 'Failed to fetch participants' });
-    return;
-  }
-});
+  const participants = await db.select()
+    .from(experimentParticipants)
+    .where(whereCondition)
+    .orderBy(desc(experimentParticipants.enrolledAt))
+    .limit(limit!)
+    .offset(offset);
+
+  const totalCount = await db.select({ count: count() })
+    .from(experimentParticipants)
+    .where(whereCondition);
+
+  const totalResult = Number(totalCount[0]?.count || 0);
+
+  res.json({
+    success: true,
+    data: participants,
+    pagination: {
+      page: page!,
+      limit: limit!,
+      total: totalResult,
+      totalPages: Math.ceil(totalResult / limit!),
+      count: participants.length,
+    }
+  });
+}));
 
 export default router;

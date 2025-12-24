@@ -10,13 +10,14 @@ const envSchema = z.object({
     DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
     JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters'),
     JWT_REFRESH_SECRET: z.string().min(32, 'JWT_REFRESH_SECRET must be at least 32 characters'),
+    JWT_RESET_SECRET: z.string().min(32).optional().default('default-reset-secret-at-least-32-chars-long'),
     ENCRYPTION_KEY: z.string().length(64, 'ENCRYPTION_KEY must be exactly 64 characters (32 bytes in hex)'),
 
     // Optional with defaults
-    NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
     PORT: z.string().default('5000'),
+    NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
     FRONTEND_URL: z.string().url().default('http://localhost:3000'),
-    AI_SERVICE_URL: z.string().url().optional(),
+    AI_SERVICE_URL: z.string().url().optional().default('http://localhost:8000'),
 
     // Email config (optional for dev)
     EMAIL_USER: z.string().email().optional(),

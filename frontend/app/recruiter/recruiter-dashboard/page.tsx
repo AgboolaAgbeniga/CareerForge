@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/lib/authContext';
 import { Icon } from '@iconify/react';
 import { formatShortDate, formatRelativeTime } from '@/lib/utils/dateUtils';
 import {
@@ -45,6 +46,36 @@ export default function RecruiterDashboard() {
   ]);
   const [locationFilter, setLocationFilter] = useState('');
   const [experienceFilter, setExperienceFilter] = useState('');
+  const { user } = useAuth();
+  const [realJobs, setRealJobs] = useState<any[]>([]);
+  const [realApplications, setRealApplications] = useState<any[]>([]);
+  const [realNotifications, setRealNotifications] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        const response = await fetch('/api/dashboard/recruiter', {
+          credentials: 'include',
+        });
+        if (response.ok) {
+          const result = await response.json();
+          const dashboardData = result.data || result;
+          setRealJobs(dashboardData.jobs || []);
+          setRealApplications(dashboardData.applications || []);
+          setRealNotifications(dashboardData.notifications || []);
+        }
+      } catch (error) {
+        console.error('Failed to fetch recruiter dashboard data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (user) {
+      fetchDashboardData();
+    }
+  }, [user]);
 
   const currentDate = formatShortDate(new Date());
 
@@ -135,7 +166,7 @@ export default function RecruiterDashboard() {
                 Dashboard
               </p>
               <h1 className="text-2xl font-semibold text-white tracking-tight">
-                Welcome back, Alex
+                Welcome back, {user ? `${user.firstName} ${user.lastName}` : 'Alex'}
               </h1>
             </div>
             <div className="text-right hidden sm:block">
@@ -146,7 +177,7 @@ export default function RecruiterDashboard() {
             </div>
           </div>
 
-          <KPICards />
+          <KPICards applicationsCount={realApplications.length} activeJobsCount={realJobs.length} />
 
           {/* Main Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -357,8 +388,8 @@ export default function RecruiterDashboard() {
                               <span
                                 key={index}
                                 className={`text-xs px-2 py-1 rounded border ${index < 2
-                                    ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20'
-                                    : 'bg-slate-700 text-slate-400 border-slate-600'
+                                  ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20'
+                                  : 'bg-slate-700 text-slate-400 border-slate-600'
                                   }`}
                               >
                                 {skill}
@@ -591,8 +622,8 @@ export default function RecruiterDashboard() {
                                 <div
                                   key={i}
                                   className={`w-2 h-4 rounded-sm ${i < Math.floor(percentage / 20)
-                                      ? `bg-${color}-500`
-                                      : 'bg-slate-700'
+                                    ? `bg-${color}-500`
+                                    : 'bg-slate-700'
                                     }`}
                                 />
                               ))}
@@ -692,9 +723,9 @@ export default function RecruiterDashboard() {
 
               {/* Active Jobs and Shortlist */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <ActiveJobs jobs={jobs} />
+                <ActiveJobs jobs={realJobs.length > 0 ? realJobs : jobs} />
 
-                <RecentShortlists />
+                <RecentShortlists applications={realApplications} />
               </div>
             </div>
 
@@ -702,7 +733,7 @@ export default function RecruiterDashboard() {
             <div className="lg:col-span-4 space-y-6">
               <AIHiringCopilot />
 
-              <NotificationsPanel />
+              <NotificationsPanel notifications={realNotifications} />
 
             </div>
           </div>
