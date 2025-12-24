@@ -110,10 +110,14 @@ router.get('/jobs/:jobSeekerId', authenticateToken, requireVerified, catchAsync(
  */
 router.get('/candidates/:jobId', authenticateToken, requireVerified, catchAsync(async (req: AuthRequest, res: Response) => {
   const { jobId } = req.params;
+  if (!jobId) {
+    throw new AppError('Job ID is required', 400, 'BAD_REQUEST');
+  }
+
   const userId = req.user!.id;
 
   // Get job details to verify ownership
-  const [job] = await db.select().from(jobs).where(eq(jobs.id, jobId)).limit(1);
+  const [job] = await db.select().from(jobs).where(eq(jobs.id, jobId!)).limit(1);
   if (!job) {
     throw new AppError('Job not found', 404, 'NOT_FOUND');
   }

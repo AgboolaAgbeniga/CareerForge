@@ -21,7 +21,6 @@ const createJobSchema = z.object({
     title: z.string().min(3).max(255),
     description: z.string().min(50).max(10000),
     requirements: z.string().min(20).max(5000),
-    responsibilities: z.string().optional(),
     location: z.string().optional(),
     type: z.enum(['full_time', 'part_time', 'contract', 'remote']),
     experienceLevel: z.enum(['entry', 'mid', 'senior', 'executive']),
@@ -97,7 +96,6 @@ router.post('/create', authenticateToken, requireVerified, catchAsync(async (req
     const title = sanitizeText(jobData.title);
     const description = sanitizeText(jobData.description);
     const requirements = sanitizeText(jobData.requirements);
-    const responsibilities = jobData.responsibilities ? sanitizeText(jobData.responsibilities) : null;
     const location = jobData.location ? sanitizeText(jobData.location) : null;
 
     // Validate salary range
@@ -105,18 +103,8 @@ router.post('/create', authenticateToken, requireVerified, catchAsync(async (req
         throw new AppError('Minimum salary cannot be greater than maximum salary', 400, 'INVALID_SALARY_RANGE');
     }
 
-    // Get recruiter's company
-    const [recruiter] = await db
-        .select({ companyId: recruiters.companyId })
-        .from(recruiters)
-        .where(eq(recruiters.id, userId))
-        .limit(1);
-
-    const companyId = jobData.companyId || recruiter?.companyId || null;
-
-    if (jobData.companyId && recruiter && recruiter.companyId !== jobData.companyId) {
-        throw new AppError('You can only post jobs for your assigned company', 403, 'FORBIDDEN');
-    }
+    // Use provided companyId or null
+    const companyId = jobData.companyId || null;
 
     // Parse expiresAt if provided
     const expiresAt = jobData.expiresAt ? new Date(jobData.expiresAt) : null;
@@ -128,7 +116,6 @@ router.post('/create', authenticateToken, requireVerified, catchAsync(async (req
         title,
         description,
         requirements,
-        responsibilities,
         location,
         jobType: jobData.type,
         experienceLevel: jobData.experienceLevel,
@@ -139,6 +126,10 @@ router.post('/create', authenticateToken, requireVerified, catchAsync(async (req
         postedAt: null,
         expiresAt,
     }).returning();
+
+    if (!newJob) {
+        throw new AppError('Failed to create job posting', 500);
+    }
 
     logger.info(`Job posting created: ${newJob.id} by recruiter ${userId}`);
     res.status(201).json({
@@ -208,12 +199,12 @@ router.get('/', catchAsync(async (req: AuthRequest, res: Response) => {
     if (location) conditions.push(sql`${jobs.location} ILIKE ${`%${location}%`}`);
 
     // Get total count for pagination
-    const [{ count }] = await db
+    const countResult = await db
         .select({ count: sql<number>`count(*)` })
         .from(jobs)
         .where(and(...conditions));
 
-    const total = Number(count);
+    const total = Number(countResult[0]?.count || 0);
     const totalPages = Math.ceil(total / limit);
 
     // Get list with pagination
@@ -283,6 +274,9 @@ router.get('/', catchAsync(async (req: AuthRequest, res: Response) => {
  */
 router.get('/:id', catchAsync(async (req: AuthRequest, res: Response) => {
     const { id } = req.params;
+    if (!id) {
+        throw new AppError('Job ID is required', 400, 'BAD_REQUEST');
+    }
 
     const [job] = await db
         .select({
@@ -290,7 +284,6 @@ router.get('/:id', catchAsync(async (req: AuthRequest, res: Response) => {
             title: jobs.title,
             description: jobs.description,
             requirements: jobs.requirements,
-            responsibilities: jobs.responsibilities,
             location: jobs.location,
             jobType: jobs.jobType,
             experienceLevel: jobs.experienceLevel,
@@ -417,6 +410,10 @@ router.get('/recruiter/my-jobs', authenticateToken, catchAsync(async (req: AuthR
  */
 router.put('/:id', authenticateToken, catchAsync(async (req: AuthRequest, res: Response) => {
     const { id } = req.params;
+    if (!id) {
+        throw new AppError('Job ID is required', 400, 'BAD_REQUEST');
+    }
+
     const userId = req.user!.id;
     const userRole = req.user!.role;
 
@@ -452,7 +449,6 @@ router.put('/:id', authenticateToken, catchAsync(async (req: AuthRequest, res: R
     if (updates.title) updateData.title = sanitizeText(updates.title);
     if (updates.description) updateData.description = sanitizeText(updates.description);
     if (updates.requirements) updateData.requirements = sanitizeText(updates.requirements);
-    if (updates.responsibilities) updateData.responsibilities = sanitizeText(updates.responsibilities);
     if (updates.location) updateData.location = sanitizeText(updates.location);
     if (updates.type) updateData.jobType = updates.type;
     if (updates.experienceLevel) updateData.experienceLevel = updates.experienceLevel;
@@ -503,6 +499,10 @@ router.put('/:id', authenticateToken, catchAsync(async (req: AuthRequest, res: R
  */
 router.put('/:id/status', authenticateToken, catchAsync(async (req: AuthRequest, res: Response) => {
     const { id } = req.params;
+    if (!id) {
+        throw new AppError('Job ID is required', 400, 'BAD_REQUEST');
+    }
+
     const userId = req.user!.id;
     const userRole = req.user!.role;
 
@@ -576,6 +576,10 @@ router.put('/:id/status', authenticateToken, catchAsync(async (req: AuthRequest,
  */
 router.delete('/:id', authenticateToken, catchAsync(async (req: AuthRequest, res: Response) => {
     const { id } = req.params;
+    if (!id) {
+        throw new AppError('Job ID is required', 400, 'BAD_REQUEST');
+    }
+
     const userId = req.user!.id;
     const userRole = req.user!.role;
 
@@ -595,10 +599,11 @@ router.delete('/:id', authenticateToken, catchAsync(async (req: AuthRequest, res
 
     if (job.status === 'draft') {
         await db.delete(jobs).where(eq(jobs.id, id));
-        return res.json({
+        res.json({
             success: true,
             message: 'Job posting deleted successfully',
         });
+        return;
     }
 
     await db.update(jobs).set({ status: 'closed', updatedAt: new Date() }).where(eq(jobs.id, id));

@@ -54,6 +54,11 @@ export const disable2FASchema = z.object({
     code: z.string().optional(),
 });
 
+export const changePasswordSchema = z.object({
+    oldPassword: z.string(),
+    newPassword: passwordSchema,
+});
+
 export const regenerateBackupCodesSchema = z.object({
     password: z.string(),
 });
@@ -122,7 +127,12 @@ export interface Verify2FADTO {
 
 export interface Disable2FADTO {
     password: string;
-    code?: string;
+    code?: string | undefined;
+}
+
+export interface ChangePasswordDTO {
+    oldPassword: string;
+    newPassword: string;
 }
 
 export interface RegenerateBackupCodesDTO {

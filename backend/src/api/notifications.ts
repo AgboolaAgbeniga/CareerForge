@@ -61,6 +61,10 @@ router.get('/', authenticateToken, catchAsync(async (req: AuthRequest, res: Resp
  */
 router.put('/:id/read', authenticateToken, catchAsync(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
+  if (!id) {
+    throw new AppError('Notification ID is required', 400, 'BAD_REQUEST');
+  }
+
   const userId = req.user!.id;
 
   const [existingNotification] = await db.select()
@@ -91,6 +95,10 @@ router.put('/:id/read', authenticateToken, catchAsync(async (req: AuthRequest, r
  */
 router.delete('/:id', authenticateToken, catchAsync(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
+  if (!id) {
+    throw new AppError('Notification ID is required', 400, 'BAD_REQUEST');
+  }
+
   const userId = req.user!.id;
 
   const [existingNotification] = await db.select()

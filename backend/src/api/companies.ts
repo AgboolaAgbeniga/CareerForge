@@ -3,7 +3,7 @@
  * Handles company creation and management for recruiters
  */
 
-import express, { Response } from 'express';
+import express, { Request, Response } from 'express';
 import { z } from 'zod';
 import { authenticateToken, AuthRequest } from '../middleware/auth';
 import { db } from '../utils/database';
@@ -41,16 +41,12 @@ router.post('/create', authenticateToken, catchAsync(async (req: AuthRequest, re
 
     const data = createCompanySchema.parse(req.body);
 
-    // Check if recruiter already has a company
-    const [existingRecruiter] = await db.select().from(recruiters).where(eq(recruiters.id, userId)).limit(1);
-    if (existingRecruiter?.companyId) {
-        throw new AppError('You already have a company associated with your account', 400, 'ALREADY_EXISTS');
-    }
+    // Create company - filter out undefined values
+    const insertData = Object.fromEntries(
+        Object.entries(data).filter(([_, value]) => value !== undefined)
+    );
 
-    const [company] = await db.insert(companies).values(data).returning();
-
-    // Link company to recruiter
-    await db.update(recruiters).set({ companyId: company.id }).where(eq(recruiters.id, userId));
+    const [company] = await db.insert(companies).values(insertData as any).returning();
 
     res.status(201).json({
         success: true,
@@ -71,29 +67,11 @@ router.get('/my', authenticateToken, catchAsync(async (req: AuthRequest, res: Re
         throw new AppError('Only recruiters can access company information', 403, 'FORBIDDEN');
     }
 
-    const [recruiter] = await db.select({ companyId: recruiters.companyId }).from(recruiters).where(eq(recruiters.id, userId)).limit(1);
-
-    if (!recruiter?.companyId) {
-        return res.json({
-            success: true,
-            company: null,
-            message: 'No company associated with your account'
-        });
-    }
-
-    const [company] = await db.select().from(companies).where(eq(companies.id, recruiter.companyId)).limit(1);
-
-    if (!company) {
-        return res.json({
-            success: true,
-            company: null,
-            message: 'Company not found'
-        });
-    }
-
+    // For now, return no company since recruiters are not linked to companies
     res.json({
         success: true,
-        company
+        company: null,
+        message: 'Company association not implemented yet'
     });
 }));
 
@@ -111,29 +89,15 @@ router.put('/my', authenticateToken, catchAsync(async (req: AuthRequest, res: Re
 
     const data = updateCompanySchema.parse(req.body);
 
-    const [recruiter] = await db.select({ companyId: recruiters.companyId }).from(recruiters).where(eq(recruiters.id, userId)).limit(1);
-
-    if (!recruiter?.companyId) {
-        throw new AppError('No company associated with your account', 404, 'NOT_FOUND');
-    }
-
-    const [updatedCompany] = await db.update(companies)
-        .set(data)
-        .where(eq(companies.id, recruiter.companyId))
-        .returning();
-
-    res.json({
-        success: true,
-        message: 'Company updated successfully',
-        company: updatedCompany
-    });
+    // For now, throw error since company association is not implemented
+    throw new AppError('Company update not implemented yet', 501, 'NOT_IMPLEMENTED');
 }));
 
 /**
  * GET /api/companies
  * Get all companies (for job listings)
  */
-router.get('/', catchAsync(async (req, res: Response) => {
+router.get('/', catchAsync(async (req: Request, res: Response) => {
     const allCompanies = await db.select({
         id: companies.id,
         name: companies.name,

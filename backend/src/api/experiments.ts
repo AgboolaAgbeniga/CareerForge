@@ -105,6 +105,9 @@ router.post('/', authenticateToken, requireVerified, requireRole(['recruiter']),
  */
 router.get('/:id', authenticateToken, requireVerified, catchAsync(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
+  if (!id) {
+    throw new AppError('Experiment ID is required', 400, 'BAD_REQUEST');
+  }
 
   const [experiment] = await db.select()
     .from(experiments)
@@ -126,6 +129,10 @@ router.get('/:id', authenticateToken, requireVerified, catchAsync(async (req: Au
  */
 router.put('/:id', authenticateToken, requireVerified, requireRole(['recruiter']), catchAsync(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
+  if (!id) {
+    throw new AppError('Experiment ID is required', 400, 'BAD_REQUEST');
+  }
+
   const updateData = updateExperimentSchema.parse(req.body);
 
   const [existingExperiment] = await db.select().from(experiments).where(eq(experiments.id, id)).limit(1);
@@ -133,11 +140,16 @@ router.put('/:id', authenticateToken, requireVerified, requireRole(['recruiter']
     throw new AppError('Experiment not found', 404, 'NOT_FOUND');
   }
 
+  // Filter out undefined values and convert to null for optional fields
+  const updateFields = Object.fromEntries(
+    Object.entries(updateData).filter(([_, value]) => value !== undefined)
+  );
+
   const [updatedExperiment] = await db.update(experiments)
     .set({
-      ...updateData,
-      startDate: updateData.startDate ? new Date(updateData.startDate) : undefined,
-      endDate: updateData.endDate ? new Date(updateData.endDate) : undefined,
+      ...updateFields,
+      startDate: updateData.startDate ? new Date(updateData.startDate) : null,
+      endDate: updateData.endDate ? new Date(updateData.endDate) : null,
       updatedAt: new Date(),
     })
     .where(eq(experiments.id, id))
@@ -154,6 +166,9 @@ router.put('/:id', authenticateToken, requireVerified, requireRole(['recruiter']
  */
 router.delete('/:id', authenticateToken, requireVerified, requireRole(['recruiter']), catchAsync(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
+  if (!id) {
+    throw new AppError('Experiment ID is required', 400, 'BAD_REQUEST');
+  }
 
   const [existingExperiment] = await db.select().from(experiments).where(eq(experiments.id, id)).limit(1);
   if (!existingExperiment) {
@@ -174,6 +189,10 @@ router.delete('/:id', authenticateToken, requireVerified, requireRole(['recruite
  */
 router.post('/:id/enroll', authenticateToken, requireVerified, catchAsync(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
+  if (!id) {
+    throw new AppError('Experiment ID is required', 400, 'BAD_REQUEST');
+  }
+
   const { variantAssigned } = enrollParticipantSchema.parse(req.body);
   const userId = req.user!.id;
 
@@ -217,6 +236,10 @@ router.post('/:id/enroll', authenticateToken, requireVerified, catchAsync(async 
  */
 router.get('/:id/participants', authenticateToken, requireVerified, requireRole(['recruiter']), catchAsync(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
+  if (!id) {
+    throw new AppError('Experiment ID is required', 400, 'BAD_REQUEST');
+  }
+
   const { page, limit } = getExperimentsSchema.parse(req.query);
   const offset = (page! - 1) * limit!;
 
