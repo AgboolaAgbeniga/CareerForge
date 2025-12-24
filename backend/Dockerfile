@@ -29,11 +29,11 @@ RUN npm ci --only=production
 # Copy built files from builder
 COPY --from=builder /app/dist ./dist
 
-# Create logs directory and set permissions
-RUN mkdir -p logs && chown -R nodejs:nodejs logs
-
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
+
+# Create logs directory and set permissions
+RUN mkdir -p logs && chown -R nodejs:nodejs logs
 USER nodejs
 
 # Expose port
