@@ -1,55 +1,22 @@
 """
-FastAPI application for Resume Parser service
+Resume Parser router for combined AI service
 """
-import asyncio
-from contextlib import asynccontextmanager
 from typing import Dict, Any
 
-from fastapi import FastAPI, UploadFile, File, HTTPException, BackgroundTasks
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import APIRouter, UploadFile, File, HTTPException
 from pydantic import BaseModel
-import uvicorn
-
-from parser import ResumeParser
 import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from shared.config import config
 from shared.utils import get_logger
 
 logger = get_logger(__name__)
 
 # Global parser instance
-parser: ResumeParser = None
+parser = None
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """Application lifespan manager"""
-    global parser
-    logger.info("Starting Resume Parser service...")
-
-    # Initialize parser
-    parser = ResumeParser()
-
-    yield
-
-    logger.info("Shutting down Resume Parser service...")
-
-app = FastAPI(
-    title="Resume Parser API",
-    description="AI-powered resume parsing using Hugging Face models",
-    version="1.0.0",
-    lifespan=lifespan
-)
-
-# CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Configure for production
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# Router
+resume_router = APIRouter()
 
 # Pydantic models
 class ParseRequest(BaseModel):
@@ -68,12 +35,14 @@ class ParseResponse(BaseModel):
     summary: str
     confidence_score: float
 
-@app.get("/health")
-async def health_check():
-    """Health check endpoint"""
-    return {"status": "healthy", "service": "resume-parser"}
+async def init_parser():
+    """Initialize the resume parser"""
+    global parser
+    from parser import ResumeParser
+    logger.info("Initializing Resume Parser...")
+    parser = ResumeParser()
 
-@app.post("/parse", response_model=ParseResponse)
+@resume_router.post("/resume/parse", response_model=ParseResponse)
 async def parse_resume(request: ParseRequest):
     """Parse resume text"""
     try:
@@ -91,7 +60,7 @@ async def parse_resume(request: ParseRequest):
         logger.error(f"Parse error: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
-@app.post("/parse-file")
+@resume_router.post("/resume/parse-file")
 async def parse_resume_file(file: UploadFile = File(...)):
     """Parse uploaded resume file"""
     try:
@@ -119,7 +88,7 @@ async def parse_resume_file(file: UploadFile = File(...)):
         logger.error(f"File parse error: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
-@app.post("/optimize")
+@resume_router.post("/resume/optimize")
 async def optimize_resume(request: OptimizeRequest):
     """Optimize resume for job application"""
     try:
@@ -133,7 +102,17 @@ async def optimize_resume(request: OptimizeRequest):
         logger.error(f"Optimize error: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
-@app.get("/skills")
+@resume_router.post("/resume/cover-letter")
+async def generate_cover_letter(data: dict):
+    """Generate cover letter"""
+    try:
+        # Placeholder - would use career coach
+        return {"content": "Generated cover letter", "key_points": [], "customization_notes": ""}
+    except Exception as e:
+        logger.error(f"Cover letter error: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@resume_router.get("/resume/skills")
 async def get_skill_suggestions(query: str = ""):
     """Get skill suggestions based on query"""
     try:
@@ -142,12 +121,3 @@ async def get_skill_suggestions(query: str = ""):
     except Exception as e:
         logger.error(f"Skills error: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
-
-if __name__ == "__main__":
-    uvicorn.run(
-        "app:app",
-        host="0.0.0.0",
-        port=config.RESUME_PARSER_PORT,
-        reload=True,
-        log_level="info"
-    )

@@ -1,55 +1,22 @@
 """
-FastAPI application for Job Matching Engine service
+Job Matching Engine router for combined AI service
 """
-import asyncio
-from contextlib import asynccontextmanager
 from typing import List, Dict, Any
 
-from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-import uvicorn
-
-from matcher import JobMatcher, MatchResult, CandidateAnalysis
 import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from shared.config import config
 from shared.utils import get_logger
 
 logger = get_logger(__name__)
 
 # Global matcher instance
-matcher: JobMatcher = None
+matcher = None
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """Application lifespan manager"""
-    global matcher
-    logger.info("Starting Job Matching Engine...")
-
-    # Initialize matcher
-    matcher = JobMatcher()
-
-    yield
-
-    logger.info("Shutting down Job Matching Engine...")
-
-app = FastAPI(
-    title="Job Matching Engine API",
-    description="AI-powered job-candidate matching using Hugging Face models",
-    version="1.0.0",
-    lifespan=lifespan
-)
-
-# CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Configure for production
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# Router
+matching_router = APIRouter()
 
 # Pydantic models
 class JobSeekerData(BaseModel):
@@ -86,59 +53,55 @@ class CandidateAnalysisResponse(BaseModel):
     cultural_fit: float
     recommendations: List[str]
 
-@app.get("/health")
-async def health_check():
-    """Health check endpoint"""
-    return {"status": "healthy", "service": "matching-engine"}
+async def init_matcher():
+    """Initialize the job matcher"""
+    global matcher
+    from matcher import JobMatcher
+    logger.info("Initializing Job Matcher...")
+    matcher = JobMatcher()
 
-@app.post("/match", response_model=MatchResponse)
-async def calculate_match(job_seeker: JobSeekerData, job: JobData):
-    """Calculate match score between job seeker and job"""
+@matching_router.post("/matching/jobs")
+async def get_job_matches(data: dict):
+    """Find job matches for a job seeker"""
     try:
         if not matcher:
             raise HTTPException(status_code=503, detail="Matcher not initialized")
 
-        result = matcher.calculate_match_score(job_seeker.dict(), job.dict())
-
-        return MatchResponse(**result.__dict__)
-
-    except Exception as e:
-        logger.error(f"Match calculation error: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
-
-@app.post("/matches/{job_seeker_id}")
-async def find_matches(job_seeker_id: int, jobs: List[JobData], top_k: int = 10):
-    """Find best job matches for a job seeker"""
-    try:
-        if not matcher:
-            raise HTTPException(status_code=503, detail="Matcher not initialized")
+        job_seeker_id = data.get('jobSeekerId')
+        skills = data.get('skills', [])
+        preferences = data.get('preferences', {})
 
         # Mock job seeker data (would come from database)
         job_seeker = {
             "id": job_seeker_id,
             "title": "Software Developer",
-            "skills": ["Python", "JavaScript", "React"],
-            "experience_years": 3,
-            "education": "Bachelor's in Computer Science",
-            "summary": "Passionate developer with experience in web development"
+            "skills": skills,
+            "experience_years": preferences.get('experience_years', 0),
+            "education": preferences.get('education', ''),
+            "summary": preferences.get('summary', '')
         }
 
-        matches = matcher.find_best_matches(job_seeker, [job.dict() for job in jobs], top_k)
+        # Mock jobs (would come from database)
+        jobs = []
+
+        matches = matcher.find_best_matches(job_seeker, jobs, 10)
 
         return {
-            "matches": [MatchResponse(**match.__dict__) for match in matches]
+            "matches": [match.__dict__ for match in matches]
         }
 
     except Exception as e:
-        logger.error(f"Find matches error: {e}")
+        logger.error(f"Job matches error: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
-@app.post("/candidates/{job_id}")
-async def analyze_candidates(job_id: int, candidates: List[JobSeekerData]):
-    """Analyze candidates for a job posting"""
+@matching_router.post("/matching/candidates")
+async def get_candidate_matches(data: dict):
+    """Analyze candidates for a job"""
     try:
         if not matcher:
             raise HTTPException(status_code=503, detail="Matcher not initialized")
+
+        job_id = data.get('jobId')
 
         # Mock job data (would come from database)
         job = {
@@ -150,51 +113,39 @@ async def analyze_candidates(job_id: int, candidates: List[JobSeekerData]):
             "experience_level": "senior"
         }
 
-        analyses = matcher.analyze_candidates_for_job(job, [candidate.dict() for candidate in candidates])
+        # Mock candidates (would come from database)
+        candidates = []
+
+        analyses = matcher.analyze_candidates_for_job(job, candidates)
 
         return {
-            "candidates": [CandidateAnalysisResponse(**analysis.__dict__) for analysis in analyses]
+            "candidates": [analysis.__dict__ for analysis in analyses]
         }
 
     except Exception as e:
-        logger.error(f"Candidate analysis error: {e}")
+        logger.error(f"Candidate matches error: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
-@app.post("/hiring-suggestions")
-async def get_hiring_suggestions(job_draft: Dict[str, Any]):
+@matching_router.post("/hiring/suggestions")
+async def get_hiring_suggestions(data: dict):
     """Get AI suggestions for job posting improvements"""
     try:
         if not matcher:
             raise HTTPException(status_code=503, detail="Matcher not initialized")
 
-        suggestions = matcher.get_hiring_suggestions(job_draft)
-
+        suggestions = matcher.get_hiring_suggestions(data)
         return suggestions
 
     except Exception as e:
         logger.error(f"Hiring suggestions error: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
-@app.post("/train")
-async def trigger_retraining():
-    """Trigger model retraining (placeholder for future)"""
+@matching_router.post("/hiring/analyze-resume")
+async def analyze_resume(data: dict):
+    """Analyze resume for recruiter"""
     try:
-        # This would implement model retraining logic
-        return {
-            "status": "training_started",
-            "estimated_completion": "2024-01-01T12:00:00Z",
-            "message": "Model retraining initiated"
-        }
-
+        # Placeholder implementation
+        return {"analysis": "Resume analysis placeholder"}
     except Exception as e:
-        logger.error(f"Training trigger error: {e}")
+        logger.error(f"Resume analysis error: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
-
-if __name__ == "__main__":
-    uvicorn.run(
-        "app:app",
-        host="0.0.0.0",
-        port=config.MATCHING_ENGINE_PORT,
-        reload=True,
-        log_level="info"
-    )
