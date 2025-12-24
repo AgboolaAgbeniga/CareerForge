@@ -59,7 +59,7 @@ router.get('/job-seeker', authenticateToken, async (req: AuthRequest, res) => {
         companyId: jobs.companyId,
       })
       .from(jobs)
-      .where(eq(jobs.status, 'active'))
+      .where(eq(jobs.status, 'open'))
       .orderBy(desc(jobs.postedAt))
       .limit(10);
 

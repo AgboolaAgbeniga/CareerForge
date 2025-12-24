@@ -1,12 +1,16 @@
 """
 Shared utilities for AI services
 """
-import logging
+import os
 import time
-from typing import Dict, Any, Optional, List
+import logging
+from typing import Dict, Any, Optional, Callable, List
 from functools import wraps
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 from huggingface_hub import HfApi
+from .config import config
 
 # Configure logging
 logging.basicConfig(

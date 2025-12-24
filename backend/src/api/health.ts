@@ -55,7 +55,7 @@ router.get('/detailed', async (req, res) => {
         return res.status(503).json(health);
     }
 
-    res.json(health);
+    return res.json(health);
 });
 
 /**

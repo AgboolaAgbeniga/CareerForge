@@ -11,7 +11,8 @@ import {
     verify2FASchema,
     updateUserProfileSchema,
     updateJobSeekerProfileSchema,
-    updateRecruiterProfileSchema
+    updateRecruiterProfileSchema,
+    UpdateUserProfileDTO
 } from './auth.dto';
 
 export class AuthController {
@@ -169,7 +170,10 @@ export class AuthController {
                 const userId = req.user!.id;
                 const { firstName, lastName, phone, location, jobSeekerProfile, recruiterProfile } = req.body;
 
-                const userUpdates = updateUserProfileSchema.parse({ firstName, lastName, phone, location });
+                const parsedUserUpdates = updateUserProfileSchema.parse({ firstName, lastName, phone, location });
+                const userUpdates = Object.fromEntries(
+                    Object.entries(parsedUserUpdates).filter(([_, value]) => value !== undefined)
+                ) as UpdateUserProfileDTO;
                 let jobSeekerUpdates, recruiterUpdates;
 
                 if (req.user!.role === 'job_seeker' && jobSeekerProfile) {

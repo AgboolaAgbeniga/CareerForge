@@ -96,30 +96,8 @@ export interface Verify2FADTO {
     code: string;
 }
 
-export interface UpdateUserProfileDTO {
-    firstName?: string;
-    lastName?: string;
-    phone?: string;
-    location?: string;
-}
+export type UpdateUserProfileDTO = z.infer<typeof updateUserProfileSchema>;
 
-export interface UpdateJobSeekerProfileDTO {
-    title?: string;
-    experienceYears?: number;
-    skills?: string[];
-    education?: string;
-    portfolioUrl?: string;
-    linkedinUrl?: string;
-    isProfileVisible?: boolean;
-}
+export type UpdateJobSeekerProfileDTO = z.infer<typeof updateJobSeekerProfileSchema>;
 
-export interface UpdateRecruiterProfileDTO {
-    companyName?: string;
-    industry?: string;
-    companySize?: string;
-    title?: string;
-    experienceYears?: number;
-    specialization?: string;
-    billingInfo?: any;
-    subscriptionPlan?: string;
-}
+export type UpdateRecruiterProfileDTO = z.infer<typeof updateRecruiterProfileSchema>;

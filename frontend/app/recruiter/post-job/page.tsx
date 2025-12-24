@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Icon } from '@iconify/react';
-import { formatSalaryRange } from '@/lib/currencyUtils';
+import { formatSalaryRange } from '@/lib/utils/currencyUtils';
 
 interface Skill {
   id: string;

@@ -233,14 +233,23 @@ export class AuthService {
 
         // Update user table
         if (Object.keys(userUpdates).length > 0) {
-            await this.authRepository.updateUserProfile(userId, userUpdates);
+            const userUpdatesWithNull = Object.fromEntries(
+                Object.entries(userUpdates).map(([key, value]) => [key, value ?? null])
+            );
+            await this.authRepository.updateUserProfile(userId, userUpdatesWithNull as any);
         }
 
         // Update role-specific profile
         if (user.role === 'job_seeker' && jobSeekerUpdates && Object.keys(jobSeekerUpdates).length > 0) {
-            await this.authRepository.updateJobSeekerProfile(userId, jobSeekerUpdates);
+            const jobSeekerUpdatesWithNull = Object.fromEntries(
+                Object.entries(jobSeekerUpdates).map(([key, value]) => [key, value ?? null])
+            );
+            await this.authRepository.updateJobSeekerProfile(userId, jobSeekerUpdatesWithNull as any);
         } else if (user.role === 'recruiter' && recruiterUpdates && Object.keys(recruiterUpdates).length > 0) {
-            await this.authRepository.updateRecruiterProfile(userId, recruiterUpdates);
+            const recruiterUpdatesWithNull = Object.fromEntries(
+                Object.entries(recruiterUpdates).map(([key, value]) => [key, value ?? null])
+            );
+            await this.authRepository.updateRecruiterProfile(userId, recruiterUpdatesWithNull as any);
         }
 
         return { message: 'Profile updated successfully' };

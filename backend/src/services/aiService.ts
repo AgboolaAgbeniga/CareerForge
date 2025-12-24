@@ -92,6 +92,31 @@ class AIService {
   }
 
   /**
+   * Find job matches for a job seeker (alias for matchJobs)
+   */
+  async findJobMatches(jobSeekerId: string): Promise<any[]> {
+    // Placeholder - would need to fetch user skills/preferences
+    return this.matchJobs(jobSeekerId, [], {});
+  }
+
+  /**
+   * Match candidates for a job posting
+   */
+  async matchCandidates(jobId: string): Promise<any[]> {
+    try {
+      const response = await axios.post(
+        `${this.baseURL}/matching/candidates`,
+        { jobId },
+        { timeout: 10000 }
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Candidate matching error:', error);
+      return [];
+    }
+  }
+
+  /**
    * Get career coaching advice from AI
    */
   async getCareerAdvice(
@@ -118,6 +143,108 @@ class AIService {
     } catch (error) {
       console.error('Career coach error:', error);
       return 'Sorry, I am currently unavailable. Please try again later.';
+    }
+  }
+
+  /**
+   * Optimize resume content for a specific job
+   */
+  async optimizeResume(resumeData: any, jobRequirements: string): Promise<any> {
+    try {
+      const response = await axios.post(
+        `${this.baseURL}/resume/optimize`,
+        { resumeData, jobRequirements },
+        { timeout: 20000 }
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Resume optimization error:', error);
+      return { error: 'Service unavailable' };
+    }
+  }
+
+  /**
+   * Optimize LinkedIn profile
+   */
+  async optimizeLinkedInProfile(currentHeadline: string, targetRole: string): Promise<any> {
+    try {
+      const response = await axios.post(
+        `${this.baseURL}/career-coach/linkedin`,
+        { currentHeadline, targetRole },
+        { timeout: 15000 }
+      );
+      return response.data;
+    } catch (error) {
+      console.error('LinkedIn optimization error:', error);
+      return { error: 'Service unavailable' };
+    }
+  }
+
+  /**
+   * Generate cover letter
+   */
+  async generateCoverLetter(jobId: string, resumeId: string): Promise<any> {
+    try {
+      const response = await axios.post(
+        `${this.baseURL}/resume/cover-letter`,
+        { jobId, resumeId },
+        { timeout: 20000 }
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Cover letter generation error:', error);
+      return { error: 'Service unavailable' };
+    }
+  }
+
+  /**
+   * Analyze skill gaps
+   */
+  async analyzeSkillGaps(userId: string, roles: string[]): Promise<any> {
+    try {
+      const response = await axios.post(
+        `${this.baseURL}/career-coach/skill-gaps`,
+        { userId, roles },
+        { timeout: 15000 }
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Skill gap analysis error:', error);
+      return { error: 'Service unavailable' };
+    }
+  }
+
+  /**
+   * Get hiring suggestions for a job draft
+   */
+  async getHiringSuggestions(jobDraft: any): Promise<any> {
+    try {
+      const response = await axios.post(
+        `${this.baseURL}/hiring/suggestions`,
+        jobDraft,
+        { timeout: 15000 }
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Hiring suggestions error:', error);
+      return { error: 'Service unavailable' };
+    }
+  }
+
+  /**
+   * Analyze resume for recruiter
+   */
+  async analyzeResumeForRecruiter(candidateId: string, jobId: string): Promise<any> {
+    try {
+      const response = await axios.post(
+        `${this.baseURL}/hiring/analyze-resume`,
+        { candidateId, jobId },
+        { timeout: 15000 }
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Resume analysis error:', error);
+      return { error: 'Service unavailable' };
     }
   }
 
