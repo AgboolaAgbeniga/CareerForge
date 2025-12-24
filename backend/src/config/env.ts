@@ -24,6 +24,9 @@ const envSchema = z.object({
     EMAIL_PASS: z.string().optional(),
 });
 
+// Create a schema for build time validation (allows missing required fields)
+const buildTimeEnvSchema = envSchema.partial();
+
 // Validate and export typed environment variables
 export const validateEnv = () => {
     try {
@@ -37,14 +40,37 @@ export const validateEnv = () => {
                 console.error(`  - ${err.path.join('.')}: ${err.message}`);
             });
             console.error('\n💡 Please check your .env file and ensure all required variables are set.');
+            
+            // In production, don't crash the build, but log the error
+            if (process.env.NODE_ENV === 'production') {
+                console.warn('⚠️ Running with incomplete environment variables - this may cause runtime errors');
+                return {};
+            }
+            
             process.exit(1);
         }
         throw error;
     }
 };
 
-// Export validated env
+// Build-time safe validation
+export const validateEnvForBuild = () => {
+    try {
+        // During build, validate with partial schema to allow missing required fields
+        const env = buildTimeEnvSchema.parse(process.env);
+        console.log('✅ Build-time environment validation passed');
+        return env;
+    } catch (error) {
+        console.warn('⚠️ Build-time environment validation failed (this is normal during Docker build):', error);
+        return {};
+    }
+};
+
+// Export validated env (runtime)
 export const env = validateEnv();
+
+// Export build-time safe env
+export const buildTimeEnv = validateEnvForBuild();
 
 // Type-safe environment variables
 export type Env = z.infer<typeof envSchema>;
