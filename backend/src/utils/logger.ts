@@ -1,47 +1,67 @@
-/**
- * Logger utility for backend services
- */
+import winston from 'winston';
+import path from 'path';
 
-interface Logger {
-  info: (message: string, meta?: any) => void;
-  error: (message: string, meta?: any) => void;
-  warn: (message: string, meta?: any) => void;
-  debug: (message: string, meta?: any) => void;
-}
+// Define log levels
+const levels = {
+  error: 0,
+  warn: 1,
+  info: 2,
+  http: 3,
+  debug: 4,
+};
 
-class ConsoleLogger implements Logger {
-  private serviceName: string;
+// Define level based on environment
+const level = () => {
+  const env = process.env.NODE_ENV || 'development';
+  return env === 'development' ? 'debug' : 'warn';
+};
 
-  constructor(serviceName: string) {
-    this.serviceName = serviceName;
-  }
+// Define colors for each level
+const colors = {
+  error: 'red',
+  warn: 'yellow',
+  info: 'green',
+  http: 'magenta',
+  debug: 'white',
+};
 
-  private formatMessage(level: string, message: string, meta?: any): string {
-    const timestamp = new Date().toISOString();
-    const metaStr = meta ? ` ${JSON.stringify(meta)}` : '';
-    return `[${timestamp}] ${level.toUpperCase()} [${this.serviceName}]: ${message}${metaStr}`;
-  }
+// Tell winston that we want to link the colors
+winston.addColors(colors);
 
-  info(message: string, meta?: any) {
-    console.log(this.formatMessage('info', message, meta));
-  }
+// Chose the aspect of the log
+const format = winston.format.combine(
+  // Add the message timestamp with the preferred format
+  winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss:ms' }),
+  // Tell Winston that the logs must be colored
+  winston.format.colorize({ all: true }),
+  // Define the format of the message showing the timestamp, the level and the message
+  winston.format.printf(
+    (info) => `${info.timestamp} ${info.level}: ${info.message}`,
+  ),
+);
 
-  error(message: string, meta?: any) {
-    console.error(this.formatMessage('error', message, meta));
-  }
+// Define which transports the logger must use to print out messages. 
+// In this case, we are using three different transports
+const transports = [
+  // Allow the use the console to print the messages
+  new winston.transports.Console(),
+  // Allow to print all the error level messages inside the error.log file
+  new winston.transports.File({
+    filename: path.join('logs', 'error.log'),
+    level: 'error',
+  }),
+  // Allow to print all the error level messages inside the all.log file
+  // (also the error log that are printed inside the error.log file)
+  new winston.transports.File({ filename: path.join('logs', 'all.log') }),
+];
 
-  warn(message: string, meta?: any) {
-    console.warn(this.formatMessage('warn', message, meta));
-  }
+// Create the logger instance that has to be exported 
+// and used to log messages.
+const logger = winston.createLogger({
+  level: level(),
+  levels,
+  format,
+  transports,
+});
 
-  debug(message: string, meta?: any) {
-    console.debug(this.formatMessage('debug', message, meta));
-  }
-}
-
-export function getLogger(serviceName: string): Logger {
-  return new ConsoleLogger(serviceName);
-}
-
-const logger = new ConsoleLogger('careerforge-backend');
 export default logger;

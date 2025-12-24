@@ -12,6 +12,8 @@ import {
     resendEmailVerificationSchema,
     setup2FASchema,
     verify2FASchema,
+    disable2FASchema,
+    regenerateBackupCodesSchema,
     updateUserProfileSchema,
     updateJobSeekerProfileSchema,
     updateRecruiterProfileSchema,
@@ -315,6 +317,73 @@ export class AuthController {
             const data = verify2FASchema.parse(req.body);
             const userId = req.user!.id;
             const result = await this.authService.verify2FA(userId, data);
+            res.json({ success: true, data: result });
+        })
+    ];
+
+    /**
+     * @swagger
+     * /api/auth/disable-2fa:
+     *   post:
+     *     summary: Disable 2FA for the current user
+     *     tags: [Auth]
+     *     security:
+     *       - cookieAuth: []
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             required: [password]
+     *             properties:
+     *               password: { type: string }
+     *               code: { type: string, description: 'Optional 2FA code or backup code' }
+     *     responses:
+     *       200:
+     *         description: 2FA disabled successfully
+     *       400:
+     *         description: Invalid password or 2FA code
+     */
+    disable2FA = [
+        authenticateToken,
+        catchAsync(async (req: AuthRequest, res: Response) => {
+            const data = disable2FASchema.parse(req.body);
+            const userId = req.user!.id;
+            const result = await this.authService.disable2FA(userId, data);
+            res.json({ success: true, data: result });
+        })
+    ];
+
+    /**
+     * @swagger
+     * /api/auth/backup-codes/regenerate:
+     *   post:
+     *     summary: Regenerate 2FA backup codes
+     *     tags: [Auth]
+     *     security:
+     *       - cookieAuth: []
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             required: [password]
+     *             properties:
+     *               password: { type: string }
+     *     responses:
+     *       200:
+     *         description: New backup codes generated
+     *       400:
+     *         description: Invalid password or 2FA not enabled
+     */
+    regenerateBackupCodes = [
+        authenticateToken,
+        catchAsync(async (req: AuthRequest, res: Response) => {
+            const data = regenerateBackupCodesSchema.parse(req.body);
+            const userId = req.user!.id;
+            const result = await this.authService.regenerateBackupCodes(userId, data);
             res.json({ success: true, data: result });
         })
     ];

@@ -9,6 +9,7 @@ import swaggerJsdoc from 'swagger-jsdoc';
 import cookieParser from 'cookie-parser';
 import logger from './utils/logger';
 import { sanitizeText } from './utils/sanitizer';
+import loggingMiddleware from './middleware/logging';
 
 // Load environment variables
 dotenv.config();
@@ -75,7 +76,20 @@ const io = new Server(server, {
 });
 
 // Middleware
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      imgSrc: ["'self'", "data:", "https:", "https://i.pravatar.cc"],
+      connectSrc: ["'self'", "ws:", "wss:"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      objectSrc: ["'none'"],
+      upgradeInsecureRequests: [],
+    },
+  },
+}));
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:3000',
   credentials: true
@@ -85,24 +99,12 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Rate limiting
-import { globalLimiter, apiLimiter } from './middleware/rateLimiter';
+import { globalLimiter, apiLimiter, aiLimiter } from './middleware/rateLimiter';
 app.use('/api/', apiLimiter); // Apply to all API routes
+app.use('/api/ai', aiLimiter); // Stricter limit for AI endpoints
 
 // Request logging middleware
-app.use((req, res, next) => {
-  const start = Date.now();
-  logger.info(`Incoming request: ${req.method} ${req.url}`, {
-    ip: req.ip,
-    userAgent: req.get('User-Agent'),
-  });
-
-  res.on('finish', () => {
-    const duration = Date.now() - start;
-    logger.info(`Request completed: ${req.method} ${req.url} ${res.statusCode} in ${duration}ms`);
-  });
-
-  next();
-});
+app.use(loggingMiddleware);
 
 // Routes
 /**
@@ -141,6 +143,7 @@ app.use('/api/messages',
 app.use('/api/notifications', require('./api/notifications').default);
 app.use('/api/analytics', require('./api/analytics').default);
 app.use('/api/experiments', require('./api/experiments').default);
+app.use('/api/admin', require('./api/admin').default);
 // Add other routes as implemented
 
 app.use('/api/ai', require('./api/ai').default);

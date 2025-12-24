@@ -12,6 +12,7 @@ import { eq, and, or, desc, sql, inArray, isNull, gt } from 'drizzle-orm';
 import { AppError } from '../middleware/error';
 import { sanitizeText } from '../utils/sanitizer';
 import { catchAsync } from '../utils/catchAsync';
+import logger from '../utils/logger';
 
 const router = express.Router();
 
@@ -139,6 +140,7 @@ router.post('/create', authenticateToken, requireVerified, catchAsync(async (req
         expiresAt,
     }).returning();
 
+    logger.info(`Job posting created: ${newJob.id} by recruiter ${userId}`);
     res.status(201).json({
         success: true,
         message: 'Job posting created successfully',
@@ -465,6 +467,7 @@ router.put('/:id', authenticateToken, catchAsync(async (req: AuthRequest, res: R
         .where(eq(jobs.id, id))
         .returning();
 
+    logger.info(`Job posting updated: ${id} by recruiter ${userId}`);
     res.json({
         success: true,
         message: 'Job updated successfully',
@@ -542,6 +545,7 @@ router.put('/:id/status', authenticateToken, catchAsync(async (req: AuthRequest,
 
     await db.update(jobs).set(updateData).where(eq(jobs.id, id));
 
+    logger.info(`Job status updated: ${id} to ${status} by recruiter ${userId}`);
     res.json({
         success: true,
         message: `Job status updated to ${status}`,

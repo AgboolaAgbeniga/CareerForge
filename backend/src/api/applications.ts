@@ -12,6 +12,7 @@ import { eq, and, or, desc, inArray } from 'drizzle-orm';
 import { AppError } from '../middleware/error';
 import { catchAsync } from '../utils/catchAsync';
 import { sanitizeText } from '../utils/sanitizer';
+import logger from '../utils/logger';
 
 const router = express.Router();
 
@@ -124,6 +125,7 @@ router.post('/apply', authenticateToken, requireVerified, catchAsync(async (req:
         isRead: false,
     });
 
+    logger.info(`Application submitted: ${newApplication.id} by user ${userId} for job ${jobId}`);
     res.status(201).json({
         success: true,
         message: 'Application submitted successfully',
@@ -393,6 +395,7 @@ router.put('/:id/status', authenticateToken, catchAsync(async (req: AuthRequest,
         isRead: false,
     });
 
+    logger.info(`Application status updated: ${id} to ${newStatus} by recruiter ${userId}`);
     res.json({
         success: true,
         message: 'Application status updated successfully',

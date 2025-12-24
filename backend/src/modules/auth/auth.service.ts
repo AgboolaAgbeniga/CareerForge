@@ -4,6 +4,7 @@ import nodemailer from 'nodemailer';
 import speakeasy from 'speakeasy';
 import qrcode from 'qrcode';
 import { AuthRepository } from './auth.repository';
+import logger from '../../utils/logger';
 import { AppError } from '../../middleware/error';
 import {
     RegisterDTO,
@@ -59,6 +60,7 @@ export class AuthService {
     async register(data: RegisterDTO) {
         const existingUser = await this.authRepository.findUserByEmail(data.email);
         if (existingUser) {
+            logger.warn(`Registration failed: User already exists - ${data.email}`);
             throw new AppError('User already exists', 400);
         }
 
@@ -94,6 +96,7 @@ export class AuthService {
             text: `Please verify your email by clicking the link: ${process.env.FRONTEND_URL}/verify-email?token=${verificationToken}`,
         });
 
+        logger.info(`User registered successfully: ${newUser.id} (${newUser.email})`);
         return { user: newUser, ...tokens };
     }
 
@@ -105,16 +108,19 @@ export class AuthService {
 
         const validPassword = await bcrypt.compare(data.password, user.passwordHash);
         if (!validPassword) {
+            logger.warn(`Login failed: Invalid password - ${data.email}`);
             throw new AppError('Invalid credentials', 400);
         }
 
         if (!user.isVerified) {
+            logger.warn(`Login failed: Email not verified - ${data.email}`);
             throw new AppError('Please verify your email before logging in', 403);
         }
 
         await this.authRepository.updateLastLogin(user.id);
         const tokens = this.generateTokens(user);
 
+        logger.info(`User logged in: ${user.id} (${user.email})`);
         return { user, tokens };
     }
 
@@ -192,8 +198,10 @@ export class AuthService {
             const hashedPassword = await bcrypt.hash(data.newPassword, 10);
             await this.authRepository.updateUserPassword(user.id, hashedPassword);
 
+            logger.info(`Password reset successful for user: ${user.id}`);
             return { message: 'Password reset successful' };
         } catch (err) {
+            logger.error(`Password reset failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
             throw new AppError('Invalid token or input', 400);
         }
     }
@@ -271,11 +279,99 @@ export class AuthService {
         }
 
         if (!verified) {
+            logger.warn(`2FA verification failed for user: ${userId}`);
             throw new AppError('Invalid code', 400);
         }
 
         await this.authRepository.updateUser2FAEnabled(userId, true);
+        logger.info(`2FA enabled for user: ${userId}`);
         return { message: '2FA verified successfully' };
+    }
+
+    async disable2FA(userId: string, data: Disable2FADTO) {
+        const user = await this.authRepository.findUserById(userId);
+        if (!user || !user.passwordHash) {
+            throw new AppError('User not found', 404);
+        }
+
+        // Verify password for security
+        const validPassword = await bcrypt.compare(data.password, user.passwordHash);
+        if (!validPassword) {
+            throw new AppError('Invalid password', 400);
+        }
+
+        // If 2FA is enabled, require a code (either TOTP or Backup Code)
+        if (user.twoFactorEnabled && data.code) {
+            const decryptedSecret = decrypt(user.twoFactorSecret!);
+            let verified = speakeasy.totp.verify({
+                secret: decryptedSecret,
+                encoding: 'base32',
+                token: data.code,
+            });
+
+            if (!verified && user.backupCodes) {
+                const backupCodes = user.backupCodes as string[];
+                for (let i = 0; i < backupCodes.length; i++) {
+                    if (await bcrypt.compare(data.code, backupCodes[i])) {
+                        verified = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!verified) {
+                throw new AppError('Invalid 2FA code', 400);
+            }
+        }
+
+        await this.authRepository.updateUser2FAEnabled(userId, false);
+        await this.authRepository.updateUser2FASecret(userId, null as any); // Clear secret
+        await this.authRepository.updateUserBackupCodes(userId, null as any); // Clear backup codes
+
+        logger.info(`2FA disabled for user: ${userId}`);
+        return { message: '2FA disabled successfully' };
+    }
+
+    async regenerateBackupCodes(userId: string, data: RegenerateBackupCodesDTO) {
+        const user = await this.authRepository.findUserById(userId);
+        if (!user || !user.passwordHash || !user.twoFactorEnabled) {
+            throw new AppError('2FA must be enabled to regenerate backup codes', 400);
+        }
+
+        // Verify password
+        const validPassword = await bcrypt.compare(data.password, user.passwordHash);
+        if (!validPassword) {
+            throw new AppError('Invalid password', 400);
+        }
+
+        // Generate 10 new backup codes
+        const plainBackupCodes = Array.from({ length: 10 }, () =>
+            Math.random().toString(36).substring(2, 10).toUpperCase()
+        );
+
+        const hashedBackupCodes = await Promise.all(
+            plainBackupCodes.map(code => bcrypt.hash(code, 10))
+        );
+
+        await this.authRepository.updateUserBackupCodes(userId, hashedBackupCodes);
+
+        return {
+            backupCodes: plainBackupCodes
+        };
+    }
+
+    async adminDisable2FA(adminId: string, targetUserId: string) {
+        // Verification of admin role is handled by middleware
+        const targetUser = await this.authRepository.findUserById(targetUserId);
+        if (!targetUser) {
+            throw new AppError('Target user not found', 404);
+        }
+
+        await this.authRepository.updateUser2FAEnabled(targetUserId, false);
+        await this.authRepository.updateUser2FASecret(targetUserId, null as any);
+        await this.authRepository.updateUserBackupCodes(targetUserId, null as any);
+
+        return { message: `2FA disabled for user ${targetUser.email}` };
     }
 
     async getProfile(userId: string) {
