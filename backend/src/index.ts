@@ -16,8 +16,9 @@ dotenv.config();
 
 // Validate environment variables before starting server (build-time safe)
 try {
-  const { buildTimeEnv } = await import('./config/env');
-  console.log('✅ Environment loaded successfully');
+  import('./config/env').then(({ buildTimeEnv }) => {
+    console.log('✅ Environment loaded successfully');
+  });
 } catch (error) {
   console.warn('⚠️ Environment validation failed during build:', error);
   // In production, we might not have all env vars during Docker build
