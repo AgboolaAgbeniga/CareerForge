@@ -32,9 +32,6 @@ COPY --from=builder /app/dist ./dist
 # Copy package files for production dependencies
 COPY --from=builder /app/package*.json ./
 
-# Install production dependencies only
-RUN npm ci --omit=dev
-
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
 
