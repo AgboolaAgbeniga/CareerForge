@@ -29,7 +29,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 
 # Install production dependencies only
-RUN npm ci --omit=dev
+RUN npm install --omit=dev
 
 # Copy compiled files from builder
 COPY --from=builder /app/dist ./dist
