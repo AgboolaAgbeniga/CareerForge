@@ -181,9 +181,22 @@ allow_origins=[
    - AI features
    - Job matching
 
+### 6.3 Verify API Documentation
+1. **Access Swagger UI**: `https://your-backend.onrender.com/api-docs`
+2. **Verify Server URL**: Should show your actual Render URL (not localhost)
+3. **Test Health Endpoint**: Click on the health check endpoint and try it
+4. **Test Authentication**: Try the auth endpoints to ensure they work
+5. **Check CORS**: Verify API calls work from your frontend domain
+
+### 6.4 Performance Verification
+1. **Response Times**: Monitor API response times
+2. **Error Rates**: Check for 4xx/5xx errors
+3. **AI Service Integration**: Test AI endpoints
+4. **Database Operations**: Verify CRUD operations work
+
 ---
 
-## 🔍 Troubleshooting
+## 🔧 Troubleshooting
 
 ### Common Issues and Solutions
 
@@ -214,13 +227,34 @@ allow_origins=[
 - Verify token is valid and has correct permissions
 - Check Hugging Face account has sufficient credits
 
+#### 6. Swagger UI shows localhost instead of production URL
+**Solution**:
+- Ensure `NODE_ENV=production` is set in Render environment variables
+- Redeploy backend service after changing environment variables
+- Clear browser cache and try accessing `/api-docs` again
+- Verify the Render service URL is correct
+
+#### 7. API documentation not accessible
+**Solution**:
+- Check backend service is running: `https://your-backend.onrender.com/health`
+- Verify `/api-docs` endpoint is not blocked by CORS
+- Check Render logs for any startup errors
+- Ensure Swagger middleware is properly configured
+
 ---
 
 ## 📊 Monitoring and Maintenance
 
 ### Health Check URLs
-- Backend: `https://your-backend.onrender.com/health`
-- AI Service: `https://your-ai-service.onrender.com/health`
+- **Backend**: `https://your-backend.onrender.com/health`
+- **AI Service**: `https://your-ai-service.onrender.com/health`
+
+### API Documentation
+- **Interactive Swagger UI**: `https://your-backend.onrender.com/api-docs`
+- **OpenAPI JSON**: `https://your-backend.onrender.com/api-docs-json`
+- **Local Development**: `http://localhost:5000/api-docs`
+
+> **Note**: The Swagger UI automatically detects the environment and displays the appropriate server URL. In development, it shows `localhost:5000`, and in production on Render, it shows the actual deployment URL.
 
 ### Logs
 - **Render**: Check service logs in dashboard

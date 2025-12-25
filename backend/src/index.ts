@@ -25,20 +25,47 @@ try {
 }
 
 // Swagger configuration
+const getSwaggerServers = () => {
+  const isDevelopment = process.env.NODE_ENV !== 'production';
+  const port = process.env.PORT || 5000;
+  
+  if (isDevelopment) {
+    return [
+      {
+        url: `http://localhost:${port}`,
+        description: 'Development server',
+      },
+    ];
+  } else {
+    // In production, we don't know the exact Render URL at build time
+    // but we can provide a placeholder and documentation
+    return [
+      {
+        url: 'https://your-backend.onrender.com',
+        description: 'Production server (Render)',
+      },
+    ];
+  }
+};
+
 const swaggerOptions = {
   definition: {
     openapi: '3.0.0',
     info: {
       title: 'CareerForge API',
       version: '1.0.0',
-      description: 'API for CareerForge job matching platform',
-    },
-    servers: [
-      {
-        url: `http://localhost:${process.env.PORT || 5000}`,
-        description: 'Development server',
+      description: 'Comprehensive API for CareerForge AI-powered job matching platform',
+      contact: {
+        name: 'CareerForge API Support',
+        email: 'api-support@careerforge.com',
+        url: 'https://github.com/your-username/careerforge',
       },
-    ],
+      license: {
+        name: 'MIT',
+        url: 'https://opensource.org/licenses/MIT',
+      },
+    },
+    servers: getSwaggerServers(),
     components: {
       securitySchemes: {
         cookieAuth: {
@@ -113,21 +140,6 @@ app.use('/api/ai', aiLimiter); // Stricter limit for AI endpoints
 // Request logging middleware
 app.use(loggingMiddleware);
 
-// Routes
-/**
- * @swagger
- * /health:
- *   get:
- *     summary: Health check endpoint
- *     tags: [System]
- *     responses:
- *       200:
- *         description: Server is healthy
- */
-app.get('/health', (req, res) => {
-  res.json({ status: 'OK', timestamp: new Date().toISOString() });
-});
-
 // Swagger docs
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
@@ -136,35 +148,29 @@ import authRoutes from './modules/auth/auth.routes';
 import healthRoutes from './api/health';
 import applicationsRoutes from './api/applications';
 import jobsRoutes from './api/jobs';
+import dashboardRoutes from './api/dashboard';
+import resumeRoutes from './api/resume';
+import matchingRoutes from './api/matching';
+import messagesRoutes from './api/messages';
+import notificationsRoutes from './api/notifications';
+import analyticsRoutes from './api/analytics';
+import experimentsRoutes from './api/experiments';
+import adminRoutes from './api/admin';
+import aiRoutes from './api/ai';
 
 app.use('/health', healthRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/applications', applicationsRoutes);
 app.use('/api/jobs', jobsRoutes);
-app.use('/api/dashboard', require('./api/dashboard').default);
-app.use('/api/resume', require('./api/resume').default);
-app.use('/api/matching', require('./api/matching').default);
-app.use('/api/messages',
-
-  require('./api/messages').default);
-app.use('/api/notifications', require('./api/notifications').default);
-app.use('/api/analytics', require('./api/analytics').default);
-app.use('/api/experiments', require('./api/experiments').default);
-app.use('/api/admin', require('./api/admin').default);
-// Add other routes as implemented
-
-app.use('/api/ai', require('./api/ai').default);
-
-// Messages routes already included above
-
-// Notifications routes
-// app.use('/api/notifications', require('./api/notifications').default);
-
-// Analytics routes
-// app.use('/api/analytics', require('./api/analytics').default);
-
-// Experiments routes
-// app.use('/api/experiments', require('./api/experiments').default);
+app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/resume', resumeRoutes);
+app.use('/api/matching', matchingRoutes);
+app.use('/api/messages', messagesRoutes);
+app.use('/api/notifications', notificationsRoutes);
+app.use('/api/analytics', analyticsRoutes);
+app.use('/api/experiments', experimentsRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/ai', aiRoutes);
 
 // Socket.io setup with authentication
 import { socketAuthMiddleware, validateUserRoom, socketRateLimiter } from './middleware/socketAuth';
