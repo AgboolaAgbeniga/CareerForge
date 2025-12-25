@@ -30,9 +30,13 @@ app = FastAPI(
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure for production
+    allow_origins=[
+        "http://localhost:3000",  # Development
+        "https://localhost:3000",  # Development HTTPS
+        "https://career-forge-rho.vercel.app/" # Add your Vercel domain here: "https://your-app.vercel.app"
+    ],
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 
@@ -42,7 +46,7 @@ app.include_router(matching_router)
 app.include_router(career_router)
 
 # Vector (pgvector) router (optional)
-from ai.vector.router import router as vector_router
+from .vector.router import router as vector_router
 app.include_router(vector_router)
 
 @app.get("/health")

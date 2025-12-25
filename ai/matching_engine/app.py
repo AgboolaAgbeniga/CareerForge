@@ -56,7 +56,7 @@ class CandidateAnalysisResponse(BaseModel):
 async def init_matcher():
     """Initialize the job matcher"""
     global matcher
-    from matcher import JobMatcher
+    from .matcher import JobMatcher
     logger.info("Initializing Job Matcher...")
     matcher = JobMatcher()
 

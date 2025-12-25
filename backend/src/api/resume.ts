@@ -8,31 +8,29 @@ import { authenticateToken, AuthRequest, requireVerified } from '../middleware/a
 import { catchAsync } from '../utils/catchAsync';
 import { AppError } from '../middleware/error';
 import { aiService } from '../services/aiService';
+import { resumeStorage, uploadWithFallback } from '../utils/storage';
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 
 const router = express.Router();
 
-// Ensure upload directory exists
-const uploadDir = 'uploads/resumes';
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
+// Determine local fallback directory for development
+const localUploadDir = process.env.UPLOAD_DIR
+  ? path.resolve(process.env.UPLOAD_DIR)
+  : path.join(os.tmpdir(), 'careerforge', 'uploads', 'resumes');
+
+// Ensure local directory exists for fallback
+try {
+  fs.mkdirSync(localUploadDir, { recursive: true });
+  console.info(`Local upload fallback dir: ${localUploadDir}`);
+} catch (err: any) {
+  console.warn(`Could not create local upload dir: ${err?.message || err}`);
 }
 
-// Multer config for file upload
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const cleanName = file.originalname.replace(/[^a-zA-Z0-9.]/g, '_');
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    cb(null, uniqueSuffix + '-' + cleanName);
-  }
-});
-
+// Multer config for memory storage (we'll handle Supabase upload manually)
 const upload = multer({
-  storage,
+  storage: multer.memoryStorage(),
   limits: { fileSize: 10 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     const allowedTypes = [
@@ -73,28 +71,52 @@ router.post('/upload', authenticateToken, requireVerified, upload.single('file')
     throw new AppError('Job seeker profile not found. Please complete onboarding first.', 404, 'NOT_FOUND');
   }
 
-  // Call AI service to parse the resume
-  const fileBuffer = fs.readFileSync(req.file.path);
-  const parsedData = await aiService.parseResume(fileBuffer, req.file.originalname);
+  try {
+    // Upload to Supabase Storage with fallback to local
+    const fileBuffer = req.file.buffer;
+    const localFallbackPath = path.join(localUploadDir, `${userId}-${Date.now()}-${req.file.originalname}`);
+    
+    const uploadResult = await uploadWithFallback(
+      'resumes',
+      '', // Will be set by resumeStorage.uploadResume
+      fileBuffer,
+      localFallbackPath,
+      {
+        cacheControl: '3600',
+        contentType: req.file.mimetype,
+      }
+    );
 
-  // Save to database
-  const [newResume] = await db.insert(resumes).values({
-    jobSeekerId: userId,
-    originalFileUrl: req.file.path,
-    parsedData: parsedData,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  }).returning();
+    // If we have a local fallback, use that path
+    const fileUrl = uploadResult.localPath || uploadResult.publicUrl;
 
-  if (!newResume) {
-    throw new AppError('Failed to save resume record', 500, 'INTERNAL_ERROR');
+    // Call AI service to parse the resume
+    const parsedData = await aiService.parseResume(fileBuffer, req.file.originalname);
+
+    // Save to database
+    const [newResume] = await db.insert(resumes).values({
+      jobSeekerId: userId,
+      originalFileUrl: fileUrl,
+      parsedData: parsedData,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }).returning();
+
+    if (!newResume) {
+      throw new AppError('Failed to save resume record', 500, 'INTERNAL_ERROR');
+    }
+
+    res.status(201).json({
+      success: true,
+      resumeId: newResume.id,
+      parsedData,
+      fileUrl: uploadResult.publicUrl,
+      isLocal: !!uploadResult.localPath
+    });
+  } catch (error) {
+    console.error('Resume upload error:', error);
+    throw new AppError('Failed to upload resume', 500, 'UPLOAD_ERROR');
   }
-
-  res.status(201).json({
-    success: true,
-    resumeId: newResume.id,
-    parsedData
-  });
 }));
 
 /**

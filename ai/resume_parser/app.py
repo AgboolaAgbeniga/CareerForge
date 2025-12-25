@@ -38,7 +38,7 @@ class ParseResponse(BaseModel):
 async def init_parser():
     """Initialize the resume parser"""
     global parser
-    from parser import ResumeParser
+    from .parser import ResumeParser
     logger.info("Initializing Resume Parser...")
     parser = ResumeParser()
 

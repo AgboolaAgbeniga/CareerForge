@@ -58,7 +58,7 @@ class CoverLetterResponse(BaseModel):
 async def init_coach():
     """Initialize the career coach"""
     global coach
-    from coach import CareerCoach
+    from .coach import CareerCoach
     logger.info("Initializing Career Coach...")
     coach = CareerCoach()
 

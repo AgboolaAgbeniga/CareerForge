@@ -62,6 +62,14 @@ export class SupabaseAuthService {
         this.authRepository = new AuthRepository();
     }
 
+    private getSupabaseClient() {
+        if (!supabase) {
+            logger.error('Supabase client not configured');
+            throw new AppError('Authentication service unavailable', 500, 'SUPABASE_NOT_CONFIGURED');
+        }
+        return supabase;
+    }
+
     async register(data: RegisterDTO) {
         // Check if user already exists in our custom users table
         const existingUser = await this.authRepository.findUserByEmail(data.email);
@@ -72,7 +80,7 @@ export class SupabaseAuthService {
 
         try {
             // Create user in Supabase Auth
-            const { data: supabaseUser, error: supabaseError } = await supabase.auth.signUp({
+            const { data: supabaseUser, error: supabaseError } = await this.getSupabaseClient().auth.signUp({
                 email: data.email,
                 password: data.password,
                 options: {
@@ -138,7 +146,7 @@ export class SupabaseAuthService {
     async login(data: LoginDTO) {
         try {
             // Authenticate with Supabase
-            const { data: supabaseUser, error: supabaseError } = await supabase.auth.signInWithPassword({
+            const { data: supabaseUser, error: supabaseError } = await this.getSupabaseClient().auth.signInWithPassword({
                 email: data.email,
                 password: data.password,
             });
@@ -186,7 +194,7 @@ export class SupabaseAuthService {
 
     async logout() {
         try {
-            const { error } = await supabase.auth.signOut();
+            const { error } = await this.getSupabaseClient().auth.signOut();
             if (error) {
                 throw new AppError(error.message, 400);
             }
@@ -198,7 +206,7 @@ export class SupabaseAuthService {
 
     async refresh(refreshToken: string) {
         try {
-            const { data, error } = await supabase.auth.refreshSession({
+            const { data, error } = await this.getSupabaseClient().auth.refreshSession({
                 refresh_token: refreshToken
             });
 
@@ -217,7 +225,7 @@ export class SupabaseAuthService {
 
     async forgotPassword(data: ForgotPasswordDTO) {
         try {
-            const { error } = await supabase.auth.resetPasswordForEmail(data.email, {
+            const { error } = await this.getSupabaseClient().auth.resetPasswordForEmail(data.email, {
                 redirectTo: `${process.env.FRONTEND_URL}/reset-password`,
             });
 
@@ -234,7 +242,7 @@ export class SupabaseAuthService {
 
     async resetPassword(data: ResetPasswordDTO) {
         try {
-            const { error } = await supabase.auth.updateUser({
+            const { error } = await this.getSupabaseClient().auth.updateUser({
                 password: data.newPassword
             });
 
@@ -267,7 +275,7 @@ export class SupabaseAuthService {
 
     async resendVerification(email: string) {
         try {
-            const { error } = await supabase.auth.resend({
+            const { error } = await this.getSupabaseClient().auth.resend({
                 type: 'signup',
                 email: email,
                 options: {
@@ -362,7 +370,7 @@ export class SupabaseAuthService {
         }
 
         // Verify password using Supabase
-        const { error: verifyError } = await supabase.auth.signInWithPassword({
+        const { error: verifyError } = await this.getSupabaseClient().auth.signInWithPassword({
             email: user.email,
             password: data.password
         });
@@ -412,7 +420,7 @@ export class SupabaseAuthService {
         }
 
         // Verify old password using Supabase
-        const { error: verifyError } = await supabase.auth.signInWithPassword({
+        const { error: verifyError } = await this.getSupabaseClient().auth.signInWithPassword({
             email: user.email,
             password: data.oldPassword
         });
@@ -422,7 +430,7 @@ export class SupabaseAuthService {
         }
 
         // Update password in Supabase
-        const { error: updateError } = await supabase.auth.updateUser({
+        const { error: updateError } = await this.getSupabaseClient().auth.updateUser({
             password: data.newPassword
         });
 

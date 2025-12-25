@@ -1,6 +1,7 @@
 {
   "name": "careerforge-backend",
   "version": "1.0.0",
+  "engines": { "node": ">=20.0.0" },
   "description": "Backend API server for CareerForge",
   "main": "src/index.ts",
   "scripts": {

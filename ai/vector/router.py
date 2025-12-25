@@ -2,8 +2,8 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 from typing import List, Dict, Any, Optional
 
-from ai.vector.pgvector import ensure_extension_and_table, upsert_embedding, search_embeddings, get_model_info
-from ai.shared.utils import get_logger
+from .pgvector import ensure_extension_and_table, upsert_embedding, search_embeddings, get_model_info
+from ..shared.utils import get_logger
 
 router = APIRouter(prefix="/vectors", tags=["vectors"])
 logger = get_logger(__name__)

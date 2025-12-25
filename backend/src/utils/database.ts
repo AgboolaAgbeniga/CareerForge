@@ -4,22 +4,30 @@ import { createClient } from '@supabase/supabase-js';
 import * as schema from '../models/schema';
 
 // Supabase client configuration
-const supabaseUrl = process.env.SUPABASE_URL || 'https://jplxlgsrjxcksantcgnp.supabase.co';
-const supabaseKey = process.env.SUPABASE_ANON_KEY || 'sb_publishable_VWYoTD0tPhKaoIoatt8RoQ_kox82itZ';
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_ANON_KEY;
 
-export const supabaseClient = createClient(supabaseUrl, supabaseKey);
+if (!supabaseUrl || !supabaseKey) {
+  console.warn('⚠️ Supabase configuration missing. Set SUPABASE_URL and SUPABASE_ANON_KEY environment variables.');
+}
 
-// Create the connection with fallback for build time
+export const supabaseClient = supabaseUrl && supabaseKey 
+  ? createClient(supabaseUrl, supabaseKey)
+  : null;
+
+// Create the connection with validation
 const getDatabaseUrl = () => {
-  // During Docker build, DATABASE_URL might not be available
-  if (process.env.DATABASE_URL) {
-    return process.env.DATABASE_URL;
+  const dbUrl = process.env.DATABASE_URL;
+  
+  if (!dbUrl) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('DATABASE_URL environment variable is required in production');
+    }
+    console.warn('⚠️ DATABASE_URL not set. Using placeholder for development.');
+    return 'postgresql://postgres:[YOUR-PASSWORD]@localhost:5432/postgres';
   }
   
-  // Fallback for build time - this will be replaced at runtime
-  return process.env.NODE_ENV === 'production' 
-    ? 'postgresql://placeholder:placeholder@placeholder:5432/placeholder'
-    : `postgresql://postgres:[YOUR-PASSWORD]@db.jplxlgsrjxcksantcgnp.supabase.co:5432/postgres`;
+  return dbUrl;
 };
 
 const client = postgres(getDatabaseUrl());

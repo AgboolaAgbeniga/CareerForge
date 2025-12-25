@@ -33,19 +33,27 @@ export class AIService {
   private baseUrl: string;
 
   constructor() {
-    this.baseUrl = process.env.AI_SERVICE_URL || 'http://localhost:8000';
+    const aiServiceUrl = process.env.AI_SERVICE_URL;
+    if (!aiServiceUrl) {
+      throw new Error('AI_SERVICE_URL environment variable is required. Please set it to your AI service URL.');
+    }
+    this.baseUrl = aiServiceUrl;
   }
 
   private async callAiService(endpoint: string, data: any, timeout: number = 10000) {
-    if (!process.env.AI_SERVICE_URL) {
-      console.warn(`⚠️ AI Service called but URL not set: ${endpoint}`);
-      throw new Error('AI services are currently unavailable');
-    }
     try {
       const response = await axios.post(`${this.baseUrl}/${endpoint}`, data, { timeout });
       return response.data;
     } catch (error) {
       console.error(`AI Service Error (${endpoint}):`, error);
+      if (axios.isAxiosError(error)) {
+        if (error.code === 'ECONNREFUSED') {
+          throw new Error(`Cannot connect to AI service at ${this.baseUrl}`);
+        }
+        if (error.response?.status === 404) {
+          throw new Error(`AI service endpoint not found: ${endpoint}`);
+        }
+      }
       throw new Error('AI service failed to process request');
     }
   }
@@ -215,14 +223,26 @@ export class AIService {
    * Health check for AI services
    */
   async healthCheck(): Promise<boolean> {
-    if (!process.env.AI_SERVICE_URL) return false;
     try {
       const response = await axios.get(`${this.baseUrl}/health`, {
         timeout: 5000,
       });
-      return response.status === 200;
+      if (response.status === 200) {
+        console.log('✅ AI service health check passed');
+        return true;
+      }
+      console.warn(`⚠️ AI service health check returned status: ${response.status}`);
+      return false;
     } catch (error) {
-      console.error('AI service health check failed:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error('❌ AI service health check failed:', errorMessage);
+      if (axios.isAxiosError(error)) {
+        if (error.code === 'ECONNREFUSED') {
+          console.error(`Cannot connect to AI service at ${this.baseUrl}`);
+        } else if (error.response?.status) {
+          console.error(`AI service returned status: ${error.response.status}`);
+        }
+      }
       return false;
     }
   }

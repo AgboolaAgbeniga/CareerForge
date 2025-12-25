@@ -5,31 +5,29 @@ import { authenticateToken, AuthRequest, requireVerified } from '../middleware/a
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
+import os from 'os';
 import { catchAsync } from '../utils/catchAsync';
 import { AppError } from '../middleware/error';
+import { resumeStorage, uploadWithFallback } from '../utils/storage';
 
 const router = express.Router();
 
-// Ensure upload directory exists
-const uploadDir = 'uploads/resumes';
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
+// Determine local fallback directory for development
+const localUploadDir = process.env.UPLOAD_DIR
+  ? path.resolve(process.env.UPLOAD_DIR)
+  : path.join(os.tmpdir(), 'careerforge', 'uploads', 'resumes');
+
+// Ensure local directory exists for fallback
+try {
+  fs.mkdirSync(localUploadDir, { recursive: true });
+  console.info(`Local upload fallback dir: ${localUploadDir}`);
+} catch (err: any) {
+  console.warn(`Could not create local upload dir: ${err?.message || err}`);
 }
 
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const cleanName = file.originalname.replace(/[^a-zA-Z0-9.]/g, '_');
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    cb(null, uniqueSuffix + '-' + cleanName);
-  }
-});
-
+// Multer config for memory storage (we'll handle Supabase upload manually)
 const upload = multer({
-  storage,
+  storage: multer.memoryStorage(),
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
   fileFilter: (req, file, cb) => {
     const allowedTypes = [
@@ -158,15 +156,21 @@ router.post('/resume/parse-file', authenticateToken, requireVerified, upload.sin
     throw new AppError('No file uploaded', 400, 'MISSING_FILE');
   }
 
-  const fileBuffer = fs.readFileSync(req.file.path);
-  const result = await aiService.parseResume(fileBuffer, req.file.originalname);
+  try {
+    // Use file buffer directly for AI parsing
+    const fileBuffer = req.file.buffer;
+    const result = await aiService.parseResume(fileBuffer, req.file.originalname);
 
-  res.json({
-    success: true,
-    data: result,
-    filename: req.file.originalname,
-    timestamp: new Date().toISOString(),
-  });
+    res.json({
+      success: true,
+      data: result,
+      filename: req.file.originalname,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error('AI parse file error:', error);
+    throw new AppError('Failed to parse resume file', 500, 'PARSE_ERROR');
+  }
 }));
 
 /**
