@@ -175,6 +175,48 @@ Models are configured in `shared/config.py`:
 #### POST /parse
 Parse resume text.
 
+---
+
+### Vectors (pgvector) API
+
+These endpoints provide a lightweight interface to index and search semantic embeddings (requires a Postgres DB with `pgvector` extension or use the migration `ai/migrations/001_add_pgvector.sql`).
+
+#### POST /vectors/init
+Create extension, table, and example index (idempotent).
+
+#### POST /vectors/index
+Index an embedding with metadata. Request body:
+```json
+{
+  "candidate_id": 123,
+  "model_id": "sentence-transformers/all-MiniLM-L6-v2",
+  "model_dim": 384,
+  "role": "job_seeker",
+  "embedding": [0.1, 0.2, ...],
+  "payload": {"name": "Alice"}
+}
+```
+
+#### POST /vectors/search
+Search for nearest embeddings. Request body:
+```json
+{
+  "embedding": [0.1, 0.2, ...],
+  "model_id": "sentence-transformers/all-MiniLM-L6-v2",
+  "role": "job_seeker",
+  "top_k": 10
+}
+```
+
+Responses include `candidate_id`, `model_id`, `role`, and `distance` (smaller is more similar).
+
+### Resume Parser Service
+
+**Base URL**: `http://localhost:8000`
+
+#### POST /parse
+Parse resume text.
+
 **Request**:
 ```json
 {

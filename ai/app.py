@@ -41,6 +41,10 @@ app.include_router(resume_router)
 app.include_router(matching_router)
 app.include_router(career_router)
 
+# Vector (pgvector) router (optional)
+from ai.vector.router import router as vector_router
+app.include_router(vector_router)
+
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""

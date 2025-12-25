@@ -24,7 +24,10 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt || pip install pyyaml huggingface-hub pytest
-      - name: Run model manifest tests
+      - name: Run tests (unit + skip db integration by default)
         env:
           HF_API_KEY: ${{ secrets.HF_API_KEY }}
-        run: pytest ai/tests/test_models.py -q
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          pytest -q
+          echo "Note: DB integration tests are skipped unless DATABASE_URL secret is set and points to a test DB."
