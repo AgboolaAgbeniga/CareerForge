@@ -43,7 +43,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   /**
    * Enhanced fetch wrapper with automatic token refresh on 401
    */
-  const fetchWithAuth = async (url: string, options: RequestInit = {}): Promise<Response> => {
+  const fetchWithAuth = React.useCallback(async (url: string, options: RequestInit = {}): Promise<Response> => {
     let response = await fetch(url, {
       ...options,
       credentials: 'include',
@@ -84,7 +84,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
 
     return response;
-  };
+  }, [isRefreshing]);
+
+
 
   useEffect(() => {
     // Check if user is logged in on mount
@@ -113,7 +115,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
 
     checkAuth();
-  }, []);
+  }, [fetchWithAuth]);
 
   const checkAuth = async () => {
     try {
