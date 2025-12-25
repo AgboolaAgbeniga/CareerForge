@@ -1,0 +1,30 @@
+name: AI models manifest check
+
+on:
+  push:
+    paths:
+      - 'ai/**'
+  pull_request:
+    paths:
+      - 'ai/**'
+
+jobs:
+  model-manifest-check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ai
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt || pip install pyyaml huggingface-hub pytest
+      - name: Run model manifest tests
+        env:
+          HF_API_KEY: ${{ secrets.HF_API_KEY }}
+        run: pytest ai/tests/test_models.py -q

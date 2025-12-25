@@ -39,16 +39,22 @@ class CareerCoach:
     def __init__(self):
         logger.info("Initializing Career Coach...")
 
-        # Initialize text generation model
+        # Ensure cache dir exists
+        try:
+            os.makedirs(config.CACHE_DIR, exist_ok=True)
+        except Exception:
+            pass
+
+        # Initialize text generation model (prefer local cache)
         self.generator = safe_model_call(
-            lambda: pipeline("text2text-generation", model=config.GENERATION_MODEL),
+            lambda: pipeline("text2text-generation", model=config.GENERATION_MODEL, cache_dir=config.CACHE_DIR),
             fallback=None
         )
 
         # Initialize sentence embedder for context understanding
         try:
             from sentence_transformers import SentenceTransformer
-            self.embedder = SentenceTransformer(config.EMBEDDING_MODEL)
+            self.embedder = SentenceTransformer(config.EMBEDDING_MODEL, cache_folder=config.CACHE_DIR)
         except Exception as e:
             logger.warning(f"Embedder not available: {e}")
             self.embedder = None

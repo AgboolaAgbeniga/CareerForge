@@ -25,14 +25,20 @@ class ResumeParser:
     def __init__(self):
         logger.info("Initializing Resume Parser...")
 
-        # Initialize models
+        # Ensure cache dir exists
+        try:
+            os.makedirs(config.CACHE_DIR, exist_ok=True)
+        except Exception:
+            pass
+
+        # Initialize models (use cache_dir/cache_folder to prefer local cache)
         self.ner_pipeline = safe_model_call(
-            lambda: pipeline("ner", model=config.NER_MODEL, aggregation_strategy="simple"),
+            lambda: pipeline("ner", model=config.NER_MODEL, aggregation_strategy="simple", cache_dir=config.CACHE_DIR),
             fallback=None
         )
 
         self.embedder = safe_model_call(
-            lambda: SentenceTransformer(config.EMBEDDING_MODEL),
+            lambda: SentenceTransformer(config.EMBEDDING_MODEL, cache_folder=config.CACHE_DIR),
             fallback=None
         )
 

@@ -17,6 +17,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy source code
 COPY . .
 
+# Optional: pre-cache models during image build (requires network; set HF_API_KEY build arg for private models)
+ARG HF_API_KEY
+ENV HF_API_KEY=${HF_API_KEY}
+RUN python -m ai.scripts.precache_models --models ai/models.yaml || echo "Precache step failed or was skipped"
+
 # Create non-root user
 RUN useradd --create-home --shell /bin/bash app \
     && chown -R app:app /app

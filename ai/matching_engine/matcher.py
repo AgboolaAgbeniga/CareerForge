@@ -41,9 +41,15 @@ class JobMatcher:
     def __init__(self):
         logger.info("Initializing Job Matcher...")
 
-        # Initialize sentence transformer for semantic similarity
+        # Ensure cache dir exists
+        try:
+            os.makedirs(config.CACHE_DIR, exist_ok=True)
+        except Exception:
+            pass
+
+        # Initialize sentence transformer for semantic similarity (prefer cache)
         self.embedder = safe_model_call(
-            lambda: SentenceTransformer(config.EMBEDDING_MODEL),
+            lambda: SentenceTransformer(config.EMBEDDING_MODEL, cache_folder=config.CACHE_DIR),
             fallback=None
         )
 

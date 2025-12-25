@@ -1,0 +1,29 @@
+models:
+  - id: dslim/bert-base-NER
+    purpose: Named Entity Recognition for resume parsing
+    config: ai/shared/config.py#NER_MODEL
+    model_card: https://huggingface.co/dslim/bert-base-NER
+    license: CHECK_MODEL_CARD
+    pinned_revision: null
+
+  - id: sentence-transformers/all-MiniLM-L6-v2
+    purpose: Embeddings for semantic similarity (skill extraction & matching)
+    config: ai/shared/config.py#EMBEDDING_MODEL
+    model_card: https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2
+    license: CHECK_MODEL_CARD
+    pinned_revision: null
+
+  - id: google/flan-t5-base
+    purpose: Text generation for career advice, cover letters, and LinkedIn optimization
+    config: ai/shared/config.py#GENERATION_MODEL
+    model_card: https://huggingface.co/google/flan-t5-base
+    license: CHECK_MODEL_CARD
+    pinned_revision: null
+
+  - id: lp://efficientdet
+    purpose: Layout detection for image-based resumes (Detectron2 via LayoutParser)
+    config: ai/resume_parser/parser.py#layout_model
+    docs: https://layout-parser.readthedocs.io/en/latest/model_zoo.html
+    notes: "Confirm Detectron2 compatibility and runtime requirements"
+
+# Add any additional models used at runtime by the HF client to this manifest
