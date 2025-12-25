@@ -13,6 +13,11 @@ const envSchema = z.object({
     JWT_RESET_SECRET: z.string().min(32).optional().default('default-reset-secret-at-least-32-chars-long'),
     ENCRYPTION_KEY: z.string().length(64, 'ENCRYPTION_KEY must be exactly 64 characters (32 bytes in hex)'),
 
+    // Supabase configuration
+    SUPABASE_URL: z.string().url().optional(),
+    SUPABASE_ANON_KEY: z.string().optional(),
+    SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
+
     // Optional with defaults
     PORT: z.string().default('5000'),
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
