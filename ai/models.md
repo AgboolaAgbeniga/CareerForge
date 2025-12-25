@@ -70,11 +70,23 @@ models:
 
 ---
 
+## Embeddings & pgvector support 🧠
+
+To support embeddings from multiple models (job-seeker, recruiter, or future models), we use a normalized `embeddings` table that stores model metadata and the vector itself. Important notes:
+
+- **Model dimension enforcement**: Every embedding insert must include `model_id` and `model_dim`. The system validates the embedding length against the manifest (`ai/models.yaml`) when available.
+- **Schema (key fields)**: `candidate_id`, `model_id`, `model_dim`, `role` (e.g., `job_seeker` / `recruiter`), `embedding` (pgvector), `payload` (jsonb), `created_at`.
+- **Indexing**: We create partial IVFFLAT indexes for common models (example provided for `all-MiniLM-L6-v2`). Tune `lists` as dataset size grows.
+- **Column dimension & padding**: The embeddings table stores a fixed vector column dimension (default **384**) controlled by `EMBEDDING_COLUMN_DIM`. Shorter model embeddings are **automatically padded with zeros** to match the column dimension; embeddings longer than the column dimension are rejected.
+- **API endpoints**: `POST /vectors/index` (index embedding; payload includes `model_id` and `model_dim`), `POST /vectors/search` (query by embedding; optional `model_id` / `role` filters), `POST /vectors/init` (create extension/table/index).
+
+---
+
 ## Checklist before production deployment ✅
 - **Pin model revisions**: Pin to HF revision SHAs or upload model files to an internal registry to ensure reproducibility.
 - **Verify licenses**: Confirm license on each model card allows your intended use (commercial vs. non-commercial restrictions).
 - **Model cards & limitations**: Add a short summary of each model’s limitations (bias, hallucination, failure modes) to the repo.
-- **Add tests**: Create CI tests to validate model access (or mocked responses) and basic output sanity checks.
+- **Add tests**: Create CI tests to validate model access (or mocked responses) and basic output sanity checks. Include integration tests for pgvector when `DATABASE_URL` is available.
 - **Secrets & quotas**: Ensure `HF_API_KEY` is stored in CI secrets and monitor API quotas and latency.
 - **Privacy / PII**: Add a data handling note for PII in resumes — consider redaction or differential handling for sensitive data.
 - **Monitoring**: Add basic metrics (latency, error rates) and validation checks to catch model regressions.
@@ -94,6 +106,11 @@ I have added the following artifacts to the repository:
 - `ai/tests/test_models.py` — pytest smoke tests that validate the manifest structure and optionally check model access when `HF_API_KEY` is present.
 - `ai/scripts/precache_models.py` — script to pre-download/cache models listed in `ai/models.yaml` into `config.CACHE_DIR` (supports `--dry-run`).
 - `ai/tests/test_precache.py` — dry-run test that ensures the precache script executes without errors.
+- `ai/vector/pgvector.py` — helper utilities for storing and searching embeddings in Postgres with pgvector (supports multi-model metadata and validation).
+- `ai/vector/router.py` — FastAPI endpoints to initialize table, index vectors (`/vectors/index`), and perform searches (`/vectors/search`).
+- `ai/tests/test_pgvector.py` — integration test (skipped unless `DATABASE_URL` is set) to validate indexing & search.
+- `ai/scripts/backfill_embeddings.py` — script to backfill embeddings from a JSONL source (supports `--dry-run`).
+- `ai/tests/test_backfill.py` — test for backfill dry-run behavior.
 - `.github/workflows/ai-models-check.yml` — GitHub Actions workflow that runs the model manifest tests on pushes and PRs affecting `ai/`.
 
 These items are now present in the repo. Next step: open a PR with these changes and (optionally) pin model revisions and verify licenses before merging.

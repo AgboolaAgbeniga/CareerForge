@@ -27,6 +27,9 @@ RUN useradd --create-home --shell /bin/bash app \
     && chown -R app:app /app
 USER app
 
+# Ensure entrypoint is executable
+RUN chmod +x /app/ai/scripts/entrypoint.sh || true
+
 # Expose port
 EXPOSE 8000
 
@@ -34,5 +37,6 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
-# Run the application
-CMD ["python", "app.py"]
+# Run migrations at start and then run the app
+ENTRYPOINT ["/app/ai/scripts/entrypoint.sh"]
+CMD []
