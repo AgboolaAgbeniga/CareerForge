@@ -29,10 +29,20 @@ router.get('/job-seeker', authenticateToken, catchAsync(async (req: AuthRequest,
     throw new AppError('Only job seekers can access this dashboard', 403, 'FORBIDDEN');
   }
 
-  // Get applications
+  // Get applications with job and company details
   const userApplications = await db
-    .select()
+    .select({
+      id: applications.id,
+      status: applications.status,
+      appliedAt: applications.appliedAt,
+      jobId: applications.jobId,
+      jobTitle: jobs.title,
+      companyName: companies.name,
+      companyLogo: companies.logoUrl,
+    })
     .from(applications)
+    .leftJoin(jobs, eq(applications.jobId, jobs.id))
+    .leftJoin(companies, eq(jobs.companyId, companies.id))
     .where(eq(applications.jobSeekerId, userId))
     .orderBy(desc(applications.appliedAt))
     .limit(5);

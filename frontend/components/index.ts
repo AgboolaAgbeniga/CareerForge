@@ -36,6 +36,7 @@ export { CareerPathVisualization } from './job-seeker/CareerPathVisualization';
 export { ProfileCompletionCard } from './job-seeker/ProfileCompletionCard';
 export { ResumeHealthCard } from './job-seeker/ResumeHealthCard';
 export { SkillGapAnalysis } from './job-seeker/SkillGapAnalysis';
+export { JobMatches } from './job-seeker/JobMatches';
 
 // Recruiter Components
 export { AIHiringCopilot } from './recruiter/AIHiringCopilot';

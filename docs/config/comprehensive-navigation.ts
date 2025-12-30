@@ -577,181 +577,399 @@ export const comprehensiveNavigationConfig: NavigationSection[] = [
     priority: 4,
     items: [
       {
-        id: 'ai-services-overview',
-        title: 'AI Services Overview',
-        href: '/docs/ai/overview',
-        description: 'Service architecture, model overview, performance metrics, integration guide',
+        id: 'ai-services-introduction',
+        title: 'AI Services Introduction',
+        href: '/docs/ai-services/introduction',
+        description: 'Overview of AI services including resume parsing, job matching, recommendation engines, and more',
         contentType: ContentType.GUIDE,
-        difficulty: DifficultyLevel.INTERMEDIATE,
-        estimatedTime: 20,
-        tags: ['ai', 'overview', 'architecture', 'performance'],
+        difficulty: DifficultyLevel.BEGINNER,
+        estimatedTime: 15,
+        tags: ['ai', 'services', 'overview', 'introduction'],
         metadata: {
           contentType: ContentType.GUIDE,
-          difficulty: DifficultyLevel.INTERMEDIATE,
-          estimatedTime: 20,
-          tags: ['ai', 'overview', 'architecture', 'performance'],
+          difficulty: DifficultyLevel.BEGINNER,
+          estimatedTime: 15,
+          tags: ['ai', 'services', 'overview', 'introduction'],
           lastUpdated: '2024-12-27'
         }
       },
       {
-        id: 'resume-parser-service',
-        title: 'Resume Parser Service',
-        href: '/docs/ai/resume-parser',
-        description: 'Service details, NER models, skill extraction, experience parsing',
+        id: 'resume-parsing',
+        title: 'Resume Parsing',
+        href: '/docs/ai-services/resume-parsing',
+        description: 'AI-powered resume parsing with text extraction, entity recognition, and structured data generation',
         contentType: ContentType.GUIDE,
-        difficulty: DifficultyLevel.ADVANCED,
-        estimatedTime: 40,
-        tags: ['resume-parser', 'ner', 'skill-extraction', 'experience'],
+        difficulty: DifficultyLevel.INTERMEDIATE,
+        estimatedTime: 20,
+        tags: ['resume', 'parsing', 'nlp', 'entity-recognition'],
         badge: BadgeType.STABLE,
         metadata: {
           contentType: ContentType.GUIDE,
-          difficulty: DifficultyLevel.ADVANCED,
-          estimatedTime: 40,
-          tags: ['resume-parser', 'ner', 'skill-extraction', 'experience'],
-          lastUpdated: '2024-12-27',
-          version: '1.0.0'
-        }
-      },
-      {
-        id: 'resume-parser-api',
-        title: 'Resume Parser API',
-        href: '/docs/ai/resume-parser-api',
-        description: 'API endpoints, request/response format, file parsing, optimization',
-        contentType: ContentType.API,
-        difficulty: DifficultyLevel.INTERMEDIATE,
-        estimatedTime: 30,
-        tags: ['api', 'resume-parser', 'file-parsing', 'optimization'],
-        badge: BadgeType.STABLE,
-        metadata: {
-          contentType: ContentType.API,
           difficulty: DifficultyLevel.INTERMEDIATE,
-          estimatedTime: 30,
-          tags: ['api', 'resume-parser', 'file-parsing', 'optimization'],
-          lastUpdated: '2024-12-27',
-          version: '1.0.0'
-        }
-      },
-      {
-        id: 'matching-engine-service',
-        title: 'Matching Engine Service',
-        href: '/docs/ai/matching-engine',
-        description: 'Service details, semantic similarity, skill matching, experience scoring',
-        contentType: ContentType.GUIDE,
-        difficulty: DifficultyLevel.ADVANCED,
-        estimatedTime: 45,
-        tags: ['matching-engine', 'semantic-similarity', 'skill-matching', 'experience'],
-        badge: BadgeType.BETA,
-        metadata: {
-          contentType: ContentType.GUIDE,
-          difficulty: DifficultyLevel.ADVANCED,
-          estimatedTime: 45,
-          tags: ['matching-engine', 'semantic-similarity', 'skill-matching', 'experience'],
-          lastUpdated: '2024-12-27',
-          version: '1.0.0-beta'
-        }
-      },
-      {
-        id: 'matching-engine-api',
-        title: 'Matching Engine API',
-        href: '/docs/ai/matching-engine-api',
-        description: 'API endpoints, match calculations, suggestions, batch operations',
-        contentType: ContentType.API,
-        difficulty: DifficultyLevel.INTERMEDIATE,
-        estimatedTime: 35,
-        tags: ['api', 'matching', 'suggestions', 'batch-operations'],
-        badge: BadgeType.BETA,
-        metadata: {
-          contentType: ContentType.API,
-          difficulty: DifficultyLevel.INTERMEDIATE,
-          estimatedTime: 35,
-          tags: ['api', 'matching', 'suggestions', 'batch-operations'],
-          lastUpdated: '2024-12-27',
-          version: '1.0.0-beta'
-        }
-      },
-      {
-        id: 'career-coach-service',
-        title: 'Career Coach Service',
-        href: '/docs/ai/career-coach',
-        description: 'Service details, advice generation, LinkedIn optimization, career paths',
-        contentType: ContentType.GUIDE,
-        difficulty: DifficultyLevel.ADVANCED,
-        estimatedTime: 40,
-        tags: ['career-coach', 'advice', 'linkedin', 'career-paths'],
-        badge: BadgeType.BETA,
-        metadata: {
-          contentType: ContentType.GUIDE,
-          difficulty: DifficultyLevel.ADVANCED,
-          estimatedTime: 40,
-          tags: ['career-coach', 'advice', 'linkedin', 'career-paths'],
-          lastUpdated: '2024-12-27',
-          version: '1.0.0-beta'
-        }
-      },
-      {
-        id: 'career-coach-api',
-        title: 'Career Coach API',
-        href: '/docs/ai/career-coach-api',
-        description: 'API endpoints, advice requests, cover letter generation, skill gap analysis',
-        contentType: ContentType.API,
-        difficulty: DifficultyLevel.INTERMEDIATE,
-        estimatedTime: 30,
-        tags: ['api', 'career-coach', 'cover-letter', 'skill-gap'],
-        badge: BadgeType.BETA,
-        metadata: {
-          contentType: ContentType.API,
-          difficulty: DifficultyLevel.INTERMEDIATE,
-          estimatedTime: 30,
-          tags: ['api', 'career-coach', 'cover-letter', 'skill-gap'],
-          lastUpdated: '2024-12-27',
-          version: '1.0.0-beta'
-        }
-      },
-      {
-        id: 'vector-search',
-        title: 'Vector Search (pgvector)',
-        href: '/docs/ai/vector-search',
-        description: 'Vector embeddings, semantic search, similarity search, metadata filtering',
-        contentType: ContentType.GUIDE,
-        difficulty: DifficultyLevel.EXPERT,
-        estimatedTime: 50,
-        tags: ['vector-search', 'embeddings', 'semantic-search', 'pgvector'],
-        badge: BadgeType.NEW,
-        metadata: {
-          contentType: ContentType.GUIDE,
-          difficulty: DifficultyLevel.EXPERT,
-          estimatedTime: 50,
-          tags: ['vector-search', 'embeddings', 'semantic-search', 'pgvector'],
+          estimatedTime: 20,
+          tags: ['resume', 'parsing', 'nlp', 'entity-recognition'],
           lastUpdated: '2024-12-27',
           version: '2.4.0'
         }
       },
       {
-        id: 'ai-models-reference',
-        title: 'AI Models Reference',
-        href: '/docs/ai/models',
-        description: 'Complete reference of all AI models, architectures, and capabilities',
-        contentType: ContentType.REFERENCE,
+        id: 'job-matching',
+        title: 'Job Matching',
+        href: '/docs/ai-services/job-matching',
+        description: 'Intelligent job-candidate matching algorithms with semantic similarity and compatibility scoring',
+        contentType: ContentType.GUIDE,
+        difficulty: DifficultyLevel.ADVANCED,
+        estimatedTime: 25,
+        tags: ['job-matching', 'semantic-similarity', 'compatibility', 'scoring'],
+        badge: BadgeType.STABLE,
+        metadata: {
+          contentType: ContentType.GUIDE,
+          difficulty: DifficultyLevel.ADVANCED,
+          estimatedTime: 25,
+          tags: ['job-matching', 'semantic-similarity', 'compatibility', 'scoring'],
+          lastUpdated: '2024-12-27',
+          version: '2.4.0'
+        }
+      },
+      {
+        id: 'recommendation-engine',
+        title: 'Recommendation Engine',
+        href: '/docs/ai-services/recommendation-engine',
+        description: 'Personalized recommendation system using collaborative filtering and content-based matching',
+        contentType: ContentType.GUIDE,
+        difficulty: DifficultyLevel.ADVANCED,
+        estimatedTime: 30,
+        tags: ['recommendation', 'collaborative-filtering', 'personalization', 'matching'],
+        badge: BadgeType.STABLE,
+        metadata: {
+          contentType: ContentType.GUIDE,
+          difficulty: DifficultyLevel.ADVANCED,
+          estimatedTime: 30,
+          tags: ['recommendation', 'collaborative-filtering', 'personalization', 'matching'],
+          lastUpdated: '2024-12-27',
+          version: '2.4.0'
+        }
+      },
+      {
+        id: 'chatbot-integration',
+        title: 'Chatbot Integration',
+        href: '/docs/ai-services/chatbot-integration',
+        description: 'Conversational AI chatbot for career guidance, job search assistance, and personalized recommendations',
+        contentType: ContentType.GUIDE,
+        difficulty: DifficultyLevel.INTERMEDIATE,
+        estimatedTime: 20,
+        tags: ['chatbot', 'conversational-ai', 'career-guidance', 'nlp'],
+        badge: BadgeType.BETA,
+        metadata: {
+          contentType: ContentType.GUIDE,
+          difficulty: DifficultyLevel.INTERMEDIATE,
+          estimatedTime: 20,
+          tags: ['chatbot', 'conversational-ai', 'career-guidance', 'nlp'],
+          lastUpdated: '2024-12-27',
+          version: '1.0.0-beta'
+        }
+      },
+      {
+        id: 'sentiment-analysis',
+        title: 'Sentiment Analysis',
+        href: '/docs/ai-services/sentiment-analysis',
+        description: 'AI-powered sentiment analysis for understanding candidate feedback and user interactions',
+        contentType: ContentType.GUIDE,
+        difficulty: DifficultyLevel.INTERMEDIATE,
+        estimatedTime: 15,
+        tags: ['sentiment-analysis', 'nlp', 'feedback', 'emotion-detection'],
+        badge: BadgeType.STABLE,
+        metadata: {
+          contentType: ContentType.GUIDE,
+          difficulty: DifficultyLevel.INTERMEDIATE,
+          estimatedTime: 15,
+          tags: ['sentiment-analysis', 'nlp', 'feedback', 'emotion-detection'],
+          lastUpdated: '2024-12-27',
+          version: '2.4.0'
+        }
+      },
+      {
+        id: 'skill-extraction',
+        title: 'Skill Extraction',
+        href: '/docs/ai-services/skill-extraction',
+        description: 'Advanced AI for extracting and categorizing skills from resumes, job descriptions, and text content',
+        contentType: ContentType.GUIDE,
+        difficulty: DifficultyLevel.INTERMEDIATE,
+        estimatedTime: 18,
+        tags: ['skill-extraction', 'nlp', 'taxonomy', 'competency-mapping'],
+        badge: BadgeType.STABLE,
+        metadata: {
+          contentType: ContentType.GUIDE,
+          difficulty: DifficultyLevel.INTERMEDIATE,
+          estimatedTime: 18,
+          tags: ['skill-extraction', 'nlp', 'taxonomy', 'competency-mapping'],
+          lastUpdated: '2024-12-27',
+          version: '2.4.0'
+        }
+      },
+      {
+        id: 'predictive-analytics',
+        title: 'Predictive Analytics',
+        href: '/docs/ai-services/predictive-analytics',
+        description: 'AI-powered predictive analytics for career success forecasting, market trends, and performance predictions',
+        contentType: ContentType.GUIDE,
+        difficulty: DifficultyLevel.ADVANCED,
+        estimatedTime: 25,
+        tags: ['predictive-analytics', 'forecasting', 'career-success', 'market-trends'],
+        badge: BadgeType.BETA,
+        metadata: {
+          contentType: ContentType.GUIDE,
+          difficulty: DifficultyLevel.ADVANCED,
+          estimatedTime: 25,
+          tags: ['predictive-analytics', 'forecasting', 'career-success', 'market-trends'],
+          lastUpdated: '2024-12-27',
+          version: '1.0.0-beta'
+        }
+      },
+      {
+        id: 'model-training',
+        title: 'AI Model Training',
+        href: '/docs/ai-services/model-training',
+        description: 'Comprehensive guide to AI model training processes, data pipelines, and deployment strategies',
+        contentType: ContentType.GUIDE,
         difficulty: DifficultyLevel.EXPERT,
-        estimatedTime: 60,
-        tags: ['models', 'reference', 'architectures', 'capabilities'],
+        estimatedTime: 35,
+        tags: ['model-training', 'machine-learning', 'data-pipelines', 'mlops'],
+        badge: BadgeType.STABLE,
+        metadata: {
+          contentType: ContentType.GUIDE,
+          difficulty: DifficultyLevel.EXPERT,
+          estimatedTime: 35,
+          tags: ['model-training', 'machine-learning', 'data-pipelines', 'mlops'],
+          lastUpdated: '2024-12-27',
+          version: '2.4.0'
+        }
+      },
+      {
+        id: 'performance-monitoring',
+        title: 'AI Performance Monitoring',
+        href: '/docs/ai-services/performance-monitoring',
+        description: 'Comprehensive monitoring and analytics for AI service performance, model accuracy, and system health',
+        contentType: ContentType.GUIDE,
+        difficulty: DifficultyLevel.ADVANCED,
+        estimatedTime: 25,
+        tags: ['performance-monitoring', 'analytics', 'model-monitoring', 'observability'],
+        badge: BadgeType.STABLE,
+        metadata: {
+          contentType: ContentType.GUIDE,
+          difficulty: DifficultyLevel.ADVANCED,
+          estimatedTime: 25,
+          tags: ['performance-monitoring', 'analytics', 'model-monitoring', 'observability'],
+          lastUpdated: '2024-12-27',
+          version: '2.4.0'
+        }
+      }
+    ]
+  },
+
+  // 5. Executive Documentation
+  {
+    id: 'executive',
+    title: 'Executive',
+    description: 'Business metrics, market analysis, and strategic insights for executives and investors',
+    priority: 5,
+    items: [
+      {
+        id: 'executive-summary',
+        title: 'Executive Summary',
+        href: '/docs/executive/executive-summary',
+        description: 'Overview of CareerForge for investors and executives',
+        contentType: ContentType.GUIDE,
+        difficulty: DifficultyLevel.BEGINNER,
+        estimatedTime: 15,
+        tags: ['executive', 'summary', 'overview'],
+        metadata: {
+          contentType: ContentType.GUIDE,
+          difficulty: DifficultyLevel.BEGINNER,
+          estimatedTime: 15,
+          tags: ['executive', 'summary', 'overview'],
+          lastUpdated: '2024-12-27'
+        }
+      },
+      {
+        id: 'business-value',
+        title: 'Business Value',
+        href: '/docs/executive/business-value',
+        description: 'ROI calculator and business value analysis',
+        contentType: ContentType.GUIDE,
+        difficulty: DifficultyLevel.INTERMEDIATE,
+        estimatedTime: 25,
+        tags: ['business', 'value', 'roi'],
+        metadata: {
+          contentType: ContentType.GUIDE,
+          difficulty: DifficultyLevel.INTERMEDIATE,
+          estimatedTime: 25,
+          tags: ['business', 'value', 'roi'],
+          lastUpdated: '2024-12-27'
+        }
+      },
+      {
+        id: 'market-intelligence',
+        title: 'Market Intelligence',
+        href: '/docs/executive/market-intelligence',
+        description: 'Market analysis and competitive intelligence',
+        contentType: ContentType.GUIDE,
+        difficulty: DifficultyLevel.INTERMEDIATE,
+        estimatedTime: 30,
+        tags: ['market', 'intelligence', 'analysis'],
+        metadata: {
+          contentType: ContentType.GUIDE,
+          difficulty: DifficultyLevel.INTERMEDIATE,
+          estimatedTime: 30,
+          tags: ['market', 'intelligence', 'analysis'],
+          lastUpdated: '2024-12-27'
+        }
+      },
+      {
+        id: 'competitive-analysis',
+        title: 'Competitive Analysis',
+        href: '/docs/executive/competitive-analysis',
+        description: 'Competitive landscape and positioning',
+        contentType: ContentType.REFERENCE,
+        difficulty: DifficultyLevel.INTERMEDIATE,
+        estimatedTime: 25,
+        tags: ['competitive', 'analysis', 'positioning'],
         metadata: {
           contentType: ContentType.REFERENCE,
-          difficulty: DifficultyLevel.EXPERT,
-          estimatedTime: 60,
-          tags: ['models', 'reference', 'architectures', 'capabilities'],
+          difficulty: DifficultyLevel.INTERMEDIATE,
+          estimatedTime: 25,
+          tags: ['competitive', 'analysis', 'positioning'],
+          lastUpdated: '2024-12-27'
+        }
+      },
+      {
+        id: 'revenue-projections',
+        title: 'Revenue Projections',
+        href: '/docs/executive/revenue-projections',
+        description: 'Financial projections and revenue models',
+        contentType: ContentType.GUIDE,
+        difficulty: DifficultyLevel.ADVANCED,
+        estimatedTime: 40,
+        tags: ['revenue', 'projections', 'financial'],
+        metadata: {
+          contentType: ContentType.GUIDE,
+          difficulty: DifficultyLevel.ADVANCED,
+          estimatedTime: 40,
+          tags: ['revenue', 'projections', 'financial'],
+          lastUpdated: '2024-12-27'
+        }
+      },
+      {
+        id: 'growth-projections',
+        title: 'Growth Projections',
+        href: '/docs/executive/growth-projections',
+        description: 'Growth forecasts and market expansion',
+        contentType: ContentType.GUIDE,
+        difficulty: DifficultyLevel.ADVANCED,
+        estimatedTime: 35,
+        tags: ['growth', 'projections', 'forecasts'],
+        metadata: {
+          contentType: ContentType.GUIDE,
+          difficulty: DifficultyLevel.ADVANCED,
+          estimatedTime: 35,
+          tags: ['growth', 'projections', 'forecasts'],
+          lastUpdated: '2024-12-27'
+        }
+      },
+      {
+        id: 'growth-strategy',
+        title: 'Growth Strategy',
+        href: '/docs/executive/growth-strategy',
+        description: 'Strategic growth initiatives and roadmap',
+        contentType: ContentType.GUIDE,
+        difficulty: DifficultyLevel.INTERMEDIATE,
+        estimatedTime: 30,
+        tags: ['growth', 'strategy', 'roadmap'],
+        metadata: {
+          contentType: ContentType.GUIDE,
+          difficulty: DifficultyLevel.INTERMEDIATE,
+          estimatedTime: 30,
+          tags: ['growth', 'strategy', 'roadmap'],
+          lastUpdated: '2024-12-27'
+        }
+      },
+      {
+        id: 'investment-highlights',
+        title: 'Investment Highlights',
+        href: '/docs/executive/investment-highlights',
+        description: 'Key investment opportunities and highlights',
+        contentType: ContentType.GUIDE,
+        difficulty: DifficultyLevel.INTERMEDIATE,
+        estimatedTime: 25,
+        tags: ['investment', 'highlights', 'opportunities'],
+        metadata: {
+          contentType: ContentType.GUIDE,
+          difficulty: DifficultyLevel.INTERMEDIATE,
+          estimatedTime: 25,
+          tags: ['investment', 'highlights', 'opportunities'],
+          lastUpdated: '2024-12-27'
+        }
+      },
+      {
+        id: 'technical-advantages',
+        title: 'Technical Advantages',
+        href: '/docs/executive/technical-advantages',
+        description: 'Technical differentiators and competitive advantages',
+        contentType: ContentType.GUIDE,
+        difficulty: DifficultyLevel.INTERMEDIATE,
+        estimatedTime: 30,
+        tags: ['technical', 'advantages', 'differentiators'],
+        metadata: {
+          contentType: ContentType.GUIDE,
+          difficulty: DifficultyLevel.INTERMEDIATE,
+          estimatedTime: 30,
+          tags: ['technical', 'advantages', 'differentiators'],
+          lastUpdated: '2024-12-27'
+        }
+      },
+      {
+        id: 'scalability-roadmap',
+        title: 'Scalability Roadmap',
+        href: '/docs/executive/scalability-roadmap',
+        description: 'Scalability strategy and infrastructure roadmap',
+        contentType: ContentType.GUIDE,
+        difficulty: DifficultyLevel.ADVANCED,
+        estimatedTime: 35,
+        tags: ['scalability', 'roadmap', 'infrastructure'],
+        metadata: {
+          contentType: ContentType.GUIDE,
+          difficulty: DifficultyLevel.ADVANCED,
+          estimatedTime: 35,
+          tags: ['scalability', 'roadmap', 'infrastructure'],
+          lastUpdated: '2024-12-27'
+        }
+      },
+      {
+        id: 'executive-dashboard',
+        title: 'Executive Dashboard',
+        href: '/docs/executive/dashboard',
+        description: 'Executive dashboard with key metrics',
+        contentType: ContentType.REFERENCE,
+        difficulty: DifficultyLevel.BEGINNER,
+        estimatedTime: 10,
+        tags: ['executive', 'dashboard', 'metrics'],
+        metadata: {
+          contentType: ContentType.REFERENCE,
+          difficulty: DifficultyLevel.BEGINNER,
+          estimatedTime: 10,
+          tags: ['executive', 'dashboard', 'metrics'],
           lastUpdated: '2024-12-27'
         }
       }
     ]
   },
 
-  // 5. Business & Strategy Documentation
+  // 6. Business & Strategy Documentation
   {
     id: 'business-strategy',
     title: 'Business & Strategy',
     description: 'Market analysis, business model, growth strategy, and executive insights',
-    priority: 5,
+    priority: 7,
     items: [
       {
         id: 'market-analysis',
@@ -824,12 +1042,12 @@ export const comprehensiveNavigationConfig: NavigationSection[] = [
     ]
   },
 
-  // 6. Developer Resources
+  // 7. Developer Resources
   {
     id: 'developer-resources',
     title: 'Developer Resources',
     description: 'Setup, integration guides, deployment, and troubleshooting',
-    priority: 6,
+    priority: 8,
     items: [
       {
         id: 'setup-installation',
@@ -904,12 +1122,12 @@ export const comprehensiveNavigationConfig: NavigationSection[] = [
     ]
   },
 
-  // 7. Security & Compliance
+  // 8. Security & Compliance
   {
     id: 'security-compliance',
     title: 'Security & Compliance',
     description: 'Security architecture, privacy, compliance, and best practices',
-    priority: 7,
+    priority: 9,
     items: [
       {
         id: 'security-architecture',
@@ -965,12 +1183,12 @@ export const comprehensiveNavigationConfig: NavigationSection[] = [
     ]
   },
 
-  // 8. Support & Resources
+  // 9. Support & Resources
   {
     id: 'support-resources',
     title: 'Support & Resources',
     description: 'Getting help, training, changelog, and community',
-    priority: 8,
+    priority: 10,
     items: [
       {
         id: 'getting-help',

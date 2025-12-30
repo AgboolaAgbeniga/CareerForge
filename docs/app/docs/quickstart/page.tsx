@@ -238,12 +238,12 @@ npm run services:dev`}</code>
                   </Link>
                 </li>
                 <li>• Check out the{' '}
-                  <Link href="/docs/api/matching-engine" className="text-primary hover:underline">
+                  <Link href="/docs/backend-api/introduction" className="text-primary hover:underline">
                     API documentation
                   </Link>
                 </li>
                 <li>• Understand the{' '}
-                  <Link href="/docs/data-layer/postgres-drizzle" className="text-primary hover:underline">
+                  <Link href="/docs/backend-api/introduction" className="text-primary hover:underline">
                     data layer
                   </Link>
                 </li>
@@ -263,11 +263,7 @@ npm run services:dev`}</code>
             <div className="bg-card border border-border rounded-lg p-6">
               <h3 className="text-lg font-semibold mb-3">Deploy to Production</h3>
               <ul className="text-muted-foreground space-y-2">
-                <li>• Follow our{' '}
-                  <Link href="/docs/deployment/environments" className="text-primary hover:underline">
-                    deployment guide
-                  </Link>
-                </li>
+                <li>• Follow our deployment guide</li>
                 <li>• Configure production environment variables</li>
                 <li>• Set up SSL certificates</li>
                 <li>• Configure monitoring and logging</li>
