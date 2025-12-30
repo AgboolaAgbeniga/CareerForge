@@ -548,8 +548,8 @@ export const performanceMonitor = new PerformanceMonitor();</code></pre>
         </div>
         
         <div class="code-example">
-          <h4>Bundle Size Monitoring</h4>
-          <pre><code class="language-typescript">
+           <h4>Bundle Size Monitoring</h4>
+           <pre><code>
 // scripts/analyze-bundle.js
 const fs = require('fs');
 const path = require('path');
@@ -557,7 +557,7 @@ const webpack = require('webpack');
 
 function analyzeBundle() {
   const config = require('../webpack.config.js');
-  
+
   webpack(config, (err, stats) => {
     if (err) {
       console.error('Bundle analysis failed:', err);
@@ -565,22 +565,22 @@ function analyzeBundle() {
     }
 
     const info = stats.toJson();
-    
+
     console.log('\\n📊 Bundle Analysis Results:');
     console.log('========================');
-    
+
     info.chunks.forEach((chunk, index) => {
       const size = chunk.size;
       const sizeKB = (size / 1024).toFixed(2);
-      
-      console.log(`Chunk ${index + 1}: ${sizeKB} KB`);
+
+      console.log(\`Chunk \${index + 1}: \${sizeKB} KB\`);
       console.log('Modules:', chunk.modules.length);
-      
+
       // Identify large modules
       chunk.modules
         .filter(module => module.size > 10000) // > 10KB
         .forEach(module => {
-          console.log(`  🚨 Large module: ${module.name} (${(module.size / 1024).toFixed(2)} KB)`);
+          console.log(\`  🚨 Large module: \${module.name} (\${(module.size / 1024).toFixed(2)} KB)\`);
         });
     });
 
@@ -590,7 +590,7 @@ function analyzeBundle() {
       totalChunks: info.chunks.length,
       totalSize: info.chunks.reduce((sum, chunk) => sum + chunk.size, 0),
       chunks: info.chunks.map((chunk, index) => ({
-        name: `chunk-${index + 1}`,
+        name: \`chunk-\${index + 1}\`,
         size: chunk.size,
         modules: chunk.modules.length
       }))
@@ -621,7 +621,7 @@ export function useRenderTime(componentName: string) {
     return () => {
       if (renderStart.current) {
         const renderTime = performance.now() - renderStart.current;
-        console.log(`Component ${componentName} render time: ${renderTime.toFixed(2)}ms`);
+        console.log(\`Component \${componentName} render time: \${renderTime.toFixed(2)}ms\`);
         
         // Send to analytics
         fetch('/api/analytics/render-time', {
@@ -648,11 +648,11 @@ export function useAsyncOperation(operationName: string) {
   const endOperation = () => {
     if (startTime.current) {
       const duration = performance.now() - startTime.current;
-      console.log(`Operation ${operationName} took: ${duration.toFixed(2)}ms`);
+      console.log(\`Operation \${operationName} took: \${duration.toFixed(2)}ms\`);
       
       // Performance threshold check
       if (duration > 1000) {
-        console.warn(`⚠️ Slow operation detected: ${operationName} (${duration.toFixed(2)}ms)`);
+        console.warn(\`⚠️ Slow operation detected: \${operationName} (\${duration.toFixed(2)}ms)\`);
       }
     }
   };
