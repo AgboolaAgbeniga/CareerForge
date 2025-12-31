@@ -257,7 +257,8 @@ router.get('/matching/candidates/:jobId', authenticateToken, requireVerified, ca
  * @swagger
  * /api/ai/career/advice:
  *   post:
- *     summary: Get AI career advice
+ *     summary: Get AI career advice with optional session context
+ *     description: Provides personalized career advice. Include sessionId for context-aware conversations.
  *     tags: [AI]
  *     security:
  *       - cookieAuth: []
@@ -269,10 +270,52 @@ router.get('/matching/candidates/:jobId', authenticateToken, requireVerified, ca
  *             type: object
  *             required: [context]
  *             properties:
- *               context: { type: string, description: 'User query or career context' }
+ *               context:
+ *                 type: string
+ *                 description: User query or career context
+ *                 example: "How can I transition to a senior developer role?"
+ *               sessionId:
+ *                 type: string
+ *                 description: Optional session ID for maintaining conversation context
+ *                 example: "550e8400-e29b-41d4-a716-446655440000"
+ *               userContext:
+ *                 type: object
+ *                 description: Optional user profile information
+ *                 properties:
+ *                   title:
+ *                     type: string
+ *                   skills:
+ *                     type: array
+ *                     items:
+ *                       type: string
+ *                   experience_years:
+ *                     type: number
  *     responses:
  *       200:
  *         description: AI advice retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     advice:
+ *                       type: string
+ *                     action_items:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                     resources:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                     confidence_score:
+ *                       type: number
+ *                       example: 0.85
  */
 router.post('/career/advice', authenticateToken, requireVerified, catchAsync(async (req: AuthRequest, res: Response) => {
   const { context } = getAdviceSchema.parse(req.body);

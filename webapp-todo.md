@@ -65,7 +65,7 @@
     - [x] Update `docs/content/ai-services/*.ts` to reflect the "Phase 1" reality (or mark future features as "Coming Soon").
     - [x] Add `PDF Support` section to `audit_report.md` once fixed.
     - [x] Add “beta” tags to features not yet fully implemented (OCR, cultural fit, advanced ML).
-    - [ ] Sync OpenAPI/Swagger docs with backend changes.
+    - [x] Sync OpenAPI/Swagger docs with backend changes (Added docs for /parse-file, sessionId, updated schemas).
 
 ---
 

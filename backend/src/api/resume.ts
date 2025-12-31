@@ -56,7 +56,68 @@ const optimizeSchema = z.object({
  * @swagger
  * /api/resume/upload:
  *   post:
- *     summary: Upload, parse, and save resume
+ *     summary: Upload, parse, and save resume to database
+ *     tags: [Resume]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *                 description: Resume file (PDF or DOCX)
+ *     responses:
+ *       200:
+ *         description: Resume uploaded and parsed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 resume:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       format: uuid
+ *                     parsed_data:
+ *                       type: object
+ *                       properties:
+ *                         skills:
+ *                           type: array
+ *                           items:
+ *                             type: object
+ *                             properties:
+ *                               skill:
+ *                                 type: string
+ *                               confidence:
+ *                                 type: number
+ *                         experience:
+ *                           type: array
+ *                           items:
+ *                             type: object
+ *                         education:
+ *                           type: array
+ *                           items:
+ *                             type: object
+ *                         contact:
+ *                           type: object
+ *                           properties:
+ *                             email:
+ *                               type: string
+ *                             phone:
+ *                               type: string
+ *       400:
+ *         description: Invalid file type or missing file
+ *       401:
+ *         description: Unauthorized
  */
 router.post('/upload', authenticateToken, requireVerified, upload.single('file'), catchAsync(async (req: AuthRequest, res: Response) => {
   if (!req.file) {
@@ -124,7 +185,86 @@ router.post('/upload', authenticateToken, requireVerified, upload.single('file')
  * @swagger
  * /api/resume/parse-file:
  *   post:
- *     summary: Parse a resume file directly (no DB save) - Demo/Test only
+ *     summary: Parse a resume file directly without saving to database
+ *     description: Test endpoint for resume parsing. Returns parsed data without database storage.
+ *     tags: [Resume]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *                 description: Resume file (PDF, DOCX, HTML, or TXT)
+ *     responses:
+ *       200:
+ *         description: Resume parsed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 personal_info:
+ *                   type: object
+ *                   properties:
+ *                     name:
+ *                       type: string
+ *                       example: "John Doe"
+ *                 skills:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       skill:
+ *                         type: string
+ *                         example: "Python"
+ *                       confidence:
+ *                         type: number
+ *                         example: 0.95
+ *                 experience:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       company:
+ *                         type: string
+ *                       start_date:
+ *                         type: string
+ *                       end_date:
+ *                         type: string
+ *                 education:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       degree:
+ *                         type: string
+ *                       institution:
+ *                         type: string
+ *                       year:
+ *                         type: string
+ *                 contact:
+ *                   type: object
+ *                   properties:
+ *                     email:
+ *                       type: string
+ *                       example: "john@example.com"
+ *                     phone:
+ *                       type: string
+ *                       example: "555-123-4567"
+ *                 summary:
+ *                   type: string
+ *                 confidence_score:
+ *                   type: number
+ *                   example: 0.85
+ *                   description: Overall confidence in parsing accuracy (0-1)
+ *       400:
+ *         description: Invalid file type or parsing error
+ *       500:
+ *         description: Internal server error
  */
 router.post('/parse-file', upload.single('file'), catchAsync(async (req: AuthRequest, res: Response) => {
   if (!req.file) {
@@ -149,7 +289,49 @@ router.post('/parse-file', upload.single('file'), catchAsync(async (req: AuthReq
  * @swagger
  * /api/resume/{id}/optimize:
  *   post:
- *     summary: AI optimize an existing resume
+ *     summary: AI-optimize an existing resume for a target job
+ *     tags: [Resume]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Resume ID
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               targetJobId:
+ *                 type: string
+ *                 format: uuid
+ *                 description: Optional job ID to optimize for
+ *               optimizationType:
+ *                 type: string
+ *                 description: Type of optimization
+ *     responses:
+ *       200:
+ *         description: Resume optimized successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 optimized_data:
+ *                   type: object
+ *                   description: AI-optimized resume data
+ *       404:
+ *         description: Resume not found
+ *       401:
+ *         description: Unauthorized
  */
 router.post('/:id/optimize', authenticateToken, requireVerified, catchAsync(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
