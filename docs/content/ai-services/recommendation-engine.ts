@@ -5,7 +5,7 @@ export const recommendationEngineContent: PageContent = {
     title: "Recommendation Engine",
     description: "Comprehensive guide to CareerForge's personalized recommendation system, including collaborative filtering, content-based matching, and hybrid approaches",
     version: "2.4.0",
-    lastUpdated: "2024-12-27",
+    lastUpdated: "2025-12-27",
     authors: ["AI Engineering Team"],
     tags: ["recommendation engine", "collaborative filtering", "personalization", "machine learning"],
     difficulty: "advanced",

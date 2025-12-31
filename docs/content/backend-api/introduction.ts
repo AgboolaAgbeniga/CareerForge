@@ -6,7 +6,7 @@ export const backendApiIntroductionContent: PageContent = {
     title: "Backend API Introduction",
     description: "Comprehensive overview of CareerForge's RESTful backend API architecture, authentication, endpoints, and integration patterns",
     version: "2.4.0",
-    lastUpdated: "2024-12-27",
+    lastUpdated: "2025-12-27",
     authors: ["Backend Engineering Team"],
     tags: ["api", "backend", "rest", "documentation", "architecture"],
     difficulty: "intermediate",
@@ -59,7 +59,7 @@ All API responses follow a consistent JSON structure:
   "data": { ... },
   "message": "Optional success message",
   "pagination": { ... }, // Only for paginated responses
-  "timestamp": "2024-12-27T10:00:00.000Z"
+  "timestamp": "2025-12-27T10:00:00.000Z"
 }
 \`\`\``,
       calloutBoxes: [
@@ -280,7 +280,7 @@ Standard query parameters for filtering and pagination:
 ?page=1&limit=20
 
 // Filtering
-?status=active&created_after=2024-01-01
+?status=active&created_after=2025-01-01
 
 // Sorting
 ?sort=created_at&order=desc
@@ -458,7 +458,7 @@ All errors follow a standardized JSON structure:
       "reason": "Invalid email format"
     }
   },
-  "timestamp": "2024-12-27T10:00:00.000Z"
+  "timestamp": "2025-12-27T10:00:00.000Z"
 }
 \`\`\`
 
@@ -574,7 +574,7 @@ When limits are exceeded:
     "details": {
       "limit": 100,
       "remaining": 0,
-      "reset": "2024-12-27T11:00:00.000Z",
+      "reset": "2025-12-27T11:00:00.000Z",
       "retryAfter": 60
     }
   }

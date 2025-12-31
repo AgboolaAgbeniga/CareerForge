@@ -5,7 +5,7 @@ export const jobSearchBrowseContent: PageContent = {
     title: "Job Search & Browse",
     description: "Complete guide to the job search interface, filter system, job listings, and detail pages",
     version: "1.0.0",
-    lastUpdated: "2024-12-27",
+    lastUpdated: "2025-12-27",
     authors: ["CareerForge Team"],
     tags: ["frontend", "job-search", "filter", "listings", "react"],
     difficulty: "intermediate" as const,

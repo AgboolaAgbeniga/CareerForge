@@ -6,7 +6,7 @@ export const introductionPhilosophyContent: PageContent = {
     title: "Introduction & Philosophy",
     description: "Learn about CareerForge's mission, vision, and core values as a revolutionary AI-powered career platform",
     version: "2.4.0",
-    lastUpdated: "2024-12-27",
+    lastUpdated: "2025-12-27",
     authors: ["CareerForge Team"],
     tags: ["introduction", "philosophy", "mission", "vision"],
     difficulty: "beginner",

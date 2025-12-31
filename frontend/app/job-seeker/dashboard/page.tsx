@@ -33,9 +33,11 @@ import {
   AICareerCoach,
   SkillGapAnalysis,
   ActivityFeed,
-  PremiumUpsell
+  PremiumUpsell,
+  JobMatches
 } from '@/components';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
+import { socketService } from '@/lib/socket';
 
 export default function Dashboard() {
   const { user, loading } = useAuth();
@@ -53,31 +55,58 @@ export default function Dashboard() {
   const [applications, setApplications] = useState([]);
   const [jobMatches, setJobMatches] = useState([]);
 
-  useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        const token = localStorage.getItem('accessToken');
-        const response = await fetch('/api/dashboard/job-seeker', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (response.ok) {
-          const result = await response.json();
-          const dashboardData = result.data || result;
-          setApplications(dashboardData.applications || []);
-          setActivities(dashboardData.notifications || []);
-          setJobMatches(dashboardData.jobMatches || []);
-        }
-      } catch (error) {
-        console.error('Failed to fetch dashboard data:', error);
+  const fetchDashboardData = React.useCallback(async () => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch('/api/dashboard/job-seeker', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (response.ok) {
+        const result = await response.json();
+        const dashboardData = result.data || result;
+        setApplications(dashboardData.applications || []);
+        setActivities(dashboardData.notifications || []);
+        setJobMatches(dashboardData.jobMatches || []);
       }
-    };
+    } catch (error) {
+      console.error('Failed to fetch dashboard data:', error);
+    }
+  }, []);
 
+  useEffect(() => {
     if (user && user.onboardingCompleted) {
       fetchDashboardData();
     }
-  }, [user]);
+  }, [user, fetchDashboardData]);
+
+  // Real-time updates
+  useEffect(() => {
+    if (user) {
+      const token = localStorage.getItem('accessToken');
+      if (token) {
+        socketService.connect(token);
+        if (user.id) socketService.joinRoom(user.id);
+
+        const handleUpdate = () => {
+          console.log('Received real-time update, refreshing dashboard...');
+          fetchDashboardData();
+        };
+
+        socketService.on('application:updated', handleUpdate);
+        socketService.on('dashboard:refresh', handleUpdate);
+        socketService.on('notification:new', handleUpdate);
+
+        return () => {
+          socketService.off('application:updated', handleUpdate);
+          socketService.off('dashboard:refresh', handleUpdate);
+          socketService.off('notification:new', handleUpdate);
+          // We don't disconnect here to avoid flapping on nav, relying on singleton
+        };
+      }
+    }
+  }, [user, fetchDashboardData]);
 
   return (
     <ProtectedRoute allowedRoles={['job_seeker']}>
@@ -97,7 +126,7 @@ export default function Dashboard() {
               <p className="text-sm text-gray-500 dark:text-gray-400 max-w-lg leading-relaxed">
                 Your AI cockpit is tracking{' '}
                 <span className="font-semibold text-gray-900 dark:text-gray-100">
-                  5 active opportunities
+                  {applications.length > 0 ? applications.length : 5} active opportunities
                 </span>
                 . Market demand for your skills is up{' '}
                 <span className="text-green-600 font-medium">12%</span> this week.
@@ -135,125 +164,7 @@ export default function Dashboard() {
               <ApplicationsTracker applications={applications} viewMode={viewMode} setViewMode={setViewMode} />
 
               {/* Job Matches Grid */}
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 tracking-tight">
-                    Top Recommended Matches
-                  </h2>
-                  <div className="flex gap-2">
-                    <button className="px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg text-xs font-medium text-gray-600 dark:text-gray-400 hover:border-gray-400 dark:hover:border-gray-500 transition-colors">
-                      Remote
-                    </button>
-                    <button className="px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg text-xs font-medium text-gray-600 dark:text-gray-400 hover:border-gray-400 dark:hover:border-gray-500 transition-colors">
-                      Full-time
-                    </button>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Job Card 1 */}
-                  <div className="group bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 hover:border-indigo-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all relative">
-                    <div className="absolute top-5 right-5 flex flex-col items-end">
-                      <div
-                        className="radial-progress text-green-500 text-[10px] font-bold"
-                        style={
-                          {
-                            '--value': 98,
-                            '--size': '2rem',
-                          } as React.CSSProperties
-                        }
-                      >
-                        98%
-                      </div>
-                    </div>
-
-                    <div className="flex gap-4 mb-4">
-                      <div className="w-12 h-12 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-100 dark:border-gray-600 flex items-center justify-center">
-                        {/* Figma icon placeholder */}
-                        <div className="w-6 h-6 bg-gray-900 dark:bg-gray-100 rounded"></div>
-                      </div>
-                      <div>
-                        <h3 className="font-bold text-gray-900 dark:text-gray-100 group-hover:text-indigo-600 transition-colors">
-                          Product Designer
-                        </h3>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
-                          Figma • San Francisco
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-[10px] font-medium text-gray-600 dark:text-gray-400">
-                        Design Systems
-                      </span>
-                      <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-[10px] font-medium text-gray-600 dark:text-gray-400">
-                        Prototyping
-                      </span>
-                      <span className="px-2 py-1 bg-green-50 dark:bg-green-900 text-green-700 dark:text-green-300 border border-green-100 dark:border-green-700 rounded text-[10px] font-medium flex items-center gap-1">
-                        <Check className="w-2.5 h-2.5" /> Skills Match
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between pt-4 border-t border-gray-50 dark:border-gray-700">
-                      <span className="text-[10px] text-gray-400 dark:text-gray-500">
-                        {formatRelativeTime(
-                          new Date(Date.now() - 4 * 60 * 60 * 1000)
-                        )}
-                      </span>
-                      <button className="text-xs font-semibold text-white bg-gray-900 dark:bg-gray-700 px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all transform translate-y-1 group-hover:translate-y-0">
-                        Apply Now
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Job Card 2 */}
-                  <div className="group bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 hover:border-indigo-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all relative">
-                    <div className="absolute top-5 right-5 flex flex-col items-end">
-                      <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900 px-2 py-1 rounded-full">
-                        94% Match
-                      </span>
-                    </div>
-
-                    <div className="flex gap-4 mb-4">
-                      <div className="w-12 h-12 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-100 dark:border-gray-600 flex items-center justify-center">
-                        {/* Slack icon placeholder */}
-                        <div className="w-6 h-6 bg-gray-900 dark:bg-gray-100 rounded"></div>
-                      </div>
-                      <div>
-                        <h3 className="font-bold text-gray-900 dark:text-gray-100 group-hover:text-indigo-600 transition-colors">
-                          Technical PM
-                        </h3>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
-                          Slack • Remote
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-[10px] font-medium text-gray-600 dark:text-gray-400">
-                        API
-                      </span>
-                      <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-[10px] font-medium text-gray-600 dark:text-gray-400">
-                        Agile
-                      </span>
-                      <span className="px-2 py-1 bg-indigo-50 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-700 rounded text-[10px] font-medium flex items-center gap-1">
-                        <Zap className="w-2.5 h-2.5" /> Hot Role
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between pt-4 border-t border-gray-50 dark:border-gray-700">
-                      <span className="text-[10px] text-gray-400 dark:text-gray-500">
-                        {formatRelativeTime(
-                          new Date(Date.now() - 24 * 60 * 60 * 1000)
-                        )}
-                      </span>
-                      <button className="text-xs font-semibold text-white bg-gray-900 dark:bg-gray-700 px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all transform translate-y-1 group-hover:translate-y-0">
-                        Apply Now
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <JobMatches matches={jobMatches} />
             </div>
 
             {/* RIGHT COLUMN (AI, Upskilling, Notifications) */}

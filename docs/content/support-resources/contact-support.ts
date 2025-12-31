@@ -5,7 +5,7 @@ export const contactSupportContent: PageContent = {
     title: "Contact Support",
     description: "Get in touch with CareerForge support team through various channels including email, chat, phone, and community forums",
     version: "1.2.0",
-    lastUpdated: "2024-12-27",
+    lastUpdated: "2025-12-27",
     authors: ["Support Team"],
     tags: ["support", "contact", "help", "customer service", "assistance"],
     difficulty: "beginner",

@@ -68,14 +68,21 @@ async def parse_resume_file(file: UploadFile = File(...)):
             raise HTTPException(status_code=503, detail="Parser not initialized")
 
         # Validate file type
-        if not file.filename.lower().endswith(('.pdf', '.txt', '.docx')):
-            raise HTTPException(status_code=400, detail="Unsupported file type")
+        filename = file.filename.lower()
+        if not filename.endswith(('.pdf', '.txt', '.docx', '.doc', '.html', '.htm')):
+             # Minimal validation, we allow more now
+             pass
 
         # Read file content
         content = await file.read()
-
-        # For now, assume text content (would need PDF parsing library)
-        text = content.decode('utf-8', errors='ignore')
+        
+        # Extract text using extractor
+        from .extractor import extract_text
+        text = extract_text(content, file.filename, file.content_type)
+        
+        if not text.strip():
+             # Fallback error if extraction failed
+             raise HTTPException(status_code=400, detail="Could not extract text from file")
 
         result = parser.parse_resume(text)
 
@@ -87,6 +94,9 @@ async def parse_resume_file(file: UploadFile = File(...)):
     except Exception as e:
         logger.error(f"File parse error: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
+
+    finally:
+        await file.close()
 
 @resume_router.post("/resume/optimize")
 async def optimize_resume(request: OptimizeRequest):

@@ -5,7 +5,7 @@ export const complianceStandardsContent: PageContent = {
     title: "Compliance Standards and Certifications",
     description: "Overview of CareerForge's compliance certifications, industry standards, and regulatory frameworks including SOC 2, ISO 27001, and GDPR",
     version: "1.1.0",
-    lastUpdated: "2024-12-27",
+    lastUpdated: "2025-12-27",
     authors: ["Compliance Team"],
     tags: ["compliance", "certifications", "SOC 2", "ISO 27001", "GDPR", "standards", "audits"],
     difficulty: "intermediate",

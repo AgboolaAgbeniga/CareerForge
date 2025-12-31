@@ -5,7 +5,7 @@ export const skillExtractionContent: PageContent = {
     title: "Skill Extraction",
     description: "Advanced AI for extracting and categorizing skills from resumes, job descriptions, and text content",
     version: "2.4.0",
-    lastUpdated: "2024-12-27",
+    lastUpdated: "2025-12-27",
     authors: ["AI Engineering Team"],
     tags: ["skill extraction", "NLP", "taxonomy", "competency mapping"],
     difficulty: "intermediate",

@@ -5,7 +5,7 @@ export const jobSeekerDashboardContent: PageContent = {
     title: "Job Seeker Dashboard",
     description: "Complete guide to the job seeker dashboard implementation, features, and architecture",
     version: "1.0.0",
-    lastUpdated: "2024-12-27",
+    lastUpdated: "2025-12-27",
     authors: ["CareerForge Team"],
     tags: ["frontend", "dashboard", "job-seeker", "react", "nextjs"],
     difficulty: "intermediate" as const,
@@ -91,8 +91,11 @@ app/job-seeker/
 components/job-seeker/
 ├── ApplicationsTracker.tsx
 ├── ResumeHealthCard.tsx
+├── ProfileCompletionCard.tsx
 ├── SkillGapAnalysis.tsx
-└── CareerPathVisualization.tsx
+├── CareerPathVisualization.tsx
+├── AICareerCoach.tsx
+└── JobMatches.tsx
 
 components/dashboard/
 ├── KPICards.tsx
@@ -178,8 +181,8 @@ The dashboard consists of modular components following atomic design principles.
 
 ### Core Components
 
-#### KPI Cards Component
-Displays key metrics with animated counters and color-coded status indicators.
+#### Resume Health & Profile Completion
+Visual indicators of profile strength and resume optimization, helping users improve their job search readiness.
 
 #### Applications Tracker
 Shows application status with filtering, sorting, and real-time updates.

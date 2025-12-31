@@ -5,7 +5,7 @@ export const chatbotIntegrationContent: PageContent = {
     title: "Chatbot Integration",
     description: "Guide to CareerForge's conversational AI chatbot for career guidance, job search assistance, and personalized recommendations",
     version: "2.4.0",
-    lastUpdated: "2024-12-27",
+    lastUpdated: "2025-12-27",
     authors: ["AI Engineering Team"],
     tags: ["chatbot", "conversational AI", "NLP", "career guidance"],
     difficulty: "intermediate",

@@ -5,7 +5,7 @@ export const gettingStartedContent: ContentDocument = {
     title: "Getting Started",
     description: "Complete guide for developers to get started with CareerForge APIs, SDKs, and integration tools.",
     version: "1.0.0",
-    lastUpdated: "2024-12-30",
+    lastUpdated: "2025-12-30",
     authors: ["Developer Relations Team"],
     tags: ["getting started", "api", "integration", "developer", "onboarding"],
     difficulty: "beginner",
@@ -385,7 +385,7 @@ if __name__ == '__main__':
           <pre><code class="language-json">{
   "status": "healthy",
   "version": "2.4.0",
-  "timestamp": "2024-12-30T10:00:00Z",
+  "timestamp": "2025-12-30T10:00:00Z",
   "services": {
     "resume_parser": "operational",
     "job_matcher": "operational",

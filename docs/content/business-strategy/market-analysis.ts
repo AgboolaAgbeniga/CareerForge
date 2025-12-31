@@ -5,7 +5,7 @@ export const marketAnalysisContent: ContentDocument = {
     title: "Market Analysis",
     description: "Comprehensive analysis of the global career development and recruitment market, including size, trends, competitive landscape, and growth opportunities.",
     version: "1.0.0",
-    lastUpdated: "2024-12-30",
+    lastUpdated: "2025-12-30",
     authors: ["Business Strategy Team"],
     tags: ["market analysis", "recruitment", "career development", "industry trends", "competitive landscape"],
     difficulty: "intermediate",
@@ -23,11 +23,11 @@ export const marketAnalysisContent: ContentDocument = {
         <div class="market-stats">
           <div class="stat-card">
             <span class="stat-value">$2.1T</span>
-            <span class="stat-label">Global Recruitment Market (2024)</span>
+            <span class="stat-label">Global Recruitment Market (2025)</span>
           </div>
           <div class="stat-card">
             <span class="stat-value">8.5%</span>
-            <span class="stat-label">CAGR (2024-2030)</span>
+            <span class="stat-label">CAGR (2025-2030)</span>
           </div>
           <div class="stat-card">
             <span class="stat-value">$4.2T</span>

@@ -5,7 +5,7 @@ export const profileManagementContent: PageContent = {
     title: "Profile Management",
     description: "Complete guide to user profiles, resume management, portfolio uploads, and profile optimization",
     version: "1.0.0",
-    lastUpdated: "2024-12-27",
+    lastUpdated: "2025-12-27",
     authors: ["CareerForge Team"],
     tags: ["frontend", "profile", "resume", "portfolio", "personalization"],
     difficulty: "intermediate" as const,

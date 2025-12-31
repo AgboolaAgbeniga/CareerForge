@@ -190,49 +190,80 @@ class JobMatcher:
             return 0.0
 
     def _calculate_skill_match(self, candidate_skills: List[str], job_requirements: List[str]) -> float:
-        """Calculate skill match score"""
+        """Calculate skill match score using Jaccard Index and Semantic Similarity"""
         if not candidate_skills or not job_requirements:
             return 0.0
 
-        candidate_skills_lower = [skill.lower() for skill in candidate_skills]
-        job_requirements_lower = [req.lower() for req in job_requirements]
+        candidate_skills_lower = set([skill.lower() for skill in candidate_skills])
+        job_requirements_lower = set([req.lower() for req in job_requirements])
 
-        # Direct matches
-        direct_matches = set(candidate_skills_lower) & set(job_requirements_lower)
-        direct_score = len(direct_matches) / len(job_requirements_lower) if job_requirements_lower else 0
+        # Jaccard Index: Intersection / Union
+        intersection = candidate_skills_lower.intersection(job_requirements_lower)
+        union = candidate_skills_lower.union(job_requirements_lower)
+        
+        jaccard_index = len(intersection) / len(union) if union else 0.0
+        
+        # Recall: Intersection / Requirements (How many requirements met?)
+        # We blend Jaccard (precision-ish) and Recall to be generous to candidates who have the *needed* skills
+        recall = len(intersection) / len(job_requirements_lower) if job_requirements_lower else 0.0
+        
+        base_score = (jaccard_index * 0.3) + (recall * 0.7) # Weighted recall heavily for job matching
 
-        # Semantic matches using embeddings
+        # Semantic matches using embeddings for missing skills
         if self.embedder:
             try:
-                # Create skill embeddings
-                all_skills = list(set(candidate_skills_lower + job_requirements_lower))
-                embeddings = self.embedder.encode(all_skills)
+                missing_reqs = job_requirements_lower - intersection
+                if not missing_reqs:
+                    return 1.0
 
-                semantic_matches = 0
-                for job_skill in job_requirements_lower:
-                    if job_skill in candidate_skills_lower:
-                        continue  # Already counted in direct matches
+                # Create embeddings for all relevant skills
+                # Optimization: We could encode only missing reqs and candidate skills
+                missing_req_list = list(missing_reqs)
+                candidate_skill_list = list(candidate_skills_lower)
+                
+                if not candidate_skill_list:
+                    return base_score
 
-                    job_idx = all_skills.index(job_skill)
-                    similarities = cosine_similarity([embeddings[job_idx]], embeddings)[0]
-
-                    # Find best match above threshold
-                    best_match_idx = np.argmax(similarities)
-                    if similarities[best_match_idx] > 0.8 and all_skills[best_match_idx] in candidate_skills_lower:
-                        semantic_matches += 1
-
-                semantic_score = semantic_matches / len(job_requirements_lower) if job_requirements_lower else 0
-
-                return min(1.0, direct_score + semantic_score)
+                candidate_embeddings = self.embedder.encode(candidate_skill_list)
+                missing_embeddings = self.embedder.encode(missing_req_list)
+                
+                semantic_boost = 0.0
+                
+                # Check cosine similarity
+                similarity_matrix = cosine_similarity(missing_embeddings, candidate_embeddings)
+                
+                # For each missing requirement, find best match in candidate skills
+                for i, _ in enumerate(missing_req_list):
+                    max_sim = np.max(similarity_matrix[i])
+                    if max_sim > 0.75: # Threshold for "close enough" (e.g. ReactJS vs React)
+                        semantic_boost += 1
+                
+                # Normalize boost based on total requirements
+                boost_factor = semantic_boost / len(job_requirements_lower)
+                
+                return min(1.0, base_score + boost_factor)
 
             except Exception as e:
                 logger.error(f"Error in semantic skill matching: {e}")
 
-        return direct_score
+        return base_score
 
     def _calculate_experience_match(self, job_seeker: Dict[str, Any], job: Dict[str, Any]) -> float:
-        """Calculate experience match score"""
+        """Calculate experience match score with text extraction fallback"""
         candidate_exp = job_seeker.get('experience_years', 0)
+        
+        # Fallback: Extract experience from text if 0
+        if candidate_exp == 0 and job_seeker.get('summary'):
+            import re
+            # Look for patterns like "5 years experience", "5+ years", "5 years of"
+            match = re.search(r'(\d+)\+?\s*years?', job_seeker['summary'], re.IGNORECASE)
+            if match:
+                try:
+                    candidate_exp = int(match.group(1))
+                    logger.info(f"Extracted experience: {candidate_exp} years")
+                except ValueError:
+                    pass
+
         job_level = job.get('experience_level', 'entry')
 
         # Map experience levels to years
@@ -249,10 +280,21 @@ class JobMatcher:
             return 1.0
         elif candidate_exp < required_range[0]:
             # Under-experienced
-            return max(0.0, candidate_exp / required_range[0])
+            return max(0.0, candidate_exp / required_range[0]) if required_range[0] > 0 else 1.0
         else:
-            # Over-experienced (still good, but slightly lower score)
-            return max(0.7, 1.0 - (candidate_exp - required_range[1]) / 10)
+            # Over-experienced (still good, but slightly lower score for seniority mismatch?)
+            # Actually, being over-qualified is usually fine. Let's cap at 1.0 or 0.9.
+            return 0.95
+
+    def predict_ml_score(self, feature_vector: List[float]) -> Optional[float]:
+        """
+        Predict match score using XGBoost (Advanced ML Model).
+        Requires pre-trained model file.
+        """
+        # Placeholder for Phase 2b: Load model
+        # if hasattr(self, 'xgb_model'):
+        #     return self.xgb_model.predict([feature_vector])[0]
+        return None
 
     def _generate_match_reasons(self, job_seeker: Dict[str, Any], job: Dict[str, Any],
                                semantic_score: float, skill_score: float, experience_score: float) -> List[str]:

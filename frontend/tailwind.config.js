@@ -8,7 +8,7 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['var(--font-rethink-sans)', 'sans-serif'],
+        sans: ['var(--font-rethink-sans)', 'var(--font-inter)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
       colors: {
         slate: {
@@ -17,7 +17,7 @@ module.exports = {
           925: '#0B1221',
         },
         primary: { 500: '#3b82f6', 600: '#2563eb' },
-                        accent: { 500: '#a855f7' }
+        accent: { 500: '#a855f7' }
       },
     },
   },

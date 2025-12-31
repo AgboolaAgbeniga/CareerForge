@@ -10,6 +10,7 @@ import cookieParser from 'cookie-parser';
 import logger from './utils/logger';
 import { sanitizeText } from './utils/sanitizer';
 import loggingMiddleware from './middleware/logging';
+import { handleCareerCoachEvents } from './sockets/careerCoach';
 
 // Load environment variables
 dotenv.config();
@@ -28,7 +29,7 @@ try {
 const getSwaggerServers = () => {
   const isDevelopment = process.env.NODE_ENV !== 'production';
   const port = process.env.PORT || 5000;
-  
+
   if (isDevelopment) {
     return [
       {
@@ -292,6 +293,9 @@ io.on('connection', (socket: any) => {
   socket.on('error', (error: Error) => {
     logger.error('Socket error', { socketId: socket.id, userId, error: error.message });
   });
+
+  // Initialize Career Coach events
+  handleCareerCoachEvents(socket, io);
 });
 
 import { errorHandler } from './middleware/error';

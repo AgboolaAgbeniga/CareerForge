@@ -5,7 +5,7 @@ export const overviewContent: ContentDocument = {
     title: "Business Overview",
     description: "Comprehensive overview of CareerForge's business model, mission, and strategic positioning in the career development and recruitment industry.",
     version: "1.0.0",
-    lastUpdated: "2024-12-30",
+    lastUpdated: "2025-12-30",
     authors: ["Business Strategy Team"],
     tags: ["business", "overview", "mission", "strategy", "careerforge", "recruitment", "platform"],
     difficulty: "beginner",
@@ -224,7 +224,7 @@ export const overviewContent: ContentDocument = {
           </div>
           <div class="kpi-item">
             <span class="kpi-metric">Match Success Rate</span>
-            <span class="kpi-target">97% by 2024</span>
+            <span class="kpi-target">97% by 2025</span>
           </div>
           <div class="kpi-item">
             <span class="kpi-metric">Revenue Growth</span>

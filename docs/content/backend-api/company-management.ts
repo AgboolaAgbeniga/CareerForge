@@ -6,7 +6,7 @@ export const backendApiCompanyManagementContent: PageContent = {
     title: "Company Management API",
     description: "Complete guide to company profile creation, management, verification, and employer operations",
     version: "1.0.0",
-    lastUpdated: "2024-12-28",
+    lastUpdated: "2025-12-28",
     authors: ["Backend Engineering Team"],
     tags: ["api", "companies", "employers", "profiles", "verification"],
     difficulty: "intermediate",
@@ -1222,7 +1222,7 @@ Suspend company account.
     "slug": "techcorp-inc",
     "verificationStatus": "unverified",
     "subscriptionTier": "free",
-    "createdAt": "2024-01-15T10:00:00Z"
+    "createdAt": "2025-01-15T10:00:00Z"
   }
 }
 \`\`\`
@@ -1236,7 +1236,7 @@ Suspend company account.
     "email": "user@company.com",
     "role": "recruiter",
     "status": "pending",
-    "expiresAt": "2024-01-22T10:00:00Z"
+    "expiresAt": "2025-01-22T10:00:00Z"
   }
 }
 \`\`\`

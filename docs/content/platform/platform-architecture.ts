@@ -6,7 +6,7 @@ export const platformArchitectureContent: PageContent = {
     title: "Platform Architecture",
     description: "Comprehensive overview of CareerForge's technical architecture, system design, and data flows",
     version: "2.4.0",
-    lastUpdated: "2024-12-27",
+    lastUpdated: "2025-12-27",
     authors: ["CareerForge Engineering Team"],
     tags: ["architecture", "system-design", "data-flows", "technical-overview"],
     difficulty: "intermediate",

@@ -6,7 +6,7 @@ export const backendApiErrorHandlingContent: PageContent = {
     title: "Error Handling & Responses",
     description: "Comprehensive guide to error handling patterns, response formats, and troubleshooting in the CareerForge backend API",
     version: "1.0.0",
-    lastUpdated: "2024-12-28",
+    lastUpdated: "2025-12-28",
     authors: ["Backend Engineering Team"],
     tags: ["api", "error-handling", "responses", "troubleshooting"],
     difficulty: "intermediate",
@@ -85,7 +85,7 @@ export const backendApiErrorHandlingContent: PageContent = {
     },
     "suggestion": "Please provide a valid email address",
     "traceId": "abc-123-def-456",
-    "timestamp": "2024-12-28T14:13:27.532Z"
+    "timestamp": "2025-12-28T14:13:27.532Z"
   },
   "request": {
     "method": "POST",

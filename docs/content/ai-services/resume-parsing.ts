@@ -4,8 +4,8 @@ export const resumeParsingContent: PageContent = {
   metadata: {
     title: "Resume Parsing Service",
     description: "Comprehensive guide to CareerForge's AI-powered resume parsing capabilities, including text extraction, entity recognition, and structured data generation",
-    version: "2.4.0",
-    lastUpdated: "2024-12-27",
+    version: "2.5.0",
+    lastUpdated: "2025-12-30",
     authors: ["AI Engineering Team"],
     tags: ["resume parsing", "NLP", "entity recognition", "text extraction", "AI", "machine learning"],
     difficulty: "intermediate",
@@ -495,7 +495,7 @@ print(result.skills.technical)
 {
   "event": "parse.completed",
   "id": "parse_12345",
-  "timestamp": "2024-12-27T10:00:00Z",
+  "timestamp": "2025-12-27T10:00:00Z",
   "data": {
     "personal_info": {...},
     "experience": [...],

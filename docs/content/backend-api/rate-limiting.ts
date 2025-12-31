@@ -6,7 +6,7 @@ export const backendApiRateLimitingContent: PageContent = {
     title: "Rate Limiting",
     description: "Comprehensive guide to rate limiting policies, implementation strategies, and client handling in the CareerForge backend API",
     version: "1.0.0",
-    lastUpdated: "2024-12-28",
+    lastUpdated: "2025-12-28",
     authors: ["Backend Engineering Team"],
     tags: ["api", "rate-limiting", "throttling", "performance", "security"],
     difficulty: "intermediate",
@@ -443,7 +443,7 @@ Content-Type: application/json
     "details": {
       "limit": 1000,
       "windowMs": 60000,
-      "resetTime": "2024-12-28T14:15:00.000Z"
+      "resetTime": "2025-12-28T14:15:00.000Z"
     },
     "suggestion": "Wait 60 seconds before retrying",
     "traceId": "abc-123-def-456"

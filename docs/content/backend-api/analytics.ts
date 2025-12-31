@@ -5,7 +5,7 @@ export const analyticsContent: PageContent = {
     title: 'Analytics & Reporting API',
     description: 'Comprehensive analytics and reporting capabilities for platform insights, performance metrics, and business intelligence.',
     version: '1.0.0',
-    lastUpdated: '2024-12-28',
+    lastUpdated: '2025-12-28',
     authors: ['CareerForge Team'],
     tags: ['backend', 'api', 'analytics', 'reporting', 'metrics', 'business-intelligence'],
     difficulty: 'advanced',
@@ -244,8 +244,8 @@ POST /api/v1/analytics/reports
 {
   "title": "Monthly User Growth Report",
   "dateRange": {
-    "start": "2024-11-01T00:00:00Z",
-    "end": "2024-11-30T23:59:59Z"
+    "start": "2025-11-01T00:00:00Z",
+    "end": "2025-11-30T23:59:59Z"
   },
   "metrics": ["user_registrations", "user_activations", "user_retention"],
   "filters": [
@@ -269,7 +269,7 @@ POST /api/v1/analytics/reports
     "title": "Monthly User Growth Report",
     "data": [
       {
-        "date": "2024-11-01",
+        "date": "2025-11-01",
         "user_type": "job_seeker",
         "user_registrations": 145,
         "user_activations": 120,
@@ -278,7 +278,7 @@ POST /api/v1/analytics/reports
     ],
     "metadata": {
       "totalRecords": 30,
-      "generatedAt": "2024-12-01T10:30:00Z"
+      "generatedAt": "2025-12-01T10:30:00Z"
     }
   }
 }
@@ -405,8 +405,8 @@ GET /api/v1/analytics/revenue
       "premium_features": 1920.00
     },
     "monthly_trend": [
-      { "month": "2024-11", "revenue": 42150.25 },
-      { "month": "2024-12", "revenue": 45670.50 }
+      { "month": "2025-11", "revenue": 42150.25 },
+      { "month": "2025-12", "revenue": 45670.50 }
     ]
   }
 }
@@ -434,8 +434,8 @@ console.log('Growth:', dashboardMetrics.data.totalUsers.changePercent + '%');
 const reportConfig = {
   title: 'User Engagement Analysis',
   dateRange: {
-    start: '2024-11-01T00:00:00Z',
-    end: '2024-11-30T23:59:59Z'
+    start: '2025-11-01T00:00:00Z',
+    end: '2025-11-30T23:59:59Z'
   },
   metrics: ['user_logins', 'profile_views', 'application_submissions'],
   filters: [

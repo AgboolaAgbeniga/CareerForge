@@ -5,7 +5,7 @@ export const modelTrainingContent: PageContent = {
     title: "AI Model Training",
     description: "Comprehensive guide to CareerForge's AI model training processes, including data pipelines, training infrastructure, and model deployment",
     version: "2.4.0",
-    lastUpdated: "2024-12-27",
+    lastUpdated: "2025-12-27",
     authors: ["AI Engineering Team"],
     tags: ["model training", "machine learning", "data pipelines", "MLOps"],
     difficulty: "expert",

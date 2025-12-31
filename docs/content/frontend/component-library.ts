@@ -5,7 +5,7 @@ export const componentLibraryContent: PageContent = {
     title: "Component Library",
     description: "Comprehensive guide to reusable UI components, design system implementation, and component architecture",
     version: "1.0.0",
-    lastUpdated: "2024-12-27",
+    lastUpdated: "2025-12-27",
     authors: ["CareerForge Team"],
     tags: ["frontend", "components", "design-system", "ui", "react"],
     difficulty: "intermediate" as const,

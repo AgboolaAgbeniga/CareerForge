@@ -6,7 +6,7 @@ export const backendApiUserManagementContent: PageContent = {
     title: "User Management API",
     description: "Complete guide to user CRUD operations, profile management, and user-related API endpoints",
     version: "1.0.0",
-    lastUpdated: "2024-12-28",
+    lastUpdated: "2025-12-28",
     authors: ["Backend Engineering Team"],
     tags: ["api", "users", "profiles", "crud", "management"],
     difficulty: "intermediate",

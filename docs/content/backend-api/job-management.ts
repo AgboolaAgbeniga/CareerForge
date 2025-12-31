@@ -6,7 +6,7 @@ export const backendApiJobManagementContent: PageContent = {
     title: "Job Management API",
     description: "Complete guide to job posting, editing, management, and lifecycle operations",
     version: "1.0.0",
-    lastUpdated: "2024-12-28",
+    lastUpdated: "2025-12-28",
     authors: ["Backend Engineering Team"],
     tags: ["api", "jobs", "posting", "management", "crud"],
     difficulty: "intermediate",
@@ -301,7 +301,7 @@ const createJobWithCustomApplication = async (jobData) => {
       ...jobData,
       applicationMethod: 'external',
       applicationUrl: 'https://company.com/careers/apply/123',
-      applicationDeadline: '2024-02-28T23:59:59Z'
+      applicationDeadline: '2025-02-28T23:59:59Z'
     })
   });
 
@@ -748,7 +748,7 @@ const advancedSearch = async (criteria) => {
         },
         "location": "San Francisco, CA",
         "salary": "$120k - $160k",
-        "postedAt": "2024-01-15T10:00:00Z",
+        "postedAt": "2025-01-15T10:00:00Z",
         "isRemote": true,
         "tags": ["react", "nodejs"],
         "relevanceScore": 0.95
@@ -1232,8 +1232,8 @@ Moderate job content.
     "id": "job-uuid",
     "title": "Senior Software Engineer",
     "status": "draft",
-    "createdAt": "2024-01-15T10:00:00Z",
-    "expiresAt": "2024-02-15T10:00:00Z"
+    "createdAt": "2025-01-15T10:00:00Z",
+    "expiresAt": "2025-02-15T10:00:00Z"
   }
 }
 \`\`\`

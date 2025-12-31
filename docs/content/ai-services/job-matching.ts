@@ -5,7 +5,7 @@ export const jobMatchingContent: PageContent = {
     title: "Job Matching Engine",
     description: "Comprehensive guide to CareerForge's intelligent job-candidate matching algorithms, including semantic similarity, skill matching, and compatibility scoring",
     version: "2.4.0",
-    lastUpdated: "2024-12-27",
+    lastUpdated: "2025-12-27",
     authors: ["AI Engineering Team"],
     tags: ["job matching", "semantic similarity", "compatibility scoring", "AI", "machine learning"],
     difficulty: "advanced",

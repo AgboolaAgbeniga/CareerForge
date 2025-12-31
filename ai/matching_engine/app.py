@@ -82,7 +82,48 @@ async def get_job_matches(data: dict):
         }
 
         # Mock jobs (would come from database)
-        jobs = []
+        jobs = [
+            {
+                "id": 101,
+                "title": "Senior Frontend Engineer",
+                "description": "Lead our frontend team building responsive web applications using React and Next.js.",
+                "requirements": "Expert in React, TypeScript, and modern CSS. Experience with state management and performance optimization.",
+                "skills_required": ["React", "TypeScript", "Next.js", "Tailwind CSS", "Redux"],
+                "experience_level": "senior"
+            },
+            {
+                "id": 102,
+                "title": "Backend Developer (Python)",
+                "description": "Build scalable microservices and APIs for our high-traffic platform.",
+                "requirements": "Strong Python knowledge, experience with FastAPI or Django. Knowledge of SQL and NoSQL databases.",
+                "skills_required": ["Python", "FastAPI", "PostgreSQL", "Docker", "Redis"],
+                "experience_level": "mid"
+            },
+            {
+                "id": 103,
+                "title": "AI/ML Engineer",
+                "description": "Develop and deploy machine learning models for recommendation systems.",
+                "requirements": "Experience with PyTorch or TensorFlow. NLP background preferred.",
+                "skills_required": ["Python", "PyTorch", "Machine Learning", "NLP", "AWS"],
+                "experience_level": "mid"
+            },
+            {
+                "id": 104,
+                "title": "Product Designer",
+                "description": "Design intuitive user interfaces and user experiences for our products.",
+                "requirements": "Proficiency in Figma. Strong portfolio demonstrating UX/UI skills.",
+                "skills_required": ["Figma", "UI Design", "UX Research", "Prototyping"],
+                "experience_level": "mid"
+            },
+            {
+                "id": 105,
+                "title": "DevOps Engineer",
+                "description": "Manage our cloud infrastructure and CI/CD pipelines.",
+                "requirements": "Experience with AWS, Kubernetes, and Jenkins/GitHub Actions.",
+                "skills_required": ["AWS", "Kubernetes", "Terraform", "CI/CD", "Linux"],
+                "experience_level": "senior"
+            }
+        ]
 
         matches = matcher.find_best_matches(job_seeker, jobs, 10)
 

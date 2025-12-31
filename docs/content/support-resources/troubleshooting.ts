@@ -5,7 +5,7 @@ export const troubleshootingContent: PageContent = {
     title: "Troubleshooting Guide",
     description: "Common issues and solutions for CareerForge platform, including login problems, account issues, and technical difficulties",
     version: "1.5.0",
-    lastUpdated: "2024-12-27",
+    lastUpdated: "2025-12-27",
     authors: ["Support Team"],
     tags: ["troubleshooting", "support", "issues", "problems", "solutions", "fixes"],
     difficulty: "intermediate",

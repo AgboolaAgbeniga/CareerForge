@@ -6,7 +6,7 @@ export const backendApiAuthenticationContent: PageContent = {
     title: "Authentication & Security",
     description: "Comprehensive guide to CareerForge API authentication mechanisms, security protocols, and access control",
     version: "1.0.0",
-    lastUpdated: "2024-12-28",
+    lastUpdated: "2025-12-28",
     authors: ["Security Team", "Backend Engineering Team"],
     tags: ["authentication", "security", "jwt", "oauth", "api-keys"],
     difficulty: "intermediate",

@@ -6,7 +6,7 @@ export const gettingStartedContent: PageContent = {
     title: "Getting Started",
     description: "Complete guide to setting up your CareerForge account and beginning your career transformation journey",
     version: "2.4.0",
-    lastUpdated: "2024-12-27",
+    lastUpdated: "2025-12-27",
     authors: ["CareerForge Team"],
     tags: ["quickstart", "setup", "getting-started", "onboarding"],
     difficulty: "beginner",

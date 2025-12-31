@@ -5,7 +5,7 @@ export const responsiveDesignContent: PageContent = {
     title: "Responsive Design",
     description: "Comprehensive guide to responsive design implementation, breakpoint system, and mobile-first development practices",
     version: "1.0.0",
-    lastUpdated: "2024-12-27",
+    lastUpdated: "2025-12-27",
     authors: ["CareerForge Team"],
     tags: ["frontend", "responsive", "mobile", "breakpoints", "css"],
     difficulty: "intermediate" as const,

@@ -6,7 +6,7 @@ export const aiServicesIntroductionContent: PageContent = {
     title: "AI Services Overview",
     description: "Comprehensive overview of CareerForge's AI-powered services including resume parsing, job matching, recommendation engines, and intelligent career coaching",
     version: "2.4.0",
-    lastUpdated: "2024-12-27",
+    lastUpdated: "2025-12-27",
     authors: ["AI Engineering Team"],
     tags: ["ai", "services", "machine-learning", "nlp", "recommendation"],
     difficulty: "intermediate",

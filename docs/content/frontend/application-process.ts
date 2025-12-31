@@ -5,7 +5,7 @@ export const applicationProcessContent: PageContent = {
     title: "Application Process",
     description: "Complete guide to application forms, resume upload, cover letter generator, and status tracking",
     version: "1.0.0",
-    lastUpdated: "2024-12-27",
+    lastUpdated: "2025-12-27",
     authors: ["CareerForge Team"],
     tags: ["frontend", "application", "resume", "cover-letter", "tracking"],
     difficulty: "intermediate" as const,

@@ -6,7 +6,7 @@ export const landingPageContent: PageContent = {
     title: "Landing Page Design",
     description: "Comprehensive guide to CareerForge's homepage design, hero section, navigation, and call-to-action elements",
     version: "2.4.0",
-    lastUpdated: "2024-12-27",
+    lastUpdated: "2025-12-27",
     authors: ["CareerForge Design Team"],
     tags: ["landing-page", "hero", "navigation", "design", "ux"],
     difficulty: "beginner",

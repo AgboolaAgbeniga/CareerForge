@@ -15,11 +15,10 @@ const inter = Inter({
   display: 'swap',
 });
 
-const rethinkSans = Rethink_Sans({
+const rethinkSans = Inter({
   subsets: ['latin'],
   variable: '--font-rethink-sans',
   display: 'swap',
-  fallback: ['var(--font-inter)', 'sans-serif'],
 });
 
 export const metadata: Metadata = {

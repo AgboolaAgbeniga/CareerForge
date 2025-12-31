@@ -4,7 +4,7 @@ const versioningContent = {
     description: 'Comprehensive guide to API versioning, backward compatibility, and migration strategies',
     keywords: ['API versioning', 'REST API', 'backward compatibility', 'migration', 'semantic versioning'],
     author: 'CareerForge Team',
-    lastUpdated: '2024-12-28',
+    lastUpdated: '2025-12-28',
     version: '1.0.0'
   },
   toc: [
@@ -109,7 +109,7 @@ Accept-Version: v1.2.3
 
 # Custom header
 GET /api/users
-X-API-Version: 2024-01-15`
+X-API-Version: 2025-01-15`
     },
     {
       type: 'list',

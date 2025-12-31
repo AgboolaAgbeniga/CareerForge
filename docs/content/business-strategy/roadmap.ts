@@ -5,7 +5,7 @@ export const roadmapContent: ContentDocument = {
     title: "Product Roadmap",
     description: "CareerForge's comprehensive product roadmap and feature development timeline, outlining planned releases, milestones, and strategic initiatives.",
     version: "1.0.0",
-    lastUpdated: "2024-12-30",
+    lastUpdated: "2025-12-30",
     authors: ["Product Strategy Team"],
     tags: ["roadmap", "product development", "features", "timeline", "releases", "milestones"],
     difficulty: "intermediate",
@@ -38,7 +38,7 @@ export const roadmapContent: ContentDocument = {
         <h3>Roadmap Timeline</h3>
         <div class="timeline-overview">
           <div class="phase">
-            <h4>Phase 1: Foundation (2024-2025)</h4>
+            <h4>Phase 1: Foundation (2025-2025)</h4>
             <p>Establish core platform and initial market presence</p>
             <ul>
               <li>Launch MVP with AI matching</li>

@@ -5,7 +5,7 @@ export const securityMeasuresContent: PageContent = {
     title: "Security Measures and Protocols",
     description: "Comprehensive overview of CareerForge's security architecture, including authentication, encryption, access controls, and threat protection mechanisms",
     version: "1.2.0",
-    lastUpdated: "2024-12-27",
+    lastUpdated: "2025-12-27",
     authors: ["Security Team"],
     tags: ["security", "authentication", "encryption", "access control", "threat protection", "compliance"],
     difficulty: "intermediate",

@@ -22,7 +22,10 @@ const envSchema = z.object({
     PORT: z.string().default('5000'),
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
     FRONTEND_URL: z.string().url().default('http://localhost:3000'),
-    AI_SERVICE_URL: z.string().url().optional().default('http://localhost:8000'),
+    AI_SERVICE_URL: z.string().url().optional().default('http://localhost:8000'), // Legacy/Fallback
+    RESUME_PARSER_URL: z.string().url().default('http://localhost:8000'),
+    MATCHING_ENGINE_URL: z.string().url().default('http://localhost:8001'),
+    CAREER_COACH_URL: z.string().url().default('http://localhost:8002'),
 
     // Email config (optional for dev)
     EMAIL_USER: z.string().email().optional(),
@@ -45,13 +48,13 @@ export const validateEnv = () => {
                 console.error(`  - ${err.path.join('.')}: ${err.message}`);
             });
             console.error('\n💡 Please check your .env file and ensure all required variables are set.');
-            
+
             // In production, don't crash the build, but log the error
             if (process.env.NODE_ENV === 'production') {
                 console.warn('⚠️ Running with incomplete environment variables - this may cause runtime errors');
                 return {};
             }
-            
+
             process.exit(1);
         }
         throw error;

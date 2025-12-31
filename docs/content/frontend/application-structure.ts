@@ -6,7 +6,7 @@ export const applicationStructureContent: PageContent = {
     title: "Application Structure",
     description: "Comprehensive guide to CareerForge's frontend architecture, project organization, routing system, and component architecture",
     version: "2.4.0",
-    lastUpdated: "2024-12-27",
+    lastUpdated: "2025-12-27",
     authors: ["CareerForge Frontend Team"],
     tags: ["structure", "routing", "components", "architecture", "frontend"],
     difficulty: "intermediate",

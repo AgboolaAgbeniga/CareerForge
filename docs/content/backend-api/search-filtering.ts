@@ -6,7 +6,7 @@ export const backendApiSearchFilteringContent: PageContent = {
     title: "Search & Filtering API",
     description: "Advanced search capabilities, filtering options, and query optimization for CareerForge platform",
     version: "1.0.0",
-    lastUpdated: "2024-12-28",
+    lastUpdated: "2025-12-28",
     authors: ["Backend Engineering Team"],
     tags: ["api", "search", "filtering", "query", "optimization"],
     difficulty: "intermediate",
@@ -265,7 +265,7 @@ title:engineer
 company:"Google Inc"
 location:(San Francisco OR "New York")
 salary:[80000 TO 120000]
-posted:[2024-01-01 TO 2024-12-31]
+posted:[2025-01-01 TO 2025-12-31]
 \`\`\`
 
 ### Query Examples
@@ -444,8 +444,8 @@ All queries are validated for:
 {
   "postedWithin": "30d",  // 30 days, 1w, 1m, etc.
   "postedBetween": {
-    "start": "2024-01-01",
-    "end": "2024-12-31"
+    "start": "2025-01-01",
+    "end": "2025-12-31"
   }
 }
 \`\`\`
@@ -634,7 +634,7 @@ All filters are validated for:
 \`\`\`javascript
 {
   "pagination": {
-    "searchAfter": ["job-123", 0.85, "2024-01-15"],
+    "searchAfter": ["job-123", 0.85, "2025-01-15"],
     "limit": 20
   }
 }

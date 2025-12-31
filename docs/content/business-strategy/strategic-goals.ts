@@ -5,7 +5,7 @@ export const strategicGoalsContent: ContentDocument = {
     title: "Strategic Goals",
     description: "CareerForge's comprehensive strategic objectives and goals for the next 3-5 years, focusing on growth, innovation, and market leadership.",
     version: "1.0.0",
-    lastUpdated: "2024-12-30",
+    lastUpdated: "2025-12-30",
     authors: ["Business Strategy Team"],
     tags: ["strategy", "goals", "objectives", "growth", "innovation", "market leadership"],
     difficulty: "intermediate",
@@ -101,7 +101,7 @@ export const strategicGoalsContent: ContentDocument = {
             <thead>
               <tr>
                 <th>Metric</th>
-                <th>2024 Baseline</th>
+                <th>2025 Baseline</th>
                 <th>2025 Target</th>
                 <th>Growth</th>
               </tr>

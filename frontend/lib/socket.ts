@@ -118,6 +118,23 @@ class SocketService {
         this.socket.emit('stopTyping', { recipientId });
     }
 
+    // --- Career Coach Methods ---
+
+    startCareerCoachSession() {
+        if (!this.socket?.connected) return;
+        this.socket.emit('careerCoach:start');
+    }
+
+    sendCareerCoachMessage(message: string) {
+        if (!this.socket?.connected) return;
+        this.socket.emit('careerCoach:message', { message });
+    }
+
+    resetCareerCoachSession() {
+        if (!this.socket?.connected) return;
+        this.socket.emit('careerCoach:reset');
+    }
+
     /**
      * Listen for events
      */

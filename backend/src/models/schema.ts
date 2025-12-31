@@ -113,6 +113,7 @@ export const applications = pgTable('applications', {
   appliedAt: timestamp('applied_at').defaultNow(),
   lastUpdatedAt: timestamp('last_updated_at').defaultNow(),
   matchScore: decimal('match_score', { precision: 5, scale: 2 }),
+  skills: jsonb('skills'),
   coverLetter: text('cover_letter'),
   resumeVersionUrl: varchar('resume_version_url', { length: 255 }),
   nextStep: varchar('next_step', { length: 255 }),

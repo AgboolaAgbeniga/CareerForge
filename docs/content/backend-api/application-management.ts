@@ -6,7 +6,7 @@ export const backendApiApplicationManagementContent: PageContent = {
     title: "Application Management API",
     description: "Complete guide to job application handling, candidate management, and application lifecycle operations",
     version: "1.0.0",
-    lastUpdated: "2024-12-28",
+    lastUpdated: "2025-12-28",
     authors: ["Backend Engineering Team"],
     tags: ["api", "applications", "candidates", "hiring", "management"],
     difficulty: "intermediate",
@@ -1288,7 +1288,7 @@ Force delete application.
     "id": "application-uuid",
     "jobId": "job-uuid",
     "status": "submitted",
-    "submittedAt": "2024-01-15T10:00:00Z",
+    "submittedAt": "2025-01-15T10:00:00Z",
     "message": "Application submitted successfully"
   }
 }
@@ -1311,8 +1311,8 @@ Force delete application.
           "name": "John Doe"
         },
         "status": "under_review",
-        "submittedAt": "2024-01-15T10:00:00Z",
-        "lastUpdated": "2024-01-16T14:30:00Z"
+        "submittedAt": "2025-01-15T10:00:00Z",
+        "lastUpdated": "2025-01-16T14:30:00Z"
       }
     ],
     "pagination": {

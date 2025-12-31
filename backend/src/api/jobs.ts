@@ -198,7 +198,18 @@ router.get('/', catchAsync(async (req: AuthRequest, res: Response) => {
     if (experienceLevel) conditions.push(eq(jobs.experienceLevel, experienceLevel));
     if (location) conditions.push(sql`${jobs.location} ILIKE ${`%${location}%`}`);
 
-    // Get total count for pagination
+    // Filter by skills at the DB level for correct pagination
+    if (skills) {
+        // Split comma-separated skills and trim whitespace
+        const skillsList = skills.split(',').map(s => s.trim()).filter(Boolean);
+        if (skillsList.length > 0) {
+            // Check if skillsRequired array overlaps with requested skills
+            // Using SQL overlap operator &&
+            conditions.push(sql`${jobs.skillsRequired} && ${skillsList}::text[]`);
+        }
+    }
+
+    // Get total count for pagination (with all filters applied)
     const countResult = await db
         .select({ count: sql<number>`count(*)` })
         .from(jobs)
@@ -224,6 +235,7 @@ router.get('/', catchAsync(async (req: AuthRequest, res: Response) => {
             expiresAt: jobs.expiresAt,
             companyId: jobs.companyId,
             companyName: companies.name,
+            companyLogo: companies.logoUrl,
         })
         .from(jobs)
         .leftJoin(companies, eq(jobs.companyId, companies.id))
@@ -232,25 +244,15 @@ router.get('/', catchAsync(async (req: AuthRequest, res: Response) => {
         .limit(limit)
         .offset(offset);
 
-    // Apply skill filtering in-memory for now if provided (optimizable later)
-    let filteredJobs = jobListings;
-    if (skills) {
-        const skillsArray = skills.split(',').map(s => s.trim().toLowerCase());
-        filteredJobs = jobListings.filter(job => {
-            const jobSkills = (job.skillsRequired || []).map(s => s.toLowerCase());
-            return skillsArray.some(skill => jobSkills.includes(skill));
-        });
-    }
-
     res.json({
         success: true,
-        data: filteredJobs,
+        data: jobListings,
         pagination: {
             page,
             limit,
             total,
             totalPages,
-            count: filteredJobs.length,
+            count: jobListings.length,
         }
     });
 }));

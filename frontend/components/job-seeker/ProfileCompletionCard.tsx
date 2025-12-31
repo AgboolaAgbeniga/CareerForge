@@ -1,13 +1,48 @@
 'use client';
 
-import React from 'react';
-import { Zap, Check } from 'lucide-react';
+import React, { useState } from 'react';
+import { Zap, Check, UploadCloud, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface ProfileCompletionCardProps {
   profileCompletion: number;
 }
 
 export function ProfileCompletionCard({ profileCompletion }: ProfileCompletionCardProps) {
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    setIsUploading(true);
+    try {
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch('http://localhost:5000/api/resume/parse-file', { // Direct call to backend for testing, should proxy
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      if (!response.ok) throw new Error('Upload failed');
+
+      const data = await response.json();
+      toast.success("Resume parsed successfully!");
+      console.log("Parsed Data:", data);
+      // Trigger dashboard refresh here if context available
+    } catch (error) {
+      console.error("Upload error:", error);
+      toast.error("Failed to parse resume.");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   return (
     <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 flex flex-col justify-between relative overflow-hidden shadow-sm border border-gray-200 dark:border-gray-700">
       <div className="flex justify-between items-start mb-4">
@@ -27,6 +62,15 @@ export function ProfileCompletionCard({ profileCompletion }: ProfileCompletionCa
         <div className="w-8 h-8 rounded-full bg-yellow-50 dark:bg-yellow-900 flex items-center justify-center border border-yellow-100 dark:border-yellow-700">
           <Zap className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
         </div>
+      </div>
+
+      {/* Upload Action */}
+      <div className="mb-4">
+        <label className="flex items-center justify-center gap-2 w-full p-2 rounded-lg bg-indigo-50 dark:bg-indigo-900/50 border border-indigo-100 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 text-sm font-medium cursor-pointer hover:bg-indigo-100 dark:hover:bg-indigo-900 transition-colors">
+          {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <UploadCloud className="w-4 h-4" />}
+          {isUploading ? 'Parsing...' : 'Upload Resume'}
+          <input type="file" className="hidden" accept=".pdf,.docx,.txt" onChange={handleFileUpload} disabled={isUploading} />
+        </label>
       </div>
 
       {/* Animated Checklist */}

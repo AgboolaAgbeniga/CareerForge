@@ -5,7 +5,7 @@ export const recruiterDashboardContent: PageContent = {
     title: "Recruiter Dashboard",
     description: "Complete guide to the recruiter dashboard implementation, features, and architecture",
     version: "1.0.0",
-    lastUpdated: "2024-12-27",
+    lastUpdated: "2025-12-27",
     authors: ["CareerForge Team"],
     tags: ["frontend", "dashboard", "recruiter", "react", "nextjs"],
     difficulty: "intermediate" as const,

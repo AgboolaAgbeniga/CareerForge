@@ -6,7 +6,7 @@ export const backendApiNotificationsContent: PageContent = {
     title: "Notifications API",
     description: "Complete guide to notification system, real-time messaging, and communication channels",
     version: "1.0.0",
-    lastUpdated: "2024-12-28",
+    lastUpdated: "2025-12-28",
     authors: ["Backend Engineering Team"],
     tags: ["api", "notifications", "real-time", "messaging", "communication"],
     difficulty: "intermediate",
@@ -123,7 +123,7 @@ graph TB
   "template": "interview_invite",
   "recipients": ["user@example.com"],
   "data": {
-    "interviewTime": "2024-01-15T14:00:00Z",
+    "interviewTime": "2025-01-15T14:00:00Z",
     "interviewer": "Sarah Johnson",
     "meetingLink": "https://meet.careerforge.com/abc123"
   }
@@ -265,7 +265,7 @@ const connectToNotifications = (userId, token) => {
 {
   "type": "system",
   "id": "notif-123",
-  "timestamp": "2024-01-15T10:30:00Z",
+  "timestamp": "2025-01-15T10:30:00Z",
   "data": {
     "event": "job_match",
     "jobId": "job-456",
@@ -279,7 +279,7 @@ const connectToNotifications = (userId, token) => {
 {
   "type": "chat",
   "id": "msg-789",
-  "timestamp": "2024-01-15T10:31:00Z",
+  "timestamp": "2025-01-15T10:31:00Z",
   "data": {
     "conversationId": "conv-101",
     "senderId": "user-202",
@@ -1706,7 +1706,7 @@ Get notification system health.
     "id": "notif-123",
     "status": "queued",
     "channels": ["email", "push"],
-    "estimatedDelivery": "2024-01-15T10:35:00Z"
+    "estimatedDelivery": "2025-01-15T10:35:00Z"
   }
 }
 \`\`\`
@@ -1723,7 +1723,7 @@ Get notification system health.
         "title": "New Job Match",
         "message": "You have a new job match for Senior Developer",
         "read": false,
-        "createdAt": "2024-01-15T10:30:00Z",
+        "createdAt": "2025-01-15T10:30:00Z",
         "actions": [
           {
             "label": "View Job",
@@ -1762,7 +1762,7 @@ Get notification system health.
     "lastMessage": {
       "content": "Hi, I'd like to schedule an interview",
       "senderId": "user-123",
-      "timestamp": "2024-01-15T11:00:00Z"
+      "timestamp": "2025-01-15T11:00:00Z"
     },
     "unreadCount": 2
   }

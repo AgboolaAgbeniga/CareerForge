@@ -5,7 +5,7 @@ export const dataPrivacyContent: PageContent = {
     title: "Data Privacy Policies",
     description: "Comprehensive data privacy policies and practices at CareerForge, including GDPR compliance, data collection, processing, and user rights",
     version: "1.3.0",
-    lastUpdated: "2024-12-27",
+    lastUpdated: "2025-12-27",
     authors: ["Legal Team", "Privacy Team"],
     tags: ["privacy", "GDPR", "data protection", "user rights", "compliance", "data processing"],
     difficulty: "intermediate",

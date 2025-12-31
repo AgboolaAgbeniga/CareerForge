@@ -5,7 +5,7 @@ export const sdksLibrariesContent: ContentDocument = {
     title: "SDKs & Libraries",
     description: "Official SDKs, libraries, and integration tools for CareerForge APIs across multiple programming languages and platforms.",
     version: "2.4.0",
-    lastUpdated: "2024-12-30",
+    lastUpdated: "2025-12-30",
     authors: ["SDK Engineering Team"],
     tags: ["sdk", "libraries", "integration", "tools", "development"],
     difficulty: "intermediate",

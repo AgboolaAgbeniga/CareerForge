@@ -28,7 +28,10 @@ export const authenticateToken = async (req: AuthRequest, res: Response, next: N
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret') as any;
+    if (!process.env.JWT_SECRET) {
+      throw new Error('JWT_SECRET environment variable is not defined');
+    }
+    const decoded = jwt.verify(token, process.env.JWT_SECRET) as any;
 
     // Verify user still exists
     const [user] = await db.select().from(users).where(eq(users.id, decoded.userId)).limit(1);

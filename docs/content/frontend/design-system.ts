@@ -5,7 +5,7 @@ export const designSystemContent: PageContent = {
     title: "Design System",
     description: "Complete guide to the CareerForge design system, including color palettes, typography, spacing, and design tokens",
     version: "1.0.0",
-    lastUpdated: "2024-12-27",
+    lastUpdated: "2025-12-27",
     authors: ["CareerForge Team"],
     tags: ["frontend", "design-system", "tokens", "styling", "ui"],
     difficulty: "intermediate" as const,

@@ -7,7 +7,7 @@ export const authenticationPagesContent: PageContent = {
     title: "Authentication Pages",
     description: "Complete guide to CareerForge's authentication system including login, registration, password reset, and email verification flows",
     version: "2.4.0",
-    lastUpdated: "2024-12-27",
+    lastUpdated: "2025-12-27",
     authors: ["CareerForge Frontend Team"],
     tags: ["authentication", "login", "registration", "security", "user-management"],
     difficulty: "intermediate",

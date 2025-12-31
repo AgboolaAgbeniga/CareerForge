@@ -5,7 +5,7 @@ export const messagingSystemContent: PageContent = {
     title: "Messaging System",
     description: "Comprehensive guide to real-time messaging, notifications, and communication features",
     version: "1.0.0",
-    lastUpdated: "2024-12-27",
+    lastUpdated: "2025-12-27",
     authors: ["CareerForge Team"],
     tags: ["frontend", "messaging", "real-time", "notifications", "communication"],
     difficulty: "intermediate" as const,

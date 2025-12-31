@@ -5,7 +5,7 @@ export const faqContent: PageContent = {
     title: "Frequently Asked Questions",
     description: "Common questions and answers about CareerForge platform, features, pricing, support, and account management",
     version: "2.0.0",
-    lastUpdated: "2024-12-27",
+    lastUpdated: "2025-12-27",
     authors: ["Support Team"],
     tags: ["faq", "support", "help", "questions", "answers", "troubleshooting"],
     difficulty: "beginner",

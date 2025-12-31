@@ -5,7 +5,7 @@ export const performanceMonitoringContent: PageContent = {
     title: "AI Performance Monitoring",
     description: "Comprehensive monitoring and analytics for AI service performance, model accuracy, and system health",
     version: "2.4.0",
-    lastUpdated: "2024-12-27",
+    lastUpdated: "2025-12-27",
     authors: ["AI Engineering Team"],
     tags: ["performance monitoring", "analytics", "model monitoring", "observability"],
     difficulty: "advanced",

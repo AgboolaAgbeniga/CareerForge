@@ -5,7 +5,7 @@ export const apiReferenceContent: ContentDocument = {
     title: "API Reference",
     description: "Complete reference for CareerForge APIs, including endpoints, parameters, responses, and examples for all services.",
     version: "2.4.0",
-    lastUpdated: "2024-12-30",
+    lastUpdated: "2025-12-30",
     authors: ["API Engineering Team"],
     tags: ["api", "reference", "endpoints", "documentation", "integration"],
     difficulty: "intermediate",
@@ -43,7 +43,7 @@ export const apiReferenceContent: ContentDocument = {
   "data": { ... },
   "meta": {
     "request_id": "req_12345",
-    "timestamp": "2024-12-30T10:00:00Z",
+    "timestamp": "2025-12-30T10:00:00Z",
     "version": "2.4.0"
   }
 }</code></pre>
@@ -146,7 +146,7 @@ export const apiReferenceContent: ContentDocument = {
         "job_title": "Senior Software Engineer",
         "company": "Tech Corp",
         "start_date": "2020-01-01",
-        "end_date": "2024-01-01",
+        "end_date": "2025-01-01",
         "description": "Led development of...",
         "skills": ["Python", "React", "AWS"]
       }
@@ -678,7 +678,7 @@ export const apiReferenceContent: ContentDocument = {
           <pre><code class="language-json">{
   "event": "resume.parsed",
   "webhook_id": "wh_12345",
-  "timestamp": "2024-12-30T10:00:00Z",
+  "timestamp": "2025-12-30T10:00:00Z",
   "data": {
     "user_id": "user_12345",
     "resume_id": "resume_67890",
@@ -740,7 +740,7 @@ export const apiReferenceContent: ContentDocument = {
       "issue": "Email format is invalid"
     },
     "request_id": "req_12345",
-    "timestamp": "2024-12-30T10:00:00Z"
+    "timestamp": "2025-12-30T10:00:00Z"
   }
 }</code></pre>
         </div>
