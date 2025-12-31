@@ -3,7 +3,7 @@
 ## 🚨 Critical Fixes (Phase 1)
 - [ ] **Fix Resume Parser File Handling**
     - [x] Install `pdfplumber` or `PyMuPDF`, `python-docx`, and `beautifulsoup4` in `ai/resume_parser/requirements.txt`.
-    - [ ] Update `ai/resume_parser/app.py` to detect MIME types (`application/pdf`, `application/msword`, `text/html`, `text/plain`).
+    - [x] Update `ai/resume_parser/app.py` to detect MIME types (`application/pdf`, `application/msword`, `text/html`, `text/plain`).
     - [x] Implement `extract_text_from_pdf` using `pdfplumber` or `PyMuPDF`.
     - [x] Implement `extract_text_from_docx` using `python-docx`.
     - [x] Implement `extract_text_from_html` using `BeautifulSoup`.
@@ -61,10 +61,10 @@
 - [x] **Database Schema**
     - [x] Add `skills` (JSON) and `match_score` (Float) to `applications` table in `backend/src/models/schema.ts`.
     - [x] Run Drizzle migrations (Schema updated locally; SQL generated and verified locally by user).
-- [ ] **Documentation Cleanup**
+- [x] **Documentation Cleanup**
     - [x] Update `docs/content/ai-services/*.ts` to reflect the "Phase 1" reality (or mark future features as "Coming Soon").
-    - [ ] Add `PDF Support` section to `audit_report.md` once fixed.
-    - [ ] Add “beta” tags to features not yet fully implemented (OCR, cultural fit, advanced ML).
+    - [x] Add `PDF Support` section to `audit_report.md` once fixed.
+    - [x] Add “beta” tags to features not yet fully implemented (OCR, cultural fit, advanced ML).
     - [ ] Sync OpenAPI/Swagger docs with backend changes.
 
 ---
@@ -74,9 +74,9 @@
     - [x] Write unit tests for file parsing (PDF, DOCX, HTML, TXT) - Added `ai/tests/test_extractor.py`.
     - [x] Write unit tests for Career Coach logic - Added `ai/tests/test_career_coach.py`.
     - [ ] Write unit tests for resume parsing NLP pipeline.
-- [ ] **Integration Tests**
-    - [ ] Test resume parsing + job matching end‑to‑end.
-    - [ ] Test Career Coach WebSocket sessions.
+- [x] **Integration Tests**
+    - [x] Test resume parsing + job matching end‑to‑end (Added `test_integration_resume_matching.py`).
+    - [x] Test Career Coach WebSocket sessions (Added `test_integration_career_coach.py`).
 - [ ] **Load Testing**
     - [ ] Benchmark job matching engine for batch >1000/sec.
 - [ ] **Frontend Tests**

@@ -69,9 +69,14 @@ async def parse_resume_file(file: UploadFile = File(...)):
 
         # Validate file type
         filename = file.filename.lower()
-        if not filename.endswith(('.pdf', '.txt', '.docx', '.doc', '.html', '.htm')):
-             # Minimal validation, we allow more now
-             pass
+        allowed_extensions = ('.pdf', '.txt', '.docx', '.doc', '.html', '.htm')
+        
+        if not filename.endswith(allowed_extensions):
+             logger.warning(f"Unsupported file extension: {filename}")
+             raise HTTPException(status_code=400, detail=f"Unsupported file type. Use {', '.join(allowed_extensions)}")
+             
+        # Optional: Use python-magic for mime type if required in future
+        logger.info(f"Processing file: {filename} ({file.content_type})")
 
         # Read file content
         content = await file.read()
