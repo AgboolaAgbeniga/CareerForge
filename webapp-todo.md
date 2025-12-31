@@ -70,10 +70,10 @@
 ---
 
 ## 🧪 Testing & QA (Phase 5)
-- [ ] **Unit Tests**
+- [x] **Unit Tests**
     - [x] Write unit tests for file parsing (PDF, DOCX, HTML, TXT) - Added `ai/tests/test_extractor.py`.
     - [x] Write unit tests for Career Coach logic - Added `ai/tests/test_career_coach.py`.
-    - [ ] Write unit tests for resume parsing NLP pipeline.
+    - [x] Write unit tests for resume parsing NLP pipeline - Added `ai/tests/test_nlp_pipeline.py`.
 - [x] **Integration Tests**
     - [x] Test resume parsing + job matching end‑to‑end (Added `test_integration_resume_matching.py`).
     - [x] Test Career Coach WebSocket sessions (Added `test_integration_career_coach.py`).
