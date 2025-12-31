@@ -34,9 +34,9 @@
     - [ ] Integrate `spaCy` transformer pipeline alongside Hugging Face NER.
     - [ ] Replace fixed skill list with taxonomy‑based skill extraction (BiLSTM‑CRF or transformer fine‑tuning).
     - [ ] Implement webhook support for resume parsing completion events.
-- [ ] **Career Coach State**
-    - [ ] Add in-memory session storage in `ai/career_coach/app.py`.
-    - [ ] Update `/advice` endpoint to accept and utilize `session_id`.
+- [x] **Career Coach State**
+    - [x] Add in-memory session storage in `ai/career_coach/app.py` (Created `session_manager.py`).
+    - [x] Update `/advice` endpoint to accept and utilize `session_id`.
     - [ ] Replace static interview templates with dynamic generation (fine‑tuned Hugging Face models).
 
 ---
@@ -60,7 +60,7 @@
 ## 🏗️ Infrastructure & Docs (Phase 4)
 - [x] **Database Schema**
     - [x] Add `skills` (JSON) and `match_score` (Float) to `applications` table in `backend/src/models/schema.ts`.
-    - [x] Run Drizzle migrations (Schema updated locally; `drizzle-kit push` failed due to invalid Supabase URL in `.env`. User needs to check `DATABASE_URL`).
+    - [x] Run Drizzle migrations (Schema updated locally; SQL generated and verified locally by user).
 - [ ] **Documentation Cleanup**
     - [x] Update `docs/content/ai-services/*.ts` to reflect the "Phase 1" reality (or mark future features as "Coming Soon").
     - [ ] Add `PDF Support` section to `audit_report.md` once fixed.

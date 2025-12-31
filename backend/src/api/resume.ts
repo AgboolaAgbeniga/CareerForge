@@ -126,7 +126,7 @@ router.post('/upload', authenticateToken, requireVerified, upload.single('file')
  *   post:
  *     summary: Parse a resume file directly (no DB save) - Demo/Test only
  */
-router.post('/parse-file', upload.single('file'), catchAsync(async (req, res) => {
+router.post('/parse-file', upload.single('file'), catchAsync(async (req: AuthRequest, res: Response) => {
   if (!req.file) {
     throw new AppError('No file uploaded', 400, 'MISSING_FILE');
   }

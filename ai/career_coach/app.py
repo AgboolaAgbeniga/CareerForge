@@ -12,8 +12,11 @@ from shared.utils import get_logger
 
 logger = get_logger(__name__)
 
-# Global coach instance
+from .session_manager import SessionManager
+
+# Global coach and session manager instances
 coach = None
+session_manager = None
 
 # Router
 career_router = APIRouter()
@@ -30,6 +33,7 @@ class UserProfile(BaseModel):
 class AdviceRequest(BaseModel):
     user_profile: UserProfile
     context: str
+    session_id: str = None  # Optional session ID
 
 class AdviceResponse(BaseModel):
     advice: str
@@ -56,24 +60,43 @@ class CoverLetterResponse(BaseModel):
     customization_notes: str
 
 async def init_coach():
-    """Initialize the career coach"""
-    global coach
+    """Initialize the career coach services"""
+    global coach, session_manager
     from .coach import CareerCoach
-    logger.info("Initializing Career Coach...")
+    logger.info("Initializing Career Coach & Session Manager...")
     coach = CareerCoach()
+    session_manager = SessionManager()
 
 @career_router.post("/career-coach/advice", response_model=AdviceResponse)
 async def get_career_advice(data: dict):
-    """Get personalized career advice"""
+    """Get personalized career advice with session context"""
     try:
-        if not coach:
-            raise HTTPException(status_code=503, detail="Coach not initialized")
+        if not coach or not session_manager:
+            raise HTTPException(status_code=503, detail="Service not initialized")
 
-        # Convert data to AdviceRequest format
-        user_profile = UserProfile(**data.get('userContext', {}))
-        context = data.get('query', '')
+        # Extract data
+        user_profile_data = data.get('userContext', {})
+        user_profile = UserProfile(**user_profile_data)
+        query = data.get('query', '')
+        session_id = data.get('sessionId')
 
-        result = coach.provide_advice(user_profile.dict(), context)
+        # different handling if session_id is provided
+        context_history = ""
+        if session_id:
+            # Add user query to history
+            session_manager.add_message(session_id, "user", query)
+            # Get historical context
+            context_history = session_manager.get_context_string(session_id)
+        
+        # Combine query with history for "context" passed to the model
+        # If history exists, prepend it. Otherwise just use query.
+        full_context = f"{context_history}\nCurrent User Query: {query}" if context_history else query
+
+        result = coach.provide_advice(user_profile.dict(), full_context)
+
+        # If session exists, store the advice response in history too
+        if session_id:
+            session_manager.add_message(session_id, "assistant", result.advice)
 
         return AdviceResponse(**result.__dict__)
 
