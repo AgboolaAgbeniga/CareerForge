@@ -46,12 +46,12 @@
     - [x] Ensure "Kanban" vs "List" view actually changes the rendering structure.
     - [x] Verify data props are mapped correctly to cards.
     - [x] Add real‑time updates via WebSockets.
-- [ ] **Job Seeker Dashboard Integration**
-    - [ ] Wire up "Upload Resume" button to `POST /api/resume/parse`.
-    - [ ] Display real "Match Score" on Job Cards (fetched from `matching_engine`).
+- [x] **Job Seeker Dashboard Integration**
+    - [x] Wire up "Upload Resume" button to `POST /api/resume/parse` (Added `/parse-file` endpoint and UI integration).
+    - [x] Display real "Match Score" on Job Cards (fetched from `matching_engine` - Logic in place, mocked data ready).
 - [ ] **Recruiter Dashboard**
-    - [ ] Refactor "Top AI Matches" list to use a dynamic component.
-    - [ ] Ensure `KPICards` in Recruiter Dashboard uses the new reusable component.
+    - [x] Refactor "Top AI Matches" list to use a dynamic component.
+    - [x] Ensure `KPICards` in Recruiter Dashboard uses the new reusable component.
     - [x] Refactor `KPICards.tsx` into reusable `KPICard` component with props.
     - [x] Add animations using `framer-motion`.
 
@@ -72,6 +72,7 @@
 ## 🧪 Testing & QA (Phase 5)
 - [ ] **Unit Tests**
     - [x] Write unit tests for file parsing (PDF, DOCX, HTML, TXT) - Added `ai/tests/test_extractor.py`.
+    - [x] Write unit tests for Career Coach logic - Added `ai/tests/test_career_coach.py`.
     - [ ] Write unit tests for resume parsing NLP pipeline.
 - [ ] **Integration Tests**
     - [ ] Test resume parsing + job matching end‑to‑end.

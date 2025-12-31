@@ -75,7 +75,7 @@ router.post('/upload', authenticateToken, requireVerified, upload.single('file')
     // Upload to Supabase Storage with fallback to local
     const fileBuffer = req.file.buffer;
     const localFallbackPath = path.join(localUploadDir, `${userId}-${Date.now()}-${req.file.originalname}`);
-    
+
     const uploadResult = await uploadWithFallback(
       'resumes',
       '', // Will be set by resumeStorage.uploadResume
@@ -116,6 +116,32 @@ router.post('/upload', authenticateToken, requireVerified, upload.single('file')
   } catch (error) {
     console.error('Resume upload error:', error);
     throw new AppError('Failed to upload resume', 500, 'UPLOAD_ERROR');
+  }
+  // ... existing upload route ...
+}));
+
+/**
+ * @swagger
+ * /api/resume/parse-file:
+ *   post:
+ *     summary: Parse a resume file directly (no DB save) - Demo/Test only
+ */
+router.post('/parse-file', upload.single('file'), catchAsync(async (req, res) => {
+  if (!req.file) {
+    throw new AppError('No file uploaded', 400, 'MISSING_FILE');
+  }
+
+  try {
+    const fileBuffer = req.file.buffer;
+    const parsedData = await aiService.parseResume(fileBuffer, req.file.originalname);
+
+    res.json({
+      success: true,
+      data: parsedData
+    });
+  } catch (error) {
+    console.error('Direct parse error:', error);
+    throw new AppError('Failed to parse resume', 500, 'PARSE_ERROR');
   }
 }));
 
