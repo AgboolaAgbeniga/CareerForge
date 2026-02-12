@@ -1,0 +1,635 @@
+
+
+    <!DOCTYPE html>
+<html lang="en" class="scroll-smooth antialiased">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareerForge | Intelligent Hiring Infrastructure</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        primary: {
+                            50: '#eff6ff', 100: '#dbeafe', 200: '#bfdbfe', 300: '#93c5fd', 400: '#60a5fa',
+                            500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8', 800: '#1e40af', 900: '#1e3a8a',
+                        },
+                        cyan: {
+                            400: '#22d3ee',
+                            500: '#06b6d4',
+                        },
+                        slate: {
+                            850: '#151e32', // Custom dark shade for better contrast
+                            950: '#020617',
+                        }
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'flow': 'flow 2s linear infinite',
+                    },
+                    keyframes: {
+                        flow: {
+                            '0%': { backgroundPosition: '0 0' },
+                            '100%': { backgroundPosition: '-20px 0' },
+                        }
+                    },
+                    boxShadow: {
+                        'glow': '0 0 20px rgba(37, 99, 235, 0.15)',
+                        'glow-cyan': '0 0 20px rgba(34, 211, 238, 0.15)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        .dark ::-webkit-scrollbar-thumb { background: #334155; }
+        
+        /* Syntax highlighting simulation */
+        .token-keyword { color: #f472b6; } 
+        .token-string { color: #a78bfa; } 
+        .token-function { color: #60a5fa; } 
+        .token-comment { color: #64748b; font-style: italic; }
+        .token-number { color: #fbbf24; }
+        
+        /* Grid Background */
+        .bg-grid {
+            background-size: 40px 40px;
+            background-image: linear-gradient(to right, rgba(0, 0, 0, 0.04) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+        }
+        .dark .bg-grid {
+            background-image: linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+        }
+        
+        /* Utility */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Animated connection lines */
+        .connection-line {
+            background: linear-gradient(90deg, transparent 0%, #2563eb 50%, transparent 100%);
+            background-size: 20px 100%;
+            opacity: 0.3;
+        }
+        .dark .connection-line {
+            background: linear-gradient(90deg, transparent 0%, #60a5fa 50%, transparent 100%);
+            opacity: 0.4;
+        }
+    </style>
+</head>
+<body class="bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-50 transition-colors duration-300 selection:bg-primary-500/20 selection:text-primary-600 font-sans">
+
+    <!-- Logic -->
+    <script>
+        const toggleTheme = () => {
+            document.documentElement.classList.toggle('dark');
+            localStorage.theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+        };
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+
+        const toggleSidebar = () => {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        };
+
+        const toggleSearch = () => {
+            const modal = document.getElementById('search-modal');
+            const input = document.getElementById('search-input');
+            modal.classList.toggle('hidden');
+            if(!modal.classList.contains('hidden')) input.focus();
+        };
+
+        const toggleSection = (id, iconId) => {
+            const section = document.getElementById(id);
+            const icon = document.getElementById(iconId);
+            section.classList.toggle('hidden');
+            icon.classList.toggle('rotate-90');
+        };
+
+        document.addEventListener('keydown', (e) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                e.preventDefault();
+                toggleSearch();
+            }
+            if (e.key === 'Escape') {
+                document.getElementById('search-modal').classList.add('hidden');
+            }
+        });
+
+        // Tab switching logic
+        function switchTab(btn, lang) {
+            // Reset all tabs
+            const container = btn.closest('.code-block');
+            container.querySelectorAll('.tab-btn').forEach(b => {
+                b.classList.remove('text-primary-600', 'border-primary-600', 'dark:text-primary-400');
+                b.classList.add('text-slate-500', 'border-transparent');
+            });
+            container.querySelectorAll('.code-content').forEach(c => c.classList.add('hidden'));
+
+            // Activate current
+            btn.classList.remove('text-slate-500', 'border-transparent');
+            btn.classList.add('text-primary-600', 'border-primary-600', 'dark:text-primary-400');
+            container.querySelector(`.code-${lang}`).classList.remove('hidden');
+        }
+    </script>
+
+    <!-- Search Modal -->
+    <div id="search-modal" class="fixed inset-0 z-[100] hidden bg-slate-900/50 backdrop-blur-sm transition-opacity" onclick="if(event.target === this) toggleSearch()">
+        <div class="mx-auto mt-20 max-w-2xl transform overflow-hidden rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl transition-all">
+            <div class="relative flex items-center border-b border-slate-200 dark:border-slate-800 px-4 py-3">
+                <span class="iconify text-slate-400" data-icon="lucide:search" data-width="20"></span>
+                <input id="search-input" type="text" placeholder="Search documentation, APIs, or guides..." class="flex-1 bg-transparent px-3 py-1 text-sm text-slate-900 dark:text-slate-50 placeholder-slate-500 focus:outline-none">
+                <div class="flex items-center gap-1 rounded border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 text-xs text-slate-500">
+                    <span class="text-[10px]">ESC</span>
+                </div>
+            </div>
+            <div class="px-2 py-3">
+                <p class="px-3 pb-2 text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Quick Links</p>
+                <a href="#" class="group flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">
+                    <span class="iconify text-slate-400 group-hover:text-primary-600" data-icon="lucide:book-open" data-width="16"></span>
+                    <span>Platform Overview</span>
+                </a>
+                <a href="#" class="group flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">
+                    <span class="iconify text-slate-400 group-hover:text-primary-600" data-icon="lucide:cpu" data-width="16"></span>
+                    <span>AI Matching Engine</span>
+                </a>
+                <a href="#" class="group flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">
+                    <span class="iconify text-slate-400 group-hover:text-primary-600" data-icon="lucide:code-2" data-width="16"></span>
+                    <span>API Reference: Candidates</span>
+                </a>
+            </div>
+            <div class="border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-850 px-4 py-2.5 flex justify-between items-center">
+                <span class="text-xs text-slate-500">Powered by CareerForge Vector Search</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="fixed top-0 z-40 w-full border-b border-slate-200/80 dark:border-slate-800/80 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md">
+        <div class="flex h-14 items-center justify-between px-4 lg:px-6">
+            <div class="flex items-center gap-4">
+                <button onclick="toggleSidebar()" class="lg:hidden text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200">
+                    <span class="iconify" data-icon="lucide:menu" data-width="20"></span>
+                </button>
+                <a href="#" class="flex items-center gap-2 group">
+                    <div class="flex h-6 w-6 items-center justify-center rounded bg-primary-600 text-white shadow-glow">
+                        <span class="iconify" data-icon="lucide:sparkles" data-width="14"></span>
+                    </div>
+                    <span class="text-sm font-semibold tracking-tight text-slate-900 dark:text-white group-hover:opacity-80 transition-opacity">CareerForge</span>
+                    <span class="hidden sm:inline-block rounded-full bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[10px] font-medium text-slate-500 border border-slate-200 dark:border-slate-700">v2.4.0</span>
+                </a>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <button onclick="toggleSearch()" class="hidden md:flex group h-8 w-64 items-center gap-2 rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 px-3 transition-colors hover:border-slate-300 dark:hover:border-slate-700">
+                    <span class="iconify text-slate-400" data-icon="lucide:search" data-width="14"></span>
+                    <span class="text-xs text-slate-500">Search documentation...</span>
+                    <span class="ml-auto flex items-center gap-0.5 rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-1.5 py-0.5 text-[10px] text-slate-400 font-sans">
+                        ⌘K
+                    </span>
+                </button>
+
+                <div class="h-4 w-px bg-slate-200 dark:bg-slate-800 mx-1"></div>
+
+                <a href="#" class="hidden sm:block text-xs font-medium text-slate-600 hover:text-primary-600 dark:text-slate-400 dark:hover:text-primary-400 transition-colors">Contact Sales</a>
+                
+                <button onclick="toggleTheme()" class="rounded-md p-2 text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 transition-colors" aria-label="Toggle Theme">
+                    <span class="iconify block dark:hidden" data-icon="lucide:sun" data-width="18"></span>
+                    <span class="iconify hidden dark:block" data-icon="lucide:moon" data-width="18"></span>
+                </button>
+                
+                <a href="#" class="rounded-md p-2 text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 transition-colors">
+                    <span class="iconify" data-icon="lucide:github" data-width="18"></span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Layout -->
+    <div class="flex h-screen pt-14">
+        
+        <!-- Mobile Overlay -->
+        <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 z-30 hidden bg-slate-900/20 backdrop-blur-sm lg:hidden"></div>
+
+        <!-- Sidebar Navigation -->
+        <aside id="sidebar" class="fixed bottom-0 left-0 top-14 z-40 w-72 -translate-x-full border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 transition-transform lg:static lg:translate-x-0 overflow-y-auto no-scrollbar pb-10">
+            <nav class="p-4 space-y-1">
+                
+                <!-- Category 1: Platform Overview -->
+                <div class="pt-2">
+                    <button onclick="toggleSection('sec-overview', 'icon-overview')" class="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-left text-sm font-semibold text-slate-900 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900">
+                        <span class="flex items-center gap-2"><span class="iconify text-primary-500" data-icon="lucide:layout-grid" data-width="16"></span> Platform Overview</span>
+                        <span id="icon-overview" class="iconify text-slate-400 transition-transform rotate-90" data-icon="lucide:chevron-right" data-width="14"></span>
+                    </button>
+                    <div id="sec-overview" class="mt-1 space-y-0.5 px-2">
+                        <a href="#" class="block rounded-md bg-primary-50 dark:bg-primary-900/10 px-8 py-1.5 text-xs font-medium text-primary-600 dark:text-primary-400 border-l-2 border-primary-500 -ml-[1px]">Introduction & Philosophy</a>
+                        <a href="#" class="block rounded-md px-8 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/50">Getting Started</a>
+                        <a href="#" class="block rounded-md px-8 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/50">Platform Architecture</a>
+                    </div>
+                </div>
+
+                <!-- Category 2: Frontend Documentation -->
+                <div class="pt-2">
+                    <button onclick="toggleSection('sec-frontend', 'icon-frontend')" class="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-left text-sm font-semibold text-slate-900 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900">
+                        <span class="flex items-center gap-2"><span class="iconify text-slate-400" data-icon="lucide:monitor" data-width="16"></span> Frontend Docs</span>
+                        <span id="icon-frontend" class="iconify text-slate-400 transition-transform" data-icon="lucide:chevron-right" data-width="14"></span>
+                    </button>
+                    <div id="sec-frontend" class="mt-1 hidden space-y-0.5 px-2">
+                        <a href="#" class="block rounded-md px-8 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/50">Application Structure</a>
+                        <a href="#" class="block rounded-md px-8 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/50">Component Library</a>
+                        <a href="#" class="block rounded-md px-8 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/50">Design System</a>
+                    </div>
+                </div>
+
+                <!-- Category 3: Backend API -->
+                <div class="pt-2">
+                    <button onclick="toggleSection('sec-backend', 'icon-backend')" class="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-left text-sm font-semibold text-slate-900 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900">
+                        <span class="flex items-center gap-2"><span class="iconify text-slate-400" data-icon="lucide:server" data-width="16"></span> Backend API</span>
+                        <span id="icon-backend" class="iconify text-slate-400 transition-transform" data-icon="lucide:chevron-right" data-width="14"></span>
+                    </button>
+                    <div id="sec-backend" class="mt-1 hidden space-y-0.5 px-2">
+                        <a href="#" class="block rounded-md px-8 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/50">API Overview</a>
+                        <a href="#" class="block rounded-md px-8 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/50">Core Endpoints</a>
+                        <a href="#" class="block rounded-md px-8 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/50">Real-time Features</a>
+                    </div>
+                </div>
+
+                <!-- Category 4: AI Services -->
+                <div class="pt-2">
+                    <button onclick="toggleSection('sec-ai', 'icon-ai')" class="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-left text-sm font-semibold text-slate-900 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900">
+                        <span class="flex items-center gap-2"><span class="iconify text-cyan-500" data-icon="lucide:sparkles" data-width="16"></span> AI Services</span>
+                        <span id="icon-ai" class="iconify text-slate-400 transition-transform" data-icon="lucide:chevron-right" data-width="14"></span>
+                    </button>
+                    <div id="sec-ai" class="mt-1 hidden space-y-0.5 px-2">
+                        <a href="#" class="block rounded-md px-8 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/50">Matching Engine</a>
+                        <a href="#" class="block rounded-md px-8 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/50">Resume Parser</a>
+                        <a href="#" class="block rounded-md px-8 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/50">Vector Search</a>
+                    </div>
+                </div>
+
+                <!-- Category 5: Business & Strategy -->
+                <div class="pt-2">
+                    <button onclick="toggleSection('sec-biz', 'icon-biz')" class="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-left text-sm font-semibold text-slate-900 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900">
+                        <span class="flex items-center gap-2"><span class="iconify text-slate-400" data-icon="lucide:trending-up" data-width="16"></span> Business & Strategy</span>
+                        <span id="icon-biz" class="iconify text-slate-400 transition-transform" data-icon="lucide:chevron-right" data-width="14"></span>
+                    </button>
+                    <div id="sec-biz" class="mt-1 hidden space-y-0.5 px-2">
+                        <a href="#" class="block rounded-md px-8 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/50">Market Analysis</a>
+                        <a href="#" class="block rounded-md px-8 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/50">Growth Strategy</a>
+                        <a href="#" class="block rounded-md px-8 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/50">Executive Dashboard</a>
+                    </div>
+                </div>
+
+                <!-- Category 6: Security & Compliance -->
+                <div class="pt-2">
+                    <button onclick="toggleSection('sec-sec', 'icon-sec')" class="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-left text-sm font-semibold text-slate-900 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900">
+                        <span class="flex items-center gap-2"><span class="iconify text-slate-400" data-icon="lucide:shield-check" data-width="16"></span> Security</span>
+                        <span id="icon-sec" class="iconify text-slate-400 transition-transform" data-icon="lucide:chevron-right" data-width="14"></span>
+                    </button>
+                    <div id="sec-sec" class="mt-1 hidden space-y-0.5 px-2">
+                        <a href="#" class="block rounded-md px-8 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/50">Architecture</a>
+                        <a href="#" class="block rounded-md px-8 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/50">Compliance (SOC2)</a>
+                    </div>
+                </div>
+
+                <!-- Footer Promo -->
+                <div class="mt-8 mx-2 rounded-xl bg-gradient-to-br from-slate-900 to-slate-800 dark:from-slate-800 dark:to-slate-900 p-4 text-white shadow-lg">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="iconify text-cyan-400" data-icon="lucide:zap" data-width="16"></span>
+                        <h4 class="text-xs font-bold uppercase tracking-wider">Enterprise</h4>
+                    </div>
+                    <p class="text-[11px] text-slate-300 leading-relaxed mb-3">Ready to scale? Connect your ATS directly to CareerForge.</p>
+                    <a href="#" class="block w-full rounded bg-white/10 py-1.5 text-center text-xs font-medium hover:bg-white/20 transition-colors">Contact Sales</a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Content Area -->
+        <main class="flex-1 overflow-y-auto bg-white dark:bg-slate-950 relative scroll-smooth">
+            <div class="bg-grid absolute inset-0 h-[600px] pointer-events-none opacity-60"></div>
+            
+            <div class="mx-auto max-w-[90rem] px-4 sm:px-6 lg:px-12 py-10 lg:py-16 grid grid-cols-1 xl:grid-cols-[1fr_240px] gap-12">
+                
+                <!-- Central Documentation -->
+                <div class="min-w-0 max-w-4xl">
+                    
+                    <!-- Breadcrumbs -->
+                    <div class="flex items-center gap-2 text-xs text-slate-500 mb-6">
+                        <span>Platform Overview</span>
+                        <span class="iconify" data-icon="lucide:chevron-right" data-width="10"></span>
+                        <span class="font-medium text-slate-900 dark:text-slate-200">Introduction</span>
+                    </div>
+
+                    <!-- Hero -->
+                    <div class="mb-12">
+                        <h1 class="text-4xl sm:text-5xl font-semibold tracking-tight text-slate-900 dark:text-white mb-6 leading-[1.1]">
+                            The Intelligent <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-cyan-500">Infrastructure</span> for Modern Hiring
+                        </h1>
+                        <p class="text-lg text-slate-600 dark:text-slate-400 leading-relaxed mb-8 max-w-2xl">
+                            CareerForge unifies the recruitment lifecycle with a single, high-performance API. From resume parsing to predictive matching, we provide the building blocks for the next generation of HR tech.
+                        </p>
+                        
+                        <div class="flex flex-wrap gap-4">
+                            <a href="#" class="inline-flex items-center justify-center rounded-lg bg-primary-600 px-5 py-2.5 text-sm font-medium text-white shadow-lg shadow-primary-500/25 hover:bg-primary-500 hover:shadow-primary-500/40 transition-all focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900">
+                                Start Building
+                                <span class="iconify ml-2" data-icon="lucide:arrow-right" data-width="16"></span>
+                            </a>
+                            <a href="#" class="inline-flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-5 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all">
+                                Platform Overview
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Architecture Visualization -->
+                    <div class="mb-20 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 p-6 sm:p-10 overflow-hidden relative group">
+                        <!-- Decorative background glow -->
+                        <div class="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-primary-500/10 blur-3xl group-hover:bg-primary-500/20 transition-all duration-700"></div>
+                        <div class="absolute -bottom-24 -left-24 h-64 w-64 rounded-full bg-cyan-500/10 blur-3xl group-hover:bg-cyan-500/20 transition-all duration-700"></div>
+
+                        <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6 max-w-3xl mx-auto">
+                            <!-- Source Node -->
+                            <div class="flex flex-col items-center gap-3">
+                                <div class="h-20 w-36 rounded-xl bg-white dark:bg-slate-800 shadow-lg border border-slate-200 dark:border-slate-700 flex flex-col items-center justify-center relative">
+                                    <div class="absolute top-0 w-full h-1 bg-gradient-to-r from-slate-400 to-slate-300 rounded-t-xl"></div>
+                                    <span class="iconify text-slate-400 mb-1" data-icon="lucide:layers" data-width="24"></span>
+                                    <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">Client Apps</span>
+                                </div>
+                            </div>
+
+                            <!-- Animated Path 1 -->
+                            <div class="flex-1 w-full h-px bg-slate-200 dark:bg-slate-700 relative overflow-hidden hidden md:block">
+                                <div class="absolute top-0 left-0 h-full w-20 bg-gradient-to-r from-transparent via-primary-500 to-transparent animate-[shimmer_2s_infinite]"></div>
+                                <div class="absolute -top-1.5 left-1/2 -ml-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-2 py-0.5 rounded-full text-[10px] text-slate-400">REST/GraphQL</div>
+                            </div>
+                            <div class="md:hidden h-8 w-px bg-slate-200 dark:bg-slate-700 relative"></div>
+
+                            <!-- Core Node (Animated) -->
+                            <div class="flex flex-col items-center gap-3 relative">
+                                <div class="absolute -inset-2 rounded-2xl bg-gradient-to-br from-primary-500/30 to-cyan-400/30 blur-md animate-pulse-slow"></div>
+                                <div class="h-24 w-40 rounded-xl bg-slate-900 dark:bg-slate-950 shadow-2xl border border-slate-700 flex flex-col items-center justify-center relative z-10 overflow-hidden">
+                                    <!-- Scanning effect inside -->
+                                    <div class="absolute inset-0 bg-gradient-to-b from-transparent via-primary-500/10 to-transparent animate-flow" style="background-size: 100% 200%;"></div>
+                                    <span class="iconify text-white mb-2" data-icon="lucide:cpu" data-width="28"></span>
+                                    <span class="text-xs font-bold text-white tracking-wide">Matching Engine</span>
+                                    <span class="text-[10px] text-cyan-400">Processing...</span>
+                                </div>
+                            </div>
+
+                            <!-- Animated Path 2 -->
+                            <div class="flex-1 w-full h-px bg-slate-200 dark:bg-slate-700 relative overflow-hidden hidden md:block">
+                                <div class="absolute top-0 left-0 h-full w-20 bg-gradient-to-r from-transparent via-cyan-400 to-transparent animate-[shimmer_2s_infinite_0.5s]"></div>
+                                <div class="absolute -top-1.5 left-1/2 -ml-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-2 py-0.5 rounded-full text-[10px] text-slate-400">JSON Stream</div>
+                            </div>
+                            <div class="md:hidden h-8 w-px bg-slate-200 dark:bg-slate-700 relative"></div>
+
+                            <!-- Output Node -->
+                            <div class="flex flex-col items-center gap-3">
+                                <div class="h-20 w-36 rounded-xl bg-white dark:bg-slate-800 shadow-lg border border-slate-200 dark:border-slate-700 flex flex-col items-center justify-center relative">
+                                    <div class="absolute top-0 w-full h-1 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-t-xl"></div>
+                                    <div class="flex gap-2 mb-1">
+                                        <div class="h-1.5 w-1.5 rounded-full bg-green-500"></div>
+                                        <div class="h-1.5 w-1.5 rounded-full bg-slate-200 dark:bg-slate-600"></div>
+                                        <div class="h-1.5 w-1.5 rounded-full bg-slate-200 dark:bg-slate-600"></div>
+                                    </div>
+                                    <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">Candidates</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Main Content Prose -->
+                    <div class="prose prose-slate dark:prose-invert max-w-none prose-headings:font-semibold prose-headings:tracking-tight prose-a:text-primary-600 dark:prose-a:text-primary-400 prose-code:text-primary-600 dark:prose-code:text-primary-400 prose-code:bg-primary-50 dark:prose-code:bg-primary-900/20 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:before:content-none prose-code:after:content-none">
+                        
+                        <h2 id="business-impact" class="scroll-mt-24 text-2xl">Built for Velocity</h2>
+                        <p class="text-slate-600 dark:text-slate-400">
+                            Traditional ATS architectures are brittle and siloed. CareerForge acts as the central nervous system for your hiring data, utilizing <span class="font-semibold text-slate-900 dark:text-slate-200">vector-based semantic search</span> to surface candidates that keyword matching misses.
+                        </p>
+
+                        <!-- Feature Grid for Investors/Execs -->
+                        <div class="grid sm:grid-cols-2 gap-6 not-prose my-10">
+                            <div class="group p-5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:shadow-lg hover:shadow-primary-500/10 transition-all duration-300">
+                                <div class="h-10 w-10 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                                    <span class="iconify" data-icon="lucide:bar-chart-2" data-width="20"></span>
+                                </div>
+                                <h3 class="text-base font-semibold text-slate-900 dark:text-white mb-2">Predictive Analytics</h3>
+                                <p class="text-sm text-slate-500 leading-relaxed">Forecast hiring needs and candidate success rates with our trained ML models.</p>
+                            </div>
+                            <div class="group p-5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:shadow-lg hover:shadow-cyan-500/10 transition-all duration-300">
+                                <div class="h-10 w-10 rounded-lg bg-cyan-50 dark:bg-cyan-900/30 text-cyan-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                                    <span class="iconify" data-icon="lucide:lock" data-width="20"></span>
+                                </div>
+                                <h3 class="text-base font-semibold text-slate-900 dark:text-white mb-2">Enterprise Security</h3>
+                                <p class="text-sm text-slate-500 leading-relaxed">SOC2 Type II compliant, GDPR ready, with fine-grained role-based access control.</p>
+                            </div>
+                        </div>
+
+                        <h2 id="integration" class="scroll-mt-24 text-2xl mt-12 mb-6">Seamless Integration</h2>
+                        <p class="text-slate-600 dark:text-slate-400 mb-6">
+                            Developers can integrate CareerForge in minutes using our typed SDKs. Our API is designed to be self-documenting and strictly typed.
+                        </p>
+
+                        <!-- Interactive Code Block -->
+                        <div class="code-block group relative rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#0d1117] overflow-hidden shadow-sm my-8">
+                            <!-- Code Header -->
+                            <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-[#161b22] px-4 py-2">
+                                <div class="flex gap-4">
+                                    <button onclick="switchTab(this, 'js')" class="tab-btn text-xs font-medium text-primary-600 dark:text-primary-400 border-b-2 border-primary-600 pb-2 -mb-2.5 transition-colors">Node.js</button>
+                                    <button onclick="switchTab(this, 'py')" class="tab-btn text-xs font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors pb-2 -mb-2.5 border-b-2 border-transparent">Python</button>
+                                    <button onclick="switchTab(this, 'curl')" class="tab-btn text-xs font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors pb-2 -mb-2.5 border-b-2 border-transparent">cURL</button>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-[10px] text-slate-400 font-mono">POST /v1/matching/analyze</span>
+                                    <button class="ml-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors" aria-label="Copy code">
+                                        <span class="iconify" data-icon="lucide:copy" data-width="14"></span>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Code Content -->
+                            <div class="p-5 overflow-x-auto text-xs sm:text-sm font-mono leading-relaxed">
+                                <div class="code-content code-js">
+<span class="token-keyword">import</span> { CareerForge } <span class="token-keyword">from</span> <span class="token-string">'@careerforge/sdk'</span>;
+
+<span class="token-comment">// Initialize client</span>
+<span class="token-keyword">const</span> client = <span class="token-keyword">new</span> CareerForge(process.env.API_KEY);
+
+<span class="token-comment">// Run AI matching analysis</span>
+<span class="token-keyword">const</span> match = <span class="token-keyword">await</span> client.matching.<span class="token-function">analyze</span>({
+  <span class="token-keyword">candidateId</span>: <span class="token-string">'cand_8x92m...'</span>,
+  <span class="token-keyword">jobId</span>: <span class="token-string">'job_v82n1...'</span>,
+  <span class="token-keyword">weights</span>: {
+    experience: <span class="token-number">0.6</span>,
+    skills: <span class="token-number">0.4</span>
+  }
+});
+
+console.<span class="token-function">log</span>(match.score); <span class="token-comment">// 0.94</span>
+                                </div>
+                                <div class="code-content code-py hidden">
+<span class="token-keyword">from</span> careerforge <span class="token-keyword">import</span> Client
+
+<span class="token-comment"># Initialize client</span>
+client = Client(api_key=<span class="token-string">"cf_sk_..."</span>)
+
+<span class="token-comment"># Run AI matching analysis</span>
+match = client.matching.<span class="token-function">analyze</span>(
+    candidate_id=<span class="token-string">"cand_8x92m..."</span>,
+    job_id=<span class="token-string">"job_v82n1..."</span>,
+    weights={<span class="token-string">"experience"</span>: <span class="token-number">0.6</span>, <span class="token-string">"skills"</span>: <span class="token-number">0.4</span>}
+)
+
+print(match.score) <span class="token-comment"># 0.94</span>
+                                </div>
+                                <div class="code-content code-curl hidden">
+curl -X POST https://api.careerforge.com/v1/matching/analyze \
+  -H <span class="token-string">"Authorization: Bearer cf_sk_..."</span> \
+  -H <span class="token-string">"Content-Type: application/json"</span> \
+  -d '{
+    <span class="token-string">"candidate_id"</span>: <span class="token-string">"cand_8x92m..."</span>,
+    <span class="token-string">"job_id"</span>: <span class="token-string">"job_v82n1..."</span>
+  }'
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Callout -->
+                        <div class="my-8 rounded-lg border-l-4 border-cyan-500 bg-cyan-50/50 dark:bg-cyan-900/10 p-4">
+                            <div class="flex items-start gap-3">
+                                <span class="iconify mt-0.5 text-cyan-600 dark:text-cyan-400 flex-shrink-0" data-icon="lucide:lightbulb" data-width="18"></span>
+                                <div>
+                                    <h4 class="text-sm font-semibold text-cyan-900 dark:text-cyan-200">Developer Tip</h4>
+                                    <p class="mt-1 text-sm text-cyan-800 dark:text-cyan-300/80">
+                                        Use the <code class="bg-white/50 dark:bg-black/20 px-1 py-0.5 rounded text-cyan-700 dark:text-cyan-300">simulate</code> flag in the sandbox environment to test matching scores without consuming credits.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Page Feedback -->
+                    <div class="mt-16 pt-8 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <div class="text-sm text-slate-500">
+                            Last updated on Oct 25, 2023
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <span class="text-sm text-slate-500 font-medium">Was this page helpful?</span>
+                            <div class="flex gap-2">
+                                <button class="group h-8 w-8 rounded-full border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-400 hover:text-green-600 hover:border-green-200 hover:bg-green-50 dark:hover:bg-green-900/20 transition-all">
+                                    <span class="iconify" data-icon="lucide:thumbs-up" data-width="14"></span>
+                                </button>
+                                <button class="group h-8 w-8 rounded-full border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-400 hover:text-red-600 hover:border-red-200 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all">
+                                    <span class="iconify" data-icon="lucide:thumbs-down" data-width="14"></span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 text-right">
+                        <a href="#" class="text-xs text-slate-400 hover:text-primary-600 flex items-center justify-end gap-1 transition-colors">
+                            <span class="iconify" data-icon="lucide:github" data-width="12"></span>
+                            Edit this page on GitHub
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Right Sidebar (TOC) -->
+                <div class="hidden xl:block">
+                    <div class="fixed w-[240px] pt-4">
+                        <h5 class="mb-4 text-xs font-semibold uppercase tracking-wider text-slate-900 dark:text-slate-100">On This Page</h5>
+                        <ul class="space-y-3 text-sm relative border-l border-slate-200 dark:border-slate-800 ml-1 pl-4">
+                            <!-- Active Indicator -->
+                            <div class="absolute -left-[1px] top-1 h-4 w-[2px] bg-primary-600 dark:bg-primary-400 rounded-full"></div>
+                            
+                            <li>
+                                <a href="#" class="block text-primary-600 dark:text-primary-400 font-medium transition-colors">Overview</a>
+                            </li>
+                            <li>
+                                <a href="#business-impact" class="block text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 transition-colors">Built for Velocity</a>
+                            </li>
+                            <li>
+                                <a href="#integration" class="block text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 transition-colors">Seamless Integration</a>
+                            </li>
+                        </ul>
+                        
+                        <div class="mt-8 border-t border-slate-200 dark:border-slate-800 pt-6">
+                            <h5 class="mb-3 text-xs font-semibold text-slate-900 dark:text-slate-100">Resources</h5>
+                            <a href="#" class="flex items-center gap-2 text-xs text-slate-500 hover:text-primary-600 dark:hover:text-primary-400 py-1 transition-colors">
+                                <span class="iconify" data-icon="lucide:book" data-width="12"></span>
+                                Full API Reference
+                            </a>
+                            <a href="#" class="flex items-center gap-2 text-xs text-slate-500 hover:text-primary-600 dark:hover:text-primary-400 py-1 transition-colors">
+                                <span class="iconify" data-icon="lucide:download" data-width="12"></span>
+                                Download Postman Collection
+                            </a>
+                            <a href="#" class="flex items-center gap-2 text-xs text-slate-500 hover:text-primary-600 dark:hover:text-primary-400 py-1 transition-colors">
+                                <span class="iconify" data-icon="lucide:message-circle" data-width="12"></span>
+                                Developer Slack
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            
+            <!-- Footer -->
+            <footer class="mt-20 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 py-12">
+                <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+                        <div>
+                            <div class="flex items-center gap-2 mb-2">
+                                <div class="flex h-5 w-5 items-center justify-center rounded bg-primary-600 text-white">
+                                    <span class="iconify" data-icon="lucide:hexagon" data-width="12"></span>
+                                </div>
+                                <span class="font-bold text-slate-900 dark:text-white">CareerForge</span>
+                            </div>
+                            <p class="text-xs text-slate-500">The operating system for modern talent acquisition.</p>
+                        </div>
+                        <div class="flex flex-wrap gap-x-8 gap-y-2 text-sm text-slate-500">
+                            <a href="#" class="hover:text-slate-900 dark:hover:text-slate-200 transition-colors">Privacy Policy</a>
+                            <a href="#" class="hover:text-slate-900 dark:hover:text-slate-200 transition-colors">Terms of Service</a>
+                            <a href="#" class="hover:text-slate-900 dark:hover:text-slate-200 transition-colors">System Status</a>
+                            <a href="#" class="hover:text-slate-900 dark:hover:text-slate-200 transition-colors">Security</a>
+                            <a href="#" class="hover:text-slate-900 dark:hover:text-slate-200 transition-colors">Contact</a>
+                        </div>
+                        <div class="flex gap-4 text-slate-400">
+                            <a href="#" class="hover:text-slate-600 dark:hover:text-slate-200 transition-colors"><span class="iconify" data-icon="lucide:twitter" data-width="18"></span></a>
+                            <a href="#" class="hover:text-slate-600 dark:hover:text-slate-200 transition-colors"><span class="iconify" data-icon="lucide:github" data-width="18"></span></a>
+                            <a href="#" class="hover:text-slate-600 dark:hover:text-slate-200 transition-colors"><span class="iconify" data-icon="lucide:linkedin" data-width="18"></span></a>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Animation Keyframes needed for the CSS grid shimmer -->
+    <style>
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+    </style>
+</body>
+</html>

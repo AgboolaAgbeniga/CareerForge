@@ -1,0 +1,27 @@
+node_modules
+
+.next/
+.env*
+*.log
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+build/
+dist/
+coverage/
+.cache/
+.tmp/
+.sass-cache/
+.eslintcache
+.prettiercache
+yarn-error.log
+.husky/_
+tsconfig.tsbuildinfo
+
+# Development plans and analysis docs
+plans/
+temp_auto_push.bat
+temp_interactive_push.bat

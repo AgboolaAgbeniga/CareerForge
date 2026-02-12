@@ -1,0 +1,335 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Import fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+/* Custom scrollbar for subtle feel */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+.dark ::-webkit-scrollbar-thumb { background: #334155; }
+
+/* Syntax highlighting simulation colors */
+.token-key { color: #f472b6; } /* pink-400 */
+.token-str { color: #a78bfa; } /* violet-400 */
+.token-fn { color: #60a5fa; } /* blue-400 */
+.token-comment { color: #64748b; } /* slate-500 */
+
+/* Subtle grid background */
+.bg-grid {
+  background-size: 40px 40px;
+  background-image: linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+}
+.dark .bg-grid {
+  background-image: linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+}
+
+/* Hide scrollbar for sidebar but allow scroll */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Base styles */
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  line-height: 1.6;
+}
+
+/* Selection styling */
+::selection {
+  background-color: rgba(59, 130, 246, 0.2);
+  color: #2563eb;
+}
+
+.dark ::selection {
+  background-color: rgba(59, 130, 246, 0.3);
+  color: #60a5fa;
+}
+
+/* Smooth scrolling with respect for motion preferences */
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* Scroll margin for fixed headers */
+section {
+  scroll-margin-top: 6rem;
+}
+
+/* Enhanced focus management for accessibility */
+:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+  border-radius: 0.25rem;
+}
+
+/* Skip link styling for keyboard navigation */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: #2563eb;
+  color: white;
+  padding: 8px 16px;
+  text-decoration: none;
+  border-radius: 4px;
+  z-index: 1000;
+  font-weight: 500;
+  transition: top 0.2s ease;
+}
+
+.skip-link:focus {
+  top: 6px;
+}
+
+/* Enhanced section focus styles */
+section:focus {
+  outline: 2px solid #2563eb;
+  outline-offset: -2px;
+  border-radius: 0.5rem;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .border-slate-200 {
+    border-color: #000;
+  }
+  
+  .dark .border-slate-800 {
+    border-color: #fff;
+  }
+  
+  .text-slate-500 {
+    color: #000;
+  }
+  
+  .dark .text-slate-400 {
+    color: #fff;
+  }
+}
+
+/* Prose styles */
+.prose {
+  max-width: none;
+  color: inherit;
+}
+
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6 {
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.025em;
+}
+
+.prose h2 {
+  margin-top: 3rem;
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+  scroll-margin-top: 6rem;
+}
+
+.prose h3 {
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+  font-size: 1.25rem;
+}
+
+.prose h4 {
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  font-size: 1.125rem;
+}
+
+.prose p {
+  margin-bottom: 1.25rem;
+  line-height: 1.75;
+}
+
+.prose ul,
+.prose ol {
+  margin-bottom: 1.25rem;
+  padding-left: 1.5rem;
+}
+
+.prose li {
+  margin-bottom: 0.5rem;
+}
+
+.prose blockquote {
+  border-left: 4px solid #06b6d4;
+  padding-left: 1rem;
+  margin: 1.5rem 0;
+  font-style: italic;
+  background-color: rgba(6, 182, 212, 0.05);
+  padding: 1rem;
+  border-radius: 0.5rem;
+}
+
+.dark .prose blockquote {
+  background-color: rgba(6, 182, 212, 0.1);
+}
+
+.prose code {
+  background-color: rgba(59, 130, 246, 0.1);
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+  font-weight: 500;
+}
+
+.dark .prose code {
+  background-color: rgba(59, 130, 246, 0.2);
+}
+
+.prose pre {
+  background-color: #0d1117;
+  color: #c0caf5;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  overflow-x: auto;
+  margin: 1.5rem 0;
+  border: 1px solid #30363d;
+}
+
+.prose pre code {
+  background: transparent;
+  padding: 0;
+  font-weight: 400;
+  color: inherit;
+}
+
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+}
+
+.prose th,
+.prose td {
+  border: 1px solid #e2e8f0;
+  padding: 0.75rem;
+  text-align: left;
+}
+
+.dark .prose th,
+.dark .prose td {
+  border-color: #334155;
+}
+
+.prose th {
+  background-color: #f8fafc;
+  font-weight: 600;
+}
+
+.dark .prose th {
+  background-color: #1e293b;
+}
+
+.prose a {
+  color: #2563eb;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.dark .prose a {
+  color: #60a5fa;
+}
+
+.prose a:hover {
+  text-decoration-thickness: 3px;
+}
+
+/* Animation classes */
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Screen reader only utility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.sr-only:focus,
+.focus\:not-sr-only:focus {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: inherit;
+  margin: inherit;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  
+  .prose {
+    max-width: none !important;
+  }
+}

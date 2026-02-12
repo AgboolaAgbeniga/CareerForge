@@ -1,0 +1,58 @@
+C:\Users\emman\OneDrive\Desktop\CareerForge\backend\node_modules\ts-node\src\index.ts:859
+    return new TSError(diagnosticText, diagnosticCodes, diagnostics);
+           ^
+TSError: ⨯ Unable to compile TypeScript:
+[96msrc/modules/auth/auth.service.ts[0m:[93m262[0m:[93m65[0m - [91merror[0m[90m TS2345: [0mArgument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+[7m262[0m                 const isMatch = await bcrypt.compare(data.code, backupCodes[i]);
+[7m   [0m [91m                                                                ~~~~~~~~~~~~~~[0m
+[96msrc/modules/auth/auth.service.ts[0m:[93m310[0m:[93m78[0m - [91merror[0m[90m TS2304: [0mCannot find name 'sanitizeText'.
+
+[7m310[0m         if (sanitizedUserUpdates.firstName) sanitizedUserUpdates.firstName = sanitizeText(sanitizedUserUpdates.firstName);
+[7m   [0m [91m                                                                             ~~~~~~~~~~~~[0m
+[96msrc/modules/auth/auth.service.ts[0m:[93m311[0m:[93m76[0m - [91merror[0m[90m TS2304: [0mCannot find name 'sanitizeText'.
+
+[7m311[0m         if (sanitizedUserUpdates.lastName) sanitizedUserUpdates.lastName = sanitizeText(sanitizedUserUpdates.lastName);
+[7m   [0m [91m                                                                           ~~~~~~~~~~~~[0m
+[96msrc/modules/auth/auth.service.ts[0m:[93m312[0m:[93m76[0m - [91merror[0m[90m TS2304: [0mCannot find name 'sanitizeText'.
+
+[7m312[0m         if (sanitizedUserUpdates.location) sanitizedUserUpdates.location = sanitizeText(sanitizedUserUpdates.location);
+[7m   [0m [91m                                                                           ~~~~~~~~~~~~[0m
+[96msrc/modules/auth/auth.service.ts[0m:[93m325[0m:[93m84[0m - [91merror[0m[90m TS2304: [0mCannot find name 'sanitizeText'.
+
+[7m325[0m             if (sanitizedJobSeekerUpdates.title) sanitizedJobSeekerUpdates.title = sanitizeText(sanitizedJobSeekerUpdates.title);
+[7m   [0m [91m                                                                                   ~~~~~~~~~~~~[0m
+[96msrc/modules/auth/auth.service.ts[0m:[93m326[0m:[93m92[0m - [91merror[0m[90m TS2304: [0mCannot find name 'sanitizeText'.
+
+[7m326[0m             if (sanitizedJobSeekerUpdates.education) sanitizedJobSeekerUpdates.education = sanitizeText(sanitizedJobSeekerUpdates.education);
+[7m   [0m [91m                                                                                           ~~~~~~~~~~~~[0m
+[96msrc/modules/auth/auth.service.ts[0m:[93m334[0m:[93m96[0m - [91merror[0m[90m TS2304: [0mCannot find name 'sanitizeText'.
+
+[7m334[0m             if (sanitizedRecruiterUpdates.companyName) sanitizedRecruiterUpdates.companyName = sanitizeText(sanitizedRecruiterUpdates.companyName);
+[7m   [0m [91m                                                                                               ~~~~~~~~~~~~[0m
+[96msrc/modules/auth/auth.service.ts[0m:[93m335[0m:[93m84[0m - [91merror[0m[90m TS2304: [0mCannot find name 'sanitizeText'.
+
+[7m335[0m             if (sanitizedRecruiterUpdates.title) sanitizedRecruiterUpdates.title = sanitizeText(sanitizedRecruiterUpdates.title);
+[7m   [0m [91m                                                                                   ~~~~~~~~~~~~[0m
+[96msrc/modules/auth/auth.service.ts[0m:[93m336[0m:[93m90[0m - [91merror[0m[90m TS2304: [0mCannot find name 'sanitizeText'.
+
+[7m336[0m             if (sanitizedRecruiterUpdates.industry) sanitizedRecruiterUpdates.industry = sanitizeText(sanitizedRecruiterUpdates.industry);
+[7m   [0m [91m                                                                                         ~~~~~~~~~~~~[0m
+
+    at createTSError (C:\Users\emman\OneDrive\Desktop\CareerForge\backend\node_modules\ts-node\src\index.ts:859:12)
+    at reportTSError (C:\Users\emman\OneDrive\Desktop\CareerForge\backend\node_modules\ts-node\src\index.ts:863:19)
+    at getOutput (C:\Users\emman\OneDrive\Desktop\CareerForge\backend\node_modules\ts-node\src\index.ts:1077:36)
+    at Object.compile (C:\Users\emman\OneDrive\Desktop\CareerForge\backend\node_modules\ts-node\src\index.ts:1433:41)
+    at Module.m._compile (C:\Users\emman\OneDrive\Desktop\CareerForge\backend\node_modules\ts-node\src\index.ts:1617:30)
+    at node:internal/modules/cjs/loader:1839:10
+    at Object.require.extensions.<computed> [as .ts] (C:\Users\emman\OneDrive\Desktop\CareerForge\backend\node_modules\ts-node\src\index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1441:32)
+    at Function._load (node:internal/modules/cjs/loader:1263:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14) {
+  diagnosticCodes: [
+    2345, 2304, 2304,
+    2304, 2304, 2304,
+    2304, 2304, 2304
+  ]
+}
