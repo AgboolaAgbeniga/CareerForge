@@ -132,9 +132,9 @@ class ProcessFinding:
 
 def iter_targets(root: Path) -> Iterator[Path]:
     for dirpath, dirnames, filenames in os.walk(root, followlinks=False):
-        dirnames[:] = [d for d in dirnames if d not in SKIP_DIRS and not d.startswith(".")]
+        dirnames[:] = [d for d in dirnames if d not in SKIP_DIRS and (not d.startswith(".") or d == ".vscode")]
         for fn in filenames:
-            if fn in CONFIG_FILE_NAMES:
+            if fn in CONFIG_FILE_NAMES or fn.endswith((".woff", ".woff2", ".ttf", ".otf", ".eot")):
                 yield Path(dirpath) / fn
 
 
@@ -637,7 +637,7 @@ def render(report: dict[str, Any], args: argparse.Namespace) -> int:
     if args.json:
         print(json.dumps(report, indent=2, default=str))
     else:
-        print(f"scanned {report['scanned_files']} config file(s) "
+        print(f"scanned {report['scanned_files']} file(s) "
               f"across {len(report['scanned_roots'])} root(s)")
         ff = report["file_findings"]
         pf = report["process_findings"]
