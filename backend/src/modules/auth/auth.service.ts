@@ -181,6 +181,55 @@ export class AuthService {
             throw new AppError(`Database error creating new user`, 400);
         }
 
+        // Send verification email
+        try {
+            logger.info(`📧 Sending verification email...`);
+            const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
+                type: 'signup',
+                email: data.email,
+                password: data.password,
+                options: {
+                    redirectTo: `${process.env.FRONTEND_URL}/auth/email-verification`,
+                },
+            });
+
+            if (linkError) {
+                logger.warn(`⚠️ Failed to generate verification link: ${linkError.message}`);
+            } else if (linkData?.properties?.action_link) {
+                const verificationLink = linkData.properties.action_link;
+
+                // Send verification email
+                await transporter.sendMail({
+                    from: process.env.EMAIL_USER || 'noreply@careerforge.com',
+                    to: data.email,
+                    subject: 'Verify your CareerForge email',
+                    html: `
+                        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                            <h2 style="color: #4f46e5;">Welcome to CareerForge!</h2>
+                            <p>Hi ${data.firstName},</p>
+                            <p>Thank you for signing up. Please verify your email address by clicking the link below:</p>
+                            <p style="margin: 30px 0;">
+                                <a href="${verificationLink}" style="background-color: #4f46e5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+                                    Verify Email
+                                </a>
+                            </p>
+                            <p>Or copy and paste this link in your browser:</p>
+                            <p style="word-break: break-all; color: #666; font-size: 12px;">${verificationLink}</p>
+                            <p style="color: #999; font-size: 12px; margin-top: 30px;">
+                                If you didn't create this account, please ignore this email.
+                            </p>
+                        </div>
+                    `,
+                    text: `Welcome to CareerForge!\n\nPlease verify your email by visiting this link:\n\n${verificationLink}\n\nIf you didn't create this account, please ignore this email.`,
+                });
+
+                logger.info(`✅ Verification email sent to ${data.email}`);
+            }
+        } catch (error) {
+            logger.warn(`⚠️ Failed to send verification email: ${error instanceof Error ? error.message : String(error)}`);
+            // Don't fail registration if email sending fails - user can request resend
+        }
+
         logger.info(`✅ User registered successfully: ${authData.user.id} (${data.email})`);
 
         // Return user info and temporary session if available
@@ -365,15 +414,41 @@ export class AuthService {
 
     async verifyEmail(data: VerifyEmailDTO) {
         try {
-            // Mark email as verified in our database
-            const user = await this.authRepository.findUserById(data.token);
+            // The token from the verification link is a hash token that Supabase uses
+            // After the user clicks the link, Supabase automatically verifies them
+            // We just need to check if a user with the given access token exists and verify them in our DB
+
+            // For development/testing: if token looks like a UUID, treat it as user ID
+            // For production: the verification happens via Supabase and we just mark as verified
+
+            let userId: string | null = null;
+
+            // Try to get the user via Supabase from the provided token
+            const { data: { user: supabaseUser }, error: userError } = await supabase.auth.getUser(data.token);
+
+            if (supabaseUser?.id) {
+                userId = supabaseUser.id;
+            } else if (data.token.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+                // Token looks like a UUID, treat it as user ID (for development)
+                userId = data.token;
+            }
+
+            if (!userId) {
+                throw new AppError('Invalid token', 400);
+            }
+
+            // Find user and mark as verified
+            const user = await this.authRepository.findUserById(userId);
             if (!user) {
                 throw new AppError('Invalid token', 400);
             }
 
             await this.authRepository.updateUserVerification(user.id, true);
-            return { message: 'Email verified' };
+            logger.info(`✅ Email verified for user: ${user.id}`);
+            return { message: 'Email verified successfully' };
         } catch (err) {
+            if (err instanceof AppError) throw err;
+            logger.error(`Email verification failed: ${err instanceof Error ? err.message : String(err)}`);
             throw new AppError('Invalid token', 400);
         }
     }
