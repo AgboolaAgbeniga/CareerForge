@@ -70,11 +70,13 @@ export class AuthService {
         logger.info(`🔍 Starting registration for ${data.email} as ${data.role}`);
 
         // Create user in Supabase Auth
+        // In development mode, auto-confirm email so user can log in immediately
+        // In production, require email confirmation
         logger.info(`🔐 Calling supabase.auth.admin.createUser()...`);
         const { data: authData, error: authError } = await supabase.auth.admin.createUser({
             email: data.email,
             password: data.password,
-            email_confirm: false,
+            email_confirm: process.env.NODE_ENV === 'production' ? false : true,
             user_metadata: {
                 firstName: data.firstName,
                 lastName: data.lastName,
@@ -260,27 +262,64 @@ export class AuthService {
             throw new AppError('Invalid credentials', 401);
         }
 
-        // Get user details from database
-        const user = await this.authRepository.findUserByEmail(data.email);
-        if (!user) {
-            throw new AppError('User not found', 404);
-        }
+        // Get user details from database using Supabase client (handles RLS)
+        try {
+            const { data: userData, error: userError } = await supabase
+                .from('users')
+                .select('*')
+                .eq('email', data.email)
+                .single();
 
-        if (!user.isVerified) {
-            logger.warn(`Login failed: Email not verified - ${data.email}`);
-            throw new AppError('Please verify your email before logging in', 403);
-        }
-
-        await this.authRepository.updateLastLogin(user.id);
-
-        logger.info(`User logged in: ${user.id} (${user.email})`);
-        return {
-            user,
-            tokens: {
-                accessToken: authData.session.access_token,
-                refreshToken: authData.session.refresh_token,
+            if (userError || !userData) {
+                logger.warn(`User not found in database: ${data.email}`);
+                throw new AppError('User not found', 404);
             }
-        };
+
+            const user = userData;
+
+            // In development mode, allow unverified login for testing
+            // In production, enforce email verification
+            if (!user.is_verified && process.env.NODE_ENV === 'production') {
+                logger.warn(`Login failed: Email not verified - ${data.email}`);
+                throw new AppError('Please verify your email before logging in', 403);
+            }
+
+            // If in development and email is not verified, log a warning but allow login
+            if (!user.is_verified && process.env.NODE_ENV !== 'production') {
+                logger.warn(`⚠️ DEV MODE: Login allowed for unverified email - ${data.email}`);
+            }
+
+            // Update last login
+            await supabase
+                .from('users')
+                .update({ last_login_at: new Date().toISOString() })
+                .eq('id', user.id);
+
+            logger.info(`User logged in: ${user.id} (${user.email})`);
+
+            // Return user in the format expected by the frontend
+            return {
+                user: {
+                    id: user.id,
+                    email: user.email,
+                    role: user.role,
+                    firstName: user.first_name,
+                    lastName: user.last_name,
+                    isVerified: user.is_verified,
+                    phone: user.phone,
+                    location: user.location,
+                    onboardingCompleted: user.onboarding_completed,
+                },
+                tokens: {
+                    accessToken: authData.session.access_token,
+                    refreshToken: authData.session.refresh_token,
+                }
+            };
+        } catch (error) {
+            if (error instanceof AppError) throw error;
+            logger.error(`Login database error: ${error instanceof Error ? error.message : String(error)}`);
+            throw new AppError('Failed to retrieve user details', 500);
+        }
     }
 
     async resendVerification(email: string) {
