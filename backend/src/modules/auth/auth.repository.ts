@@ -14,22 +14,8 @@ export class AuthRepository {
     }
 
     async createUser(userData: typeof users.$inferInsert) {
-        try {
-            const result = await db.insert(users).values(userData).returning();
-            return result[0];
-        } catch (error) {
-            console.error('❌ Database error in createUser:', {
-                userData,
-                error: error instanceof Error ? {
-                    name: error.name,
-                    message: error.message,
-                    code: (error as any).code,
-                    detail: (error as any).detail,
-                    constraint: (error as any).constraint,
-                } : error
-            });
-            throw error;
-        }
+        const result = await db.insert(users).values(userData).returning();
+        return result[0];
     }
 
     async createJobSeekerProfile(userId: string) {
