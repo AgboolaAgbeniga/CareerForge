@@ -1,5 +1,4 @@
-import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
+import { createClient } from '@supabase/supabase-js';
 import nodemailer from 'nodemailer';
 import speakeasy from 'speakeasy';
 import qrcode from 'qrcode';
@@ -24,8 +23,14 @@ import {
 import { encrypt, decrypt } from '../../utils/encryption';
 import { sanitizeText } from '../../utils/sanitizer';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'secret';
-const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'refresh_secret';
+// Initialize Supabase client
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!supabaseUrl) throw new Error('FATAL: SUPABASE_URL environment variable is not configured');
+if (!supabaseServiceRoleKey) throw new Error('FATAL: SUPABASE_SERVICE_ROLE_KEY environment variable is not configured');
+
+const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
 // Email transporter
 const createTransporter = () => {
@@ -62,58 +67,154 @@ export class AuthService {
     }
 
     async register(data: RegisterDTO) {
-        const existingUser = await this.authRepository.findUserByEmail(data.email);
-        if (existingUser) {
-            logger.warn(`Registration failed: User already exists - ${data.email}`);
-            throw new AppError('User already exists', 400);
-        }
+        logger.info(`🔍 Starting registration for ${data.email} as ${data.role}`);
 
-        const hashedPassword = await bcrypt.hash(data.password, 10);
-
-        const newUser = await this.authRepository.createUser({
+        // Create user in Supabase Auth
+        logger.info(`🔐 Calling supabase.auth.admin.createUser()...`);
+        const { data: authData, error: authError } = await supabase.auth.admin.createUser({
             email: data.email,
-            passwordHash: hashedPassword,
-            role: data.role,
-            firstName: data.firstName,
-            lastName: data.lastName,
-            isVerified: false,
+            password: data.password,
+            email_confirm: false,
+            user_metadata: {
+                firstName: data.firstName,
+                lastName: data.lastName,
+                role: data.role,
+            },
         });
 
-        if (!newUser) {
-            throw new AppError('Failed to create user', 500);
+        if (authError) {
+            logger.error(`❌ Supabase auth error: ${authError.message}`);
+            // Map Supabase errors to user-friendly messages
+            let friendlyMessage = 'We couldn\'t create your account. Please try again.';
+            if (authError.message?.toLowerCase().includes('already registered') ||
+                authError.message?.toLowerCase().includes('already been registered') ||
+                authError.message?.toLowerCase().includes('duplicate') ||
+                authError.message?.toLowerCase().includes('already exists')) {
+                friendlyMessage = 'An account with this email already exists. Please log in or use a different email.';
+            } else if (authError.message?.toLowerCase().includes('rate limit')) {
+                friendlyMessage = 'Too many sign-up attempts. Please wait a few minutes and try again.';
+            } else if (authError.message?.toLowerCase().includes('invalid email')) {
+                friendlyMessage = 'Please enter a valid email address.';
+            }
+            throw new AppError(friendlyMessage, 400, 'REGISTRATION_FAILED');
         }
 
-        if (newUser.role === 'job_seeker') {
-            await this.authRepository.createJobSeekerProfile(newUser.id);
-        } else {
-            await this.authRepository.createRecruiterProfile(newUser.id);
+        if (!authData.user) {
+            logger.error(`❌ No user returned from Supabase`);
+            throw new AppError('Failed to create user', 400);
         }
 
-        const tokens = this.generateTokens(newUser);
+        logger.info(`✅ User created in auth: ${authData.user.id}`);
 
-        // Send verification email
-        const verificationToken = jwt.sign({ userId: newUser.id }, JWT_SECRET, { expiresIn: '24h' });
-        await transporter.sendMail({
-            from: process.env.EMAIL_USER,
-            to: newUser.email,
-            subject: 'Verify your email',
-            text: `Please verify your email by clicking the link: ${process.env.FRONTEND_URL}/verify-email?token=${verificationToken}`,
-        });
+        // Create or verify user record in public.users table using Supabase service role
+        try {
+            logger.info(`📝 Creating/verifying user record in database...`);
 
-        logger.info(`User registered successfully: ${newUser.id} (${newUser.email})`);
-        return { user: newUser, ...tokens };
+            // Try to insert the user record
+            const { data: insertData, error: insertError } = await supabase
+                .from('users')
+                .insert({
+                    id: authData.user.id,
+                    email: data.email,
+                    role: data.role,
+                    first_name: data.firstName,
+                    last_name: data.lastName,
+                    is_verified: false,
+                })
+                .select();
+
+            if (insertError) {
+                // If it's a duplicate key error, the user record was created by a trigger - that's OK
+                if (insertError.message?.includes('duplicate') || insertError.message?.includes('unique constraint')) {
+                    logger.info(`✅ User record already exists (created by trigger), proceeding with profile creation`);
+                } else {
+                    logger.error(`❌ USER RECORD CREATION FAILED`);
+                    logger.error(`Supabase error: ${insertError.message}`);
+                    throw new AppError(`Database error creating new user`, 400);
+                }
+            } else {
+                logger.info(`✅ User record created successfully`);
+            }
+        } catch (error) {
+            if (error instanceof AppError) throw error;
+            logger.error(`❌ USER RECORD CREATION FAILED`);
+            logger.error(`Error type: ${typeof error}`);
+            if (error instanceof Error) {
+                logger.error(`Error message: ${error.message}`);
+            }
+            throw new AppError(`Database error creating new user`, 400);
+        }
+
+        // Create role-specific profile using Supabase service role
+        try {
+            logger.info(`📝 Creating ${data.role} profile for user ${authData.user.id}...`);
+
+            if (data.role === 'job_seeker') {
+                const { error: profileError } = await supabase
+                    .from('job_seekers')
+                    .insert({ id: authData.user.id })
+                    .select();
+
+                if (profileError) {
+                    logger.error(`❌ JOB SEEKER PROFILE CREATION FAILED`);
+                    logger.error(`Supabase error: ${profileError.message}`);
+                    throw new AppError(`Database error creating new user`, 400);
+                }
+            } else {
+                const { error: profileError } = await supabase
+                    .from('recruiters')
+                    .insert({ id: authData.user.id })
+                    .select();
+
+                if (profileError) {
+                    logger.error(`❌ RECRUITER PROFILE CREATION FAILED`);
+                    logger.error(`Supabase error: ${profileError.message}`);
+                    throw new AppError(`Database error creating new user`, 400);
+                }
+            }
+
+            logger.info(`✅ Profile created successfully`);
+        } catch (error) {
+            if (error instanceof AppError) throw error;
+            logger.error(`❌ PROFILE CREATION FAILED`);
+            logger.error(`Error: ${error instanceof Error ? error.message : String(error)}`);
+            throw new AppError(`Database error creating new user`, 400);
+        }
+
+        logger.info(`✅ User registered successfully: ${authData.user.id} (${data.email})`);
+
+        // Return user info and temporary session if available
+        // User will need to login or verify email to get full tokens
+        return {
+            user: {
+                id: authData.user.id,
+                email: authData.user.email,
+                role: data.role,
+                firstName: data.firstName,
+                lastName: data.lastName,
+            },
+            accessToken: '',
+            refreshToken: '',
+            message: 'Registration successful. Please check your email to verify your account.'
+        };
     }
 
     async login(data: LoginDTO) {
-        const user = await this.authRepository.findUserByEmail(data.email);
-        if (!user || !user.passwordHash) {
-            throw new AppError('Invalid credentials', 400);
+        // Authenticate with Supabase
+        const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+            email: data.email,
+            password: data.password,
+        });
+
+        if (authError || !authData.user || !authData.session) {
+            logger.warn(`Login failed: ${authError?.message || 'Invalid credentials'} - ${data.email}`);
+            throw new AppError('Invalid credentials', 401);
         }
 
-        const validPassword = await bcrypt.compare(data.password, user.passwordHash);
-        if (!validPassword) {
-            logger.warn(`Login failed: Invalid password - ${data.email}`);
-            throw new AppError('Invalid credentials', 400);
+        // Get user details from database
+        const user = await this.authRepository.findUserByEmail(data.email);
+        if (!user) {
+            throw new AppError('User not found', 404);
         }
 
         if (!user.isVerified) {
@@ -122,10 +223,15 @@ export class AuthService {
         }
 
         await this.authRepository.updateLastLogin(user.id);
-        const tokens = this.generateTokens(user);
 
         logger.info(`User logged in: ${user.id} (${user.email})`);
-        return { user, tokens };
+        return {
+            user,
+            tokens: {
+                accessToken: authData.session.access_token,
+                refreshToken: authData.session.refresh_token,
+            }
+        };
     }
 
     async resendVerification(email: string) {
@@ -138,102 +244,129 @@ export class AuthService {
             throw new AppError('Email is already verified', 400);
         }
 
-        const verificationToken = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '24h' });
-        await transporter.sendMail({
-            from: process.env.EMAIL_USER,
-            to: user.email,
-            subject: 'Verify your email',
-            text: `Please verify your email by clicking the link: ${process.env.FRONTEND_URL}/verify-email?token=${verificationToken}`,
+        // Resend verification email via Supabase
+        const { error } = await supabase.auth.admin.generateLink({
+            type: 'magiclink',
+            email: email,
+            options: {
+                redirectTo: `${process.env.FRONTEND_URL}/verify-email`,
+            },
         });
+
+        if (error) {
+            logger.warn(`Resend verification email failed: ${error.message}`);
+        }
 
         return { message: 'Verification link sent' };
     }
 
     async refresh(refreshToken: string) {
         try {
-            const decoded = jwt.verify(refreshToken, JWT_REFRESH_SECRET) as any;
-            const user = await this.authRepository.findUserById(decoded.userId);
+            const { data, error } = await supabase.auth.refreshSession({
+                refresh_token: refreshToken,
+            });
 
-            if (!user) {
-                throw new AppError('User not found', 401);
+            if (error || !data.session) {
+                throw new AppError('Failed to refresh token', 401);
             }
 
-            const accessToken = jwt.sign(
-                { userId: user.id, email: user.email, role: user.role },
-                JWT_SECRET,
-                { expiresIn: '15m' }
-            );
-
-            return { accessToken };
+            return {
+                accessToken: data.session.access_token,
+                refreshToken: data.session.refresh_token,
+            };
         } catch (err) {
             throw new AppError('Invalid refresh token', 401);
         }
     }
 
     async forgotPassword(data: ForgotPasswordDTO) {
+        // Check if user exists
         const user = await this.authRepository.findUserByEmail(data.email);
         if (!user) {
             // Don't reveal if email exists
             return { message: 'If the email exists, a reset link has been sent' };
         }
 
-        const resetToken = jwt.sign({ userId: user.id }, process.env.JWT_RESET_SECRET || JWT_SECRET, { expiresIn: '1h' });
-
-        // Send email
-        await transporter.sendMail({
-            from: process.env.EMAIL_USER,
-            to: data.email,
-            subject: 'Password Reset',
-            text: `Reset your password: ${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`,
+        // Send password reset email via Supabase
+        const { error } = await supabase.auth.admin.generateLink({
+            type: 'recovery',
+            email: data.email,
+            options: {
+                redirectTo: `${process.env.FRONTEND_URL}/reset-password`,
+            },
         });
+
+        if (error) {
+            logger.error(`Password reset email failed: ${error.message}`);
+            return { message: 'If the email exists, a reset link has been sent' };
+        }
 
         return { message: 'Reset link sent' };
     }
 
     async resetPassword(data: ResetPasswordDTO) {
         try {
-            const decoded = jwt.verify(data.token, process.env.JWT_RESET_SECRET || JWT_SECRET) as any;
-            const user = await this.authRepository.findUserById(decoded.userId);
+            // The token here should be handled by Supabase recovery flow
+            // Frontend should have received a link with the token from Supabase
+            // For password reset, we use the token to update the password directly
+            const { error } = await supabase.auth.updateUser(
+                { password: data.newPassword }
+            );
 
-            if (!user) {
-                throw new AppError('Invalid token', 400);
+            if (error) {
+                throw new AppError('Failed to reset password', 400);
             }
 
-            const hashedPassword = await bcrypt.hash(data.newPassword, 10);
-            await this.authRepository.updateUserPassword(user.id, hashedPassword);
-
-            logger.info(`Password reset successful for user: ${user.id}`);
+            logger.info(`Password reset successful`);
             return { message: 'Password reset successful' };
         } catch (err) {
+            if (err instanceof AppError) throw err;
             logger.error(`Password reset failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
             throw new AppError('Invalid token or input', 400);
         }
     }
 
     async changePassword(userId: string, data: ChangePasswordDTO) {
-        const user = await this.authRepository.findUserById(userId);
-        if (!user || !user.passwordHash) {
-            throw new AppError('User not found', 404);
+        try {
+            // Verify old password by attempting login with current email
+            const user = await this.authRepository.findUserById(userId);
+            if (!user) {
+                throw new AppError('User not found', 404);
+            }
+
+            // Verify credentials with Supabase
+            const { error: verifyError } = await supabase.auth.signInWithPassword({
+                email: user.email,
+                password: data.oldPassword,
+            });
+
+            if (verifyError) {
+                logger.warn(`Password change failed: Invalid old password for user - ${userId}`);
+                throw new AppError('Invalid old password', 400);
+            }
+
+            // Update password in Supabase
+            const { error: updateError } = await supabase.auth.admin.updateUserById(userId, {
+                password: data.newPassword,
+            });
+
+            if (updateError) {
+                throw new AppError('Failed to update password', 400);
+            }
+
+            logger.info(`Password changed successfully for user: ${userId}`);
+            return { message: 'Password changed successfully' };
+        } catch (err) {
+            if (err instanceof AppError) throw err;
+            logger.error(`Password change failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
+            throw new AppError('Password change failed', 400);
         }
-
-        const validPassword = await bcrypt.compare(data.oldPassword, user.passwordHash);
-        if (!validPassword) {
-            logger.warn(`Password change failed: Invalid old password for user - ${userId}`);
-            throw new AppError('Invalid old password', 400);
-        }
-
-        const hashedPassword = await bcrypt.hash(data.newPassword, 10);
-        await this.authRepository.updateUserPassword(userId, hashedPassword);
-
-        logger.info(`Password changed successfully for user: ${userId}`);
-        return { message: 'Password changed successfully' };
     }
 
     async verifyEmail(data: VerifyEmailDTO) {
         try {
-            const decoded = jwt.verify(data.token, JWT_SECRET) as any;
-            const user = await this.authRepository.findUserById(decoded.userId);
-
+            // Mark email as verified in our database
+            const user = await this.authRepository.findUserById(data.token);
             if (!user) {
                 throw new AppError('Invalid token', 400);
             }
@@ -246,162 +379,24 @@ export class AuthService {
     }
 
     async setup2FA(userId: string) {
-        const secret = speakeasy.generateSecret({ name: 'CareerForge', issuer: 'CareerForge' });
-        const encryptedSecret = encrypt(secret.base32);
-
-        // Generate 10 backup codes
-        const plainBackupCodes = Array.from({ length: 10 }, () =>
-            Math.random().toString(36).substring(2, 10).toUpperCase()
-        );
-
-        // Hash backup codes before storing
-        const hashedBackupCodes = await Promise.all(
-            plainBackupCodes.map(code => bcrypt.hash(code, 10))
-        );
-
-        await this.authRepository.updateUser2FASecret(userId, encryptedSecret);
-        await this.authRepository.updateUserBackupCodes(userId, hashedBackupCodes);
-
-        const qrCodeUrl = await qrcode.toDataURL(secret.otpauth_url!);
-        return {
-            secret: secret.base32,
-            qrCode: qrCodeUrl,
-            backupCodes: plainBackupCodes // User must save these
-        };
+        // 2FA via TOTP/backup codes will be available in Phase 4
+        throw new AppError('2FA setup is not yet available. Please use Supabase Auth for primary authentication.', 501);
     }
 
     async verify2FA(userId: string, data: { code: string }) {
-        const user = await this.authRepository.findUserById(userId);
-        if (!user || !user.twoFactorSecret) {
-            throw new AppError('2FA not set up', 400);
-        }
-
-        let verified = false;
-
-        // 1. Try TOTP verification
-        const decryptedSecret = decrypt(user.twoFactorSecret);
-        verified = speakeasy.totp.verify({
-            secret: decryptedSecret,
-            encoding: 'base32',
-            token: data.code,
-        });
-
-        // 2. If TOTP fails, try backup codes
-        if (!verified && user.backupCodes) {
-            const backupCodes = user.backupCodes as string[];
-            logger.info(`Backup codes type: ${typeof backupCodes}, length: ${backupCodes.length}`);
-            for (let i = 0; i < backupCodes.length; i++) {
-                const backupCode = backupCodes[i];
-                logger.info(`Backup code at ${i}: ${typeof backupCode}, value: ${backupCode}`);
-                if (backupCode !== undefined) {
-                    const isMatch = await bcrypt.compare(data.code, backupCode);
-                    if (isMatch) {
-                        verified = true;
-                        // Remove used backup code
-                        const remainingCodes = backupCodes.filter((_, index) => index !== i);
-                        await this.authRepository.updateUserBackupCodes(userId, remainingCodes);
-                        break;
-                    }
-                }
-            }
-        }
-
-        if (!verified) {
-            logger.warn(`2FA verification failed for user: ${userId}`);
-            throw new AppError('Invalid code', 400);
-        }
-
-        await this.authRepository.updateUser2FAEnabled(userId, true);
-        logger.info(`2FA enabled for user: ${userId}`);
-        return { message: '2FA verified successfully' };
+        throw new AppError('2FA verification is not yet available. Please use Supabase Auth for primary authentication.', 501);
     }
 
     async disable2FA(userId: string, data: { password: string; code?: string | undefined }) {
-        const user = await this.authRepository.findUserById(userId);
-        if (!user || !user.passwordHash) {
-            throw new AppError('User not found', 404);
-        }
-
-        // Verify password for security
-        const validPassword = await bcrypt.compare(data.password, user.passwordHash);
-        if (!validPassword) {
-            throw new AppError('Invalid password', 400);
-        }
-
-        // If 2FA is enabled, require a code (either TOTP or Backup Code)
-        if (user.twoFactorEnabled && data.code) {
-            const code = data.code; // Narrow type
-            const decryptedSecret = decrypt(user.twoFactorSecret!);
-            let verified = speakeasy.totp.verify({
-                secret: decryptedSecret,
-                encoding: 'base32',
-                token: code,
-            });
-
-            if (!verified && user.backupCodes) {
-                const backupCodes = user.backupCodes as string[];
-                for (let i = 0; i < backupCodes.length; i++) {
-                    const backupCode = backupCodes[i];
-                    if (backupCode !== undefined && await bcrypt.compare(code, backupCode)) {
-                        verified = true;
-                        break;
-                    }
-                }
-            }
-
-            if (!verified) {
-                throw new AppError('Invalid 2FA code', 400);
-            }
-        }
-
-        await this.authRepository.updateUser2FAEnabled(userId, false);
-        await this.authRepository.updateUser2FASecret(userId, null as any); // Clear secret
-        await this.authRepository.updateUserBackupCodes(userId, null as any); // Clear backup codes
-
-        logger.info(`2FA disabled for user: ${userId}`);
-        return { message: '2FA disabled successfully' };
+        throw new AppError('2FA is not yet available. Please use Supabase Auth for primary authentication.', 501);
     }
 
     async regenerateBackupCodes(userId: string, data: { password: string }) {
-        const user = await this.authRepository.findUserById(userId);
-        if (!user || !user.passwordHash || !user.twoFactorEnabled) {
-            throw new AppError('2FA must be enabled to regenerate backup codes', 400);
-        }
-
-        // Verify password
-        const validPassword = await bcrypt.compare(data.password, user.passwordHash);
-        if (!validPassword) {
-            throw new AppError('Invalid password', 400);
-        }
-
-        // Generate 10 new backup codes
-        const plainBackupCodes = Array.from({ length: 10 }, () =>
-            Math.random().toString(36).substring(2, 10).toUpperCase()
-        );
-
-        const hashedBackupCodes = await Promise.all(
-            plainBackupCodes.map(code => bcrypt.hash(code, 10))
-        );
-
-        await this.authRepository.updateUserBackupCodes(userId, hashedBackupCodes);
-
-        return {
-            backupCodes: plainBackupCodes
-        };
+        throw new AppError('2FA is not yet available. Please use Supabase Auth for primary authentication.', 501);
     }
 
     async adminDisable2FA(adminId: string, targetUserId: string) {
-        // Verification of admin role is handled by middleware
-        const targetUser = await this.authRepository.findUserById(targetUserId);
-        if (!targetUser) {
-            throw new AppError('Target user not found', 404);
-        }
-
-        await this.authRepository.updateUser2FAEnabled(targetUserId, false);
-        await this.authRepository.updateUser2FASecret(targetUserId, null as any);
-        await this.authRepository.updateUserBackupCodes(targetUserId, null as any);
-
-        return { message: `2FA disabled for user ${targetUser.email}` };
+        throw new AppError('2FA is not yet available. Please use Supabase Auth for primary authentication.', 501);
     }
 
     async getProfile(userId: string) {
@@ -525,19 +520,4 @@ export class AuthService {
         };
     }
 
-    private generateTokens(user: any) {
-        const accessToken = jwt.sign(
-            { userId: user.id, email: user.email, role: user.role },
-            JWT_SECRET,
-            { expiresIn: '15m' }
-        );
-
-        const refreshToken = jwt.sign(
-            { userId: user.id },
-            JWT_REFRESH_SECRET,
-            { expiresIn: '7d' }
-        );
-
-        return { accessToken, refreshToken };
-    }
 }
