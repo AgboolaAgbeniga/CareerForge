@@ -1,9 +1,19 @@
 import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
+import { createClient } from '@supabase/supabase-js';
 import { db } from '../utils/database';
 import { users } from '../models/schema';
 import { eq } from 'drizzle-orm';
 import { AppError } from './error';
+
+// Initialize Supabase client
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!supabaseUrl || !supabaseServiceRoleKey) {
+  throw new Error('FATAL: SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY environment variables are not configured');
+}
+
+const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
 /**
  * Extended Request interface to include user information
@@ -28,13 +38,15 @@ export const authenticateToken = async (req: AuthRequest, res: Response, next: N
   }
 
   try {
-    if (!process.env.JWT_SECRET) {
-      throw new Error('JWT_SECRET environment variable is not defined');
-    }
-    const decoded = jwt.verify(token, process.env.JWT_SECRET) as any;
+    // Verify token with Supabase
+    const { data, error } = await supabase.auth.getUser(token);
 
-    // Verify user still exists
-    const [user] = await db.select().from(users).where(eq(users.id, decoded.userId)).limit(1);
+    if (error || !data.user) {
+      return next(new AppError('Invalid or expired token', 403, 'FORBIDDEN'));
+    }
+
+    // Get user details from database
+    const [user] = await db.select().from(users).where(eq(users.id, data.user.id)).limit(1);
     if (!user) {
       return next(new AppError('User not found', 401, 'UNAUTHORIZED'));
     }
@@ -87,17 +99,19 @@ export const optionalAuth = async (req: AuthRequest, res: Response, next: NextFu
 
   if (token) {
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret') as any;
-      const [user] = await db.select().from(users).where(eq(users.id, decoded.userId)).limit(1);
-      if (user) {
-        req.user = {
-          id: user.id,
-          email: user.email,
-          role: user.role,
-          firstName: user.firstName || undefined,
-          lastName: user.lastName || undefined,
-          isVerified: !!user.isVerified,
-        };
+      const { data, error } = await supabase.auth.getUser(token);
+      if (!error && data.user) {
+        const [user] = await db.select().from(users).where(eq(users.id, data.user.id)).limit(1);
+        if (user) {
+          req.user = {
+            id: user.id,
+            email: user.email,
+            role: user.role,
+            firstName: user.firstName || undefined,
+            lastName: user.lastName || undefined,
+            isVerified: !!user.isVerified,
+          };
+        }
       }
     } catch (error) {
       // Ignore auth errors for optional auth

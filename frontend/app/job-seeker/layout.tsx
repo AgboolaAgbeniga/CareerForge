@@ -1,4 +1,6 @@
 import type { Metadata } from 'next';
+import CoachChat from '@/components/job-seeker/CoachChat';
+import { PageContextProvider } from '@/contexts/PageContext';
 
 export const metadata: Metadata = {
   title: 'Job Seeker Dashboard - CareerForge',
@@ -11,5 +13,10 @@ export default function JobSeekerLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return children;
+  return (
+    <PageContextProvider>
+      {children}
+      <CoachChat />
+    </PageContextProvider>
+  );
 }

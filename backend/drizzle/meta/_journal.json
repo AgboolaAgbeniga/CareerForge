@@ -8,6 +8,27 @@
       "when": 1767171499786,
       "tag": "0000_remarkable_genesis",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1781204403712,
+      "tag": "0001_certain_iron_fist",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1781204493628,
+      "tag": "0002_lyrical_kabuki",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1781477641452,
+      "tag": "0003_flat_mordo",
+      "breakpoints": true
     }
   ]
 }

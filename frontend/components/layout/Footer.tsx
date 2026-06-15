@@ -163,7 +163,7 @@ const Footer: React.FC<FooterProps> = () => {
           </div>
           <div className="mt-4 text-center">
             <p className="text-xs text-slate-400">
-              © 2023 CareerForge Inc. All rights reserved.
+              © {new Date().getFullYear()} CareerForge Inc. All rights reserved.
             </p>
           </div>
         </div>

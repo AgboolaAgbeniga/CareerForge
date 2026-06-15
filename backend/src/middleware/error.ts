@@ -27,14 +27,17 @@ export const errorHandler = (
 ) => {
     // Zod validation error
     if (err instanceof z.ZodError) {
+        const friendlyErrors = err.errors.map(e => ({
+            field: e.path.join('.'),
+            message: e.message
+        }));
+        // Use the first error's message as the top-level message for simple display
+        const primaryMessage = friendlyErrors[0]?.message || 'Please check your input and try again';
         return res.status(400).json({
             status: 'error',
             code: 'VALIDATION_ERROR',
-            message: 'Invalid input data',
-            details: err.errors.map(e => ({
-                path: e.path.join('.'),
-                message: e.message
-            }))
+            message: primaryMessage,
+            details: friendlyErrors
         });
     }
 

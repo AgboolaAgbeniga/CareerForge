@@ -16,9 +16,11 @@ import {
   AISuggestionsPanel,
   ResumeAnalysis,
 } from '@/components';
+import apiClient from '@/lib/apiClient';
 
 export default function AiResumeDraft() {
-  const [resumeData, setResumeData] = useState({
+  const [isLoading, setIsLoading] = useState(true);
+  const [resumeData, setResumeData] = useState<any>({
     name: 'John Doe',
     title: 'Senior Product Designer',
     location: 'San Francisco, CA',
@@ -53,14 +55,60 @@ export default function AiResumeDraft() {
         ],
       },
     ],
-    education: {
-      degree: 'BFA in Interaction Design',
-      institution: 'California College of the Arts',
-      period: '2014 - 2018',
-    },
+    education: [],
   });
 
   const [selectedTemplate, setSelectedTemplate] = useState(0);
+
+  React.useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [profileRes, resumesRes] = await Promise.all([
+          apiClient.get('/api/auth/profile').catch(() => null),
+          apiClient.get('/api/resume/my').catch(() => [])
+        ]);
+        
+        let newResumeData = { ...resumeData };
+        
+        // If we have parsed resumes, pick the most recent one to populate draft
+        if (resumesRes && resumesRes.length > 0) {
+          const latestResume = resumesRes[resumesRes.length - 1];
+          if (latestResume.parsedData) {
+            const pd = latestResume.parsedData;
+            if (pd.name) newResumeData.name = pd.name;
+            if (pd.title) newResumeData.title = pd.title;
+            if (pd.email) newResumeData.email = pd.email;
+            if (pd.location) newResumeData.location = pd.location;
+            if (pd.skills) newResumeData.skills = pd.skills;
+            if (pd.experience) newResumeData.experience = pd.experience;
+            if (pd.education) newResumeData.education = pd.education;
+          }
+        }
+        
+        // Let user profile override basic details
+        if (profileRes) {
+          const profile = profileRes.jobSeekerProfile;
+          if (profile) {
+            if (profile.title) newResumeData.title = profile.title;
+            if (profile.skills && profile.skills.length > 0) newResumeData.skills = profile.skills;
+            if (profile.experience && profile.experience.length > 0) newResumeData.experience = profile.experience;
+            if (profile.educationHistory && profile.educationHistory.length > 0) newResumeData.education = profile.educationHistory;
+            if (profileRes.location) newResumeData.location = profileRes.location;
+            if (profileRes.email) newResumeData.email = profileRes.email;
+            if (profileRes.firstName) newResumeData.name = `${profileRes.firstName} ${profileRes.lastName || ''}`.trim();
+          }
+        }
+        
+        setResumeData(newResumeData);
+      } catch (error) {
+        console.error('Failed to load data', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchData();
+  }, []);
 
   const updateResumeData = (field: string, value: any) => {
     setResumeData((prev) => ({ ...prev, [field]: value }));
@@ -98,7 +146,22 @@ export default function AiResumeDraft() {
       period: 'Start - End',
       achievements: ['Achievement 1', 'Achievement 2'],
     };
-    updateResumeData('experience', [...resumeData.experience, newExp]);
+    updateResumeData('experience', [...(resumeData.experience || []), newExp]);
+  };
+
+  const updateEducation = (index: number, field: string, value: any) => {
+    const newEducation = [...(resumeData.education || [])];
+    newEducation[index] = { ...newEducation[index], [field]: value };
+    updateResumeData('education', newEducation);
+  };
+
+  const addEducation = () => {
+    const newEdu = {
+      degree: 'New Degree',
+      institution: 'Institution Name',
+      period: 'Start - End',
+    };
+    updateResumeData('education', [...(resumeData.education || []), newEdu]);
   };
 
   return (
@@ -138,15 +201,23 @@ export default function AiResumeDraft() {
           </header>
 
           <div className="flex-1 overflow-hidden flex flex-col lg:flex-row">
-            <ResumeEditor
-              resumeData={resumeData}
-              updateResumeData={updateResumeData}
-              updateExperience={updateExperience}
-              updateAchievement={updateAchievement}
-              addSkill={addSkill}
-              removeSkill={removeSkill}
-              addExperience={addExperience}
-            />
+            {isLoading ? (
+              <div className="flex-1 flex items-center justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
+              </div>
+            ) : (
+              <ResumeEditor
+                resumeData={resumeData}
+                updateResumeData={updateResumeData}
+                updateExperience={updateExperience}
+                updateAchievement={updateAchievement}
+                addSkill={addSkill}
+                removeSkill={removeSkill}
+                addExperience={addExperience}
+                updateEducation={updateEducation}
+                addEducation={addEducation}
+              />
+            )}
 
             {/* RIGHT: CONTROL PANEL (Sidebar) */}
             <aside className="w-full lg:w-96 border-l border-slate-800 bg-slate-950/50 backdrop-blur-sm p-6 overflow-y-auto space-y-6">

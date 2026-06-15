@@ -22,6 +22,7 @@ const rethinkSans = Inter({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://careerforge.com'),
   title: 'CareerForge - The Future of Hiring',
   description:
     'The all-in-one AI platform connecting top talent with innovative companies. Optimize resumes, find perfect matches, and accelerate your career growth.',
@@ -84,8 +85,23 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" dir="ltr" className={`${rethinkSans.variable} ${inter.variable}`}>
-      <body className="font-sans text-slate-600 antialiased selection:bg-indigo-100 selection:text-indigo-700 dark:text-slate-400 dark:selection:bg-indigo-900 dark:selection:text-indigo-100">
+    <html lang="en" dir="ltr" className={`${rethinkSans.variable} ${inter.variable}`} suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                  document.documentElement.classList.add('dark')
+                } else {
+                  document.documentElement.classList.remove('dark')
+                }
+              } catch (_) {}
+            `,
+          }}
+        />
+      </head>
+      <body className="font-sans text-slate-600 antialiased selection:bg-indigo-100 selection:text-indigo-700 dark:bg-slate-900 dark:text-slate-400 dark:selection:bg-indigo-900 dark:selection:text-indigo-100">
         <ThemeProvider>
           <AuthProvider>
             <ToastProvider>

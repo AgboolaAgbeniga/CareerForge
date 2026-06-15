@@ -1,93 +1,159 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { MailCheck, CheckCircle } from 'lucide-react';
+import AuthLayout from '@/components/layout/AuthLayout';
 
-export default function EmailVerificationPage() {
-  const [email, setEmail] = useState('user@example.com');
+function EmailVerificationContent() {
+  const searchParams = useSearchParams();
+  const emailParam = searchParams.get('email') || '';
+
+  const [email] = useState(emailParam || 'your email');
   const [showToast, setShowToast] = useState(false);
   const [isResending, setIsResending] = useState(false);
-  const searchParams = useSearchParams();
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [error, setError] = useState('');
 
+  // Cooldown timer
   useEffect(() => {
-    // Get email from URL params or use default
-    const emailParam = searchParams.get('email');
-    if (emailParam) {
-      setEmail(emailParam);
-    }
-  }, [searchParams]);
+    if (resendCooldown <= 0) return;
+    const timer = setInterval(() => setResendCooldown(prev => prev - 1), 1000);
+    return () => clearInterval(timer);
+  }, [resendCooldown]);
 
-  const handleResend = async () => {
-    if (isResending) return;
+  const handleResend = useCallback(async () => {
+    if (isResending || resendCooldown > 0) return;
 
     setIsResending(true);
+    setError('');
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      const response = await fetch(`${API_URL}/api/auth/resend-verification`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: emailParam }),
+      });
+
+      if (response.ok) {
+        setShowToast(true);
+        setResendCooldown(60); // 60 second cooldown
+        setTimeout(() => setShowToast(false), 4000);
+      } else {
+        const result = await response.json().catch(() => null);
+        if (result?.message?.includes('already verified')) {
+          setError('Your email is already verified! You can log in.');
+        } else {
+          setShowToast(true); // Show success anyway to prevent enumeration
+          setResendCooldown(60);
+          setTimeout(() => setShowToast(false), 4000);
+        }
+      }
+    } catch {
+      setError('Unable to connect to the server. Please try again later.');
+    } finally {
       setIsResending(false);
-      setShowToast(true);
-
-      // Hide toast after 4 seconds
-      setTimeout(() => {
-        setShowToast(false);
-      }, 4000);
-    }, 2000);
-  };
+    }
+  }, [isResending, resendCooldown, emailParam]);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-300 font-sans antialiased flex items-center justify-center p-4">
-      <div className="w-full max-w-md glass-panel rounded-xl border border-indigo-500/20 p-8 sm:p-12 text-center">
+    <AuthLayout title="Verify your email" subtitle="One more step to get started.">
+      <div className="text-center py-2">
         {/* Icon */}
-        <div className="flex justify-center mb-6">
-          <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-full flex items-center justify-center">
-            <MailCheck className="w-8 h-8" />
-          </div>
+        <div className="w-16 h-16 mx-auto mb-5 rounded-full bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center">
+          <svg className="w-8 h-8 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          </svg>
         </div>
 
-        {/* Header */}
-        <h1 className="text-xl font-semibold text-white tracking-tight mb-2">
-          Verify your email address
-        </h1>
-        <p className="text-slate-400 text-sm mb-6">
-          We've sent a verification link to{' '}
-          <strong className="text-white">{email}</strong>
-          . Please click the link in the email to activate your account.
+        <p className="text-sm text-slate-400 mb-1">
+          We&apos;ve sent a verification link to
+        </p>
+        <p className="text-sm font-semibold text-white mb-4">{email}</p>
+        <p className="text-xs text-slate-500 mb-6">
+          Click the link in your email to activate your account. It may take a few minutes to arrive.
         </p>
 
+        {/* Error */}
+        {error && (
+          <div className="flex items-start gap-3 p-3 mb-4 bg-red-500/10 border border-red-500/25 rounded-xl text-left" role="alert">
+            <svg className="w-4 h-4 text-red-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p className="text-xs text-red-400">{error}</p>
+          </div>
+        )}
+
         {/* Actions */}
-        <div className="space-y-4">
+        <div className="space-y-3">
           <button
             onClick={handleResend}
-            disabled={isResending}
-            className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 rounded-lg font-semibold shadow-lg shadow-indigo-500/20 transition-all hover:shadow-[0_0_20px_rgba(79,70,229,0.3)] hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-75 disabled:cursor-not-allowed"
+            disabled={isResending || resendCooldown > 0}
+            className={`w-full text-sm font-semibold py-2.5 rounded-lg shadow-lg transition-all duration-200 flex items-center justify-center gap-2 ${
+              isResending || resendCooldown > 0
+                ? 'bg-slate-700 text-slate-400 cursor-not-allowed shadow-none'
+                : 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:from-indigo-500 hover:to-violet-500 shadow-indigo-500/20 hover:shadow-indigo-500/30 hover:scale-[1.01] active:scale-[0.99]'
+            }`}
           >
-            {isResending ? 'Sending...' : 'Resend Verification Email'}
+            {isResending ? (
+              <>
+                <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
+                Sending…
+              </>
+            ) : resendCooldown > 0 ? (
+              `Resend available in ${resendCooldown}s`
+            ) : (
+              'Resend Verification Email'
+            )}
           </button>
+
           <Link
             href="/auth/login"
-            className="text-sm text-indigo-400 hover:text-indigo-300 transition-colors font-medium flex items-center justify-center gap-1"
+            className="w-full bg-slate-800/50 hover:bg-slate-800 text-slate-300 text-sm font-medium py-2.5 rounded-lg border border-slate-700/50 transition-colors inline-block text-center"
           >
-            Go back to Log In
+            Back to Log In
           </Link>
         </div>
 
-        {/* Helper Text */}
-        <div className="text-center mt-8">
-          <p className="text-xs text-slate-500">
-            Didn't receive the email? Check your spam folder or wait a few minutes before resending.
-          </p>
-        </div>
-
-        {/* Toast Notification */}
-        {showToast && (
-          <div className="fixed bottom-5 right-5 bg-slate-950 border border-indigo-500/20 text-white py-3 px-5 rounded-lg shadow-xl text-sm flex items-center gap-2">
-            <CheckCircle className="w-5 h-5 text-green-500" />
-            <span>New verification email sent.</span>
+        {/* Helper */}
+        <div className="mt-6 pt-4 border-t border-slate-800/50">
+          <div className="flex items-start gap-2 text-left">
+            <svg className="w-4 h-4 text-slate-600 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p className="text-xs text-slate-600">
+              Can&apos;t find the email? Check your spam or junk folder. Make sure{' '}
+              <span className="text-slate-500">noreply@careerforge.com</span> isn&apos;t blocked.
+            </p>
           </div>
-        )}
+        </div>
       </div>
-    </div>
+
+      {/* Toast */}
+      {showToast && (
+        <div className="fixed bottom-5 right-5 flex items-center gap-2.5 bg-slate-900 border border-emerald-500/30 text-white py-3 px-5 rounded-xl shadow-2xl shadow-black/40 text-sm animate-[fadeSlide_0.3s_ease-out] z-50">
+          <svg className="w-5 h-5 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          </svg>
+          <span className="text-slate-300">Verification email sent!</span>
+        </div>
+      )}
+      <style jsx>{`@keyframes fadeSlide { from { opacity: 0; transform: translateY(8px) } to { opacity: 1; transform: translateY(0) } }`}</style>
+    </AuthLayout>
+  );
+}
+
+export default function EmailVerificationPage() {
+  return (
+    <Suspense fallback={
+      <AuthLayout title="Loading…" subtitle="Please wait.">
+        <div className="flex justify-center py-8">
+          <svg className="animate-spin w-6 h-6 text-indigo-400" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
+        </div>
+      </AuthLayout>
+    }>
+      <EmailVerificationContent />
+    </Suspense>
   );
 }

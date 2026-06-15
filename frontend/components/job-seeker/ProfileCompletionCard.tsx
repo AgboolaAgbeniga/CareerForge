@@ -20,12 +20,10 @@ export function ProfileCompletionCard({ profileCompletion }: ProfileCompletionCa
 
     setIsUploading(true);
     try {
-      const token = localStorage.getItem('accessToken');
-      const response = await fetch('http://localhost:5000/api/resume/parse-file', { // Direct call to backend for testing, should proxy
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      const response = await fetch(`${apiUrl}/api/ai/resume/parse-file`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
+        credentials: 'include',
         body: formData
       });
 

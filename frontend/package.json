@@ -13,7 +13,10 @@
   },
   "dependencies": {
     "@iconify/react": "^6.0.2",
+    "@opentelemetry/api": "^1.9.0",
+    "@supabase/supabase-js": "^2.45.0",
     "axios": "^1.6.2",
+    "clsx": "^2.1.1",
     "critters": "^0.0.23",
     "framer-motion": "^12.23.25",
     "jwt-decode": "^4.0.0",

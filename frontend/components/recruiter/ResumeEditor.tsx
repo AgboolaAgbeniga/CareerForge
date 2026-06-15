@@ -30,11 +30,11 @@ interface ResumeData {
     period: string;
     achievements: string[];
   }>;
-  education: {
+  education: Array<{
     degree: string;
     institution: string;
     period: string;
-  };
+  }>;
 }
 
 interface ResumeEditorProps {
@@ -45,6 +45,8 @@ interface ResumeEditorProps {
   addSkill: (skill: string) => void;
   removeSkill: (index: number) => void;
   addExperience: () => void;
+  updateEducation?: (index: number, field: string, value: any) => void;
+  addEducation?: () => void;
 }
 
 export function ResumeEditor({
@@ -55,6 +57,8 @@ export function ResumeEditor({
   addSkill,
   removeSkill,
   addExperience,
+  updateEducation,
+  addEducation,
 }: ResumeEditorProps) {
   return (
     <div className="flex-1 overflow-y-auto p-8 relative">
@@ -230,52 +234,56 @@ export function ResumeEditor({
 
         {/* Education Section */}
         <div className="mb-8">
-          <h2 className="text-sm font-bold text-slate-200 uppercase tracking-wider mb-3 flex items-center gap-2">
-            <GraduationCap className="w-4 h-4 text-indigo-500" />{' '}
-            Education
-          </h2>
-          <div className="group hover:bg-slate-800/20 -mx-4 px-4 py-2 rounded-lg transition-colors">
-            <div className="flex justify-between items-baseline mb-1">
-              <h3
-                className="text-white font-medium editable"
-                contentEditable
-                onInput={(e) =>
-                  updateResumeData('education', {
-                    ...resumeData.education,
-                    degree: e.currentTarget.textContent,
-                  })
-                }
-                suppressContentEditableWarning={true}
-              >
-                {resumeData.education.degree}
-              </h3>
-              <span
-                className="text-xs text-slate-500 font-mono editable"
-                contentEditable
-                onInput={(e) =>
-                  updateResumeData('education', {
-                    ...resumeData.education,
-                    period: e.currentTarget.textContent,
-                  })
-                }
-                suppressContentEditableWarning={true}
-              >
-                {resumeData.education.period}
-              </span>
-            </div>
-            <div
-              className="text-xs text-slate-400 editable"
-              contentEditable
-              onInput={(e) =>
-                updateResumeData('education', {
-                  ...resumeData.education,
-                  institution: e.currentTarget.textContent,
-                })
-              }
-              suppressContentEditableWarning={true}
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-sm font-bold text-slate-200 uppercase tracking-wider flex items-center gap-2">
+              <GraduationCap className="w-4 h-4 text-indigo-500" />{' '}
+              Education
+            </h2>
+            <button
+              className="text-xs text-indigo-400 hover:text-white flex items-center gap-1"
+              onClick={addEducation}
             >
-              {resumeData.education.institution}
-            </div>
+              <Plus className="w-3 h-3" /> Add Education
+            </button>
+          </div>
+
+          <div className="space-y-4">
+            {resumeData.education.map((edu, eduIndex) => (
+              <div key={eduIndex} className="group hover:bg-slate-800/20 -mx-4 px-4 py-2 rounded-lg transition-colors">
+                <div className="flex justify-between items-baseline mb-1">
+                  <h3
+                    className="text-white font-medium editable"
+                    contentEditable
+                    onInput={(e) => {
+                      if (updateEducation) updateEducation(eduIndex, 'degree', e.currentTarget.textContent);
+                    }}
+                    suppressContentEditableWarning={true}
+                  >
+                    {edu.degree}
+                  </h3>
+                  <span
+                    className="text-xs text-slate-500 font-mono editable"
+                    contentEditable
+                    onInput={(e) => {
+                      if (updateEducation) updateEducation(eduIndex, 'period', e.currentTarget.textContent);
+                    }}
+                    suppressContentEditableWarning={true}
+                  >
+                    {edu.period}
+                  </span>
+                </div>
+                <div
+                  className="text-xs text-slate-400 editable"
+                  contentEditable
+                  onInput={(e) => {
+                    if (updateEducation) updateEducation(eduIndex, 'institution', e.currentTarget.textContent);
+                  }}
+                  suppressContentEditableWarning={true}
+                >
+                  {edu.institution}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 

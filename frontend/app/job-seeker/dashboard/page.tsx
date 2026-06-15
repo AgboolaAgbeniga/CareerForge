@@ -57,12 +57,9 @@ export default function Dashboard() {
 
   const fetchDashboardData = React.useCallback(async () => {
     try {
-      const token = localStorage.getItem('accessToken');
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
       const response = await fetch(`${API_URL}/api/dashboard/job-seeker`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        credentials: 'include',
       });
       if (response.ok) {
         const result = await response.json();
@@ -85,7 +82,10 @@ export default function Dashboard() {
   // Real-time updates
   useEffect(() => {
     if (user) {
-      const token = localStorage.getItem('accessToken');
+      const token = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('accessToken='))
+        ?.split('=')[1];
       if (token) {
         socketService.connect(token);
         if (user.id) socketService.joinRoom(user.id);

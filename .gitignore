@@ -1,7 +1,18 @@
 node_modules
 
 .next/
-.env*
+
+# Environment files — NEVER commit real secrets
+.env
+.env.local
+.env.production
+.env.*.local
+backend/.env
+ai/.env
+frontend/.env.local
+!.env.example
+!backend/.env.example
+!ai/.env.example
 *.log
 .DS_Store
 Thumbs.db

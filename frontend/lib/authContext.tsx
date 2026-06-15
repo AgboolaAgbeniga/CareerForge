@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { supabase } from './supabase';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
@@ -19,6 +20,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<User>;
   logout: () => void;
   checkAuth: () => Promise<void>;
+  getAccessToken: () => Promise<string | null>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -40,12 +42,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  // Get access token from Supabase session
+  const getAccessToken = async (): Promise<string | null> => {
+    const { data } = await supabase.auth.getSession();
+    return data.session?.access_token || null;
+  };
+
   /**
    * Enhanced fetch wrapper with automatic token refresh on 401
    */
   const fetchWithAuth = React.useCallback(async (url: string, options: RequestInit = {}): Promise<Response> => {
+    const token = await getAccessToken();
+    const headers = {
+      ...options.headers,
+      ...(token && { Authorization: `Bearer ${token}` }),
+    };
+
     let response = await fetch(url, {
       ...options,
+      headers,
       credentials: 'include',
     });
 
@@ -56,24 +71,28 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsRefreshing(true);
 
       try {
-        // Call refresh endpoint
-        const refreshResponse = await fetch(`${API_URL}/api/auth/refresh`, {
-          method: 'POST',
-          credentials: 'include',
-        });
+        // Refresh session with Supabase
+        const { data, error } = await supabase.auth.refreshSession();
 
-        if (refreshResponse.ok) {
+        if (!error && data.session) {
           console.log('Token refreshed successfully, retrying original request...');
+
+          const newToken = data.session.access_token;
+          const newHeaders = {
+            ...options.headers,
+            Authorization: `Bearer ${newToken}`,
+          };
 
           // Retry original request with new access token
           response = await fetch(url, {
             ...options,
+            headers: newHeaders,
             credentials: 'include',
           });
         } else {
           console.error('Token refresh failed, logging out...');
           setUser(null);
-          window.location.href = '/login';
+          window.location.href = '/auth/login';
         }
       } catch (error) {
         console.error('Error during token refresh:', error);
@@ -86,22 +105,29 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return response;
   }, [isRefreshing]);
 
-
-
+  // Check auth on mount
   useEffect(() => {
-    // Check if user is logged in on mount
     const checkAuth = async () => {
       try {
-        const response = await fetchWithAuth(`${API_URL}/api/auth/profile`);
+        // Check Supabase session
+        const { data: sessionData } = await supabase.auth.getSession();
 
-        if (response.ok) {
-          const result = await response.json();
-          // Extract user from result.data.user
-          const userData = result.data?.user || result.user;
-          if (userData) {
-            setUser({ ...userData, onboardingCompleted: !!userData.onboardingCompleted });
-          } else {
-            setUser(null);
+        if (sessionData.session) {
+          // Get user profile from backend
+          const token = sessionData.session.access_token;
+          const response = await fetch(`${API_URL}/api/auth/profile`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            credentials: 'include',
+          });
+
+          if (response.ok) {
+            const result = await response.json();
+            const userData = result.data?.user || result.user;
+            if (userData) {
+              setUser({ ...userData, onboardingCompleted: !!userData.onboardingCompleted });
+            }
           }
         } else {
           setUser(null);
@@ -115,17 +141,56 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
 
     checkAuth();
-  }, [fetchWithAuth]);
+  }, []);
+
+  // Listen to auth state changes
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
+        // Sync token to cookie for Next.js middleware
+        document.cookie = `accessToken=${session.access_token}; path=/; max-age=${15 * 60}; SameSite=Lax`;
+        
+        // Get user profile after sign in
+        try {
+          const response = await fetch(`${API_URL}/api/auth/profile`, {
+            headers: {
+              Authorization: `Bearer ${session.access_token}`,
+            },
+            credentials: 'include',
+          });
+
+          if (response.ok) {
+            const result = await response.json();
+            const userData = result.data?.user || result.user;
+            if (userData) {
+              setUser({ ...userData, onboardingCompleted: !!userData.onboardingCompleted });
+            }
+          }
+        } catch (error) {
+          console.error('Failed to fetch user profile:', error);
+        }
+      } else if (event === 'SIGNED_OUT') {
+        document.cookie = 'accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+        setUser(null);
+      }
+    });
+
+    return () => {
+      subscription?.unsubscribe();
+    };
+  }, []);
 
   const checkAuth = async () => {
     try {
-      const response = await fetchWithAuth(`${API_URL}/api/auth/profile`);
-
-      if (response.ok) {
-        const result = await response.json();
-        const userData = result.data?.user || result.user;
-        if (userData) {
-          setUser({ ...userData, onboardingCompleted: !!userData.onboardingCompleted });
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (sessionData.session) {
+        const response = await fetchWithAuth(`${API_URL}/api/auth/profile`);
+        if (response.ok) {
+          const result = await response.json();
+          const userData = result.data?.user || result.user;
+          if (userData) {
+            setUser({ ...userData, onboardingCompleted: !!userData.onboardingCompleted });
+          }
         }
       }
     } catch (error) {
@@ -134,36 +199,48 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const login = async (email: string, password: string) => {
-    const response = await fetch(`${API_URL}/api/auth/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify({ email, password }),
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
     });
 
-    const result = await response.json().catch(() => ({ message: 'Login failed' }));
-
-    if (response.ok) {
-      const userData = result.data?.user || result.user;
-      const user = { ...userData, onboardingCompleted: !!userData.onboardingCompleted };
-      setUser(user);
-      return user;
-    } else {
-      const error = new Error(result.message || 'Login failed') as any;
-      error.status = response.status;
-      error.code = result.code;
+    if (authError || !authData.session) {
+      const error = new Error(authError?.message || 'Login failed') as any;
+      error.status = 401;
       throw error;
     }
+    
+    document.cookie = `accessToken=${authData.session.access_token}; path=/; max-age=${15 * 60}; SameSite=Lax`;
+
+    // Get user profile from backend
+    try {
+      const response = await fetch(`${API_URL}/api/auth/profile`, {
+        headers: {
+          Authorization: `Bearer ${authData.session.access_token}`,
+        },
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        const userData = result.data?.user || result.user;
+        const user: User = {
+          ...userData,
+          onboardingCompleted: !!userData.onboardingCompleted,
+        };
+        setUser(user);
+        return user;
+      }
+    } catch (error) {
+      console.error('Failed to fetch user profile after login:', error);
+    }
+
+    throw new Error('Failed to load user profile');
   };
 
   const logout = async () => {
     try {
-      await fetch(`${API_URL}/api/auth/logout`, {
-        method: 'POST',
-        credentials: 'include'
-      });
+      await supabase.auth.signOut();
     } catch (error) {
       console.error('Logout error', error);
     }
@@ -171,7 +248,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading, checkAuth }}>
+    <AuthContext.Provider value={{ user, login, logout, loading, checkAuth, getAccessToken }}>
       {children}
     </AuthContext.Provider>
   );
@@ -183,11 +260,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
  *        const data = await authFetch('/api/some-endpoint');
  */
 export const useAuthFetch = () => {
+  const { getAccessToken } = useAuth();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   return async (url: string, options: RequestInit = {}): Promise<Response> => {
+    const token = await getAccessToken();
+    const headers = {
+      ...options.headers,
+      ...(token && { Authorization: `Bearer ${token}` }),
+    };
+
     let response = await fetch(url, {
       ...options,
+      headers,
       credentials: 'include',
     });
 
@@ -196,23 +281,27 @@ export const useAuthFetch = () => {
       setIsRefreshing(true);
 
       try {
-        const refreshResponse = await fetch(`${API_URL}/api/auth/refresh`, {
-          method: 'POST',
-          credentials: 'include',
-        });
+        const { data, error } = await supabase.auth.refreshSession();
 
-        if (refreshResponse.ok) {
+        if (!error && data.session) {
+          const newToken = data.session.access_token;
+          const newHeaders = {
+            ...options.headers,
+            Authorization: `Bearer ${newToken}`,
+          };
+
           // Retry original request
           response = await fetch(url, {
             ...options,
+            headers: newHeaders,
             credentials: 'include',
           });
         } else {
-          window.location.href = '/login';
+          window.location.href = '/auth/login';
         }
       } catch (error) {
         console.error('Token refresh error:', error);
-        window.location.href = '/login';
+        window.location.href = '/auth/login';
       } finally {
         setIsRefreshing(false);
       }

@@ -26,56 +26,119 @@ import {
   TrendingUp,
   Wand2,
   ChevronRight,
+  ArrowRight,
+  Loader2,
 } from 'lucide-react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import apiClient from '@/lib/apiClient';
+import { toast } from 'sonner';
 
-export default function FullProfile() {
-  const [profileData, setProfileData] = useState({
-    name: 'Jane Doe',
-    title: 'Senior Product Designer',
-    location: 'San Francisco, CA',
-    email: 'jane.doe@example.com',
-    website: 'janedoe.design',
-    phone: '+1 (555) 123-4567',
-    linkedin: 'linkedin.com/in/jane',
-    portfolio: 'www.janedoe.com',
-    profileStrength: 85,
-    experience: [
-      {
-        title: 'Senior Product Designer',
-        company: 'Linear',
-        location: 'San Francisco',
-        period: 'Jan 2022 — Present',
-        description:
-          'Leading the design system initiative and core product features. Improved user retention by 15% through streamlined onboarding flows.',
-      },
-      {
-        title: 'Product Designer',
-        company: 'Stripe',
-        location: 'Remote',
-        period: 'Jun 2019 — Dec 2021',
-        description:
-          'Designed payment checkout experiences used by millions. Collaborated with engineering to implement a new react-based component library.',
-      },
-    ],
-    education: {
-      institution: 'Stanford University',
-      degree: 'Bachelor of Science in Human Computer Interaction',
-      period: '2015 — 2019',
-    },
-    certifications: [
-      {
-        name: 'Google UX Design Certificate',
-        issued: 'Mar 2021',
-      },
-    ],
-    skills: ['Figma', 'React', 'Prototyping', 'Design Systems'],
-    portfolioLinks: [
-      { platform: 'Dribbble', name: 'Dribbble Shots', icon: Dribbble },
-      { platform: 'GitHub', name: 'GitHub Profile', icon: Github },
-    ],
+function FullProfileContent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const isOnboarding = searchParams.get('onboarding') === 'true';
+
+  const [isLoading, setIsLoading] = useState(true);
+
+  const [profileData, setProfileData] = useState<any>({
+    name: '',
+    title: '',
+    location: '',
+    email: '',
+    website: '',
+    phone: '',
+    linkedin: '',
+    portfolio: '',
+    bio: '',
+    profileStrength: 0,
+    experience: [],
+    education: [],
+    certifications: [],
+    skills: [],
+    portfolioLinks: [],
   });
 
   const [editingSection, setEditingSection] = useState<string | null>(null);
+
+  React.useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [profileRes, resumesRes] = await Promise.all([
+          apiClient.get('/api/auth/profile').catch(() => null),
+          apiClient.get('/api/resume/my').catch(() => [])
+        ]);
+        
+        let newProfileData = { ...profileData };
+        
+        if (profileRes) {
+           newProfileData.name = `${profileRes.firstName || ''} ${profileRes.lastName || ''}`.trim() || newProfileData.name;
+           newProfileData.email = profileRes.email || newProfileData.email;
+        }
+        
+        const resumes = Array.isArray(resumesRes) ? resumesRes : (resumesRes as any)?.data || [];
+        const activeResume = resumes[0]; // Assuming ordered by most recent or active
+
+        if (activeResume && activeResume.parsedData) {
+           const parsed = activeResume.parsedData;
+           if (parsed.personal_info?.name) newProfileData.name = parsed.personal_info.name;
+           if (parsed.contact?.email) newProfileData.email = parsed.contact.email;
+           if (parsed.contact?.phone) newProfileData.phone = parsed.contact.phone;
+           
+           if (parsed.skills && Array.isArray(parsed.skills)) {
+             newProfileData.skills = parsed.skills.map((s: any) => typeof s === 'string' ? s : s.skill).filter(Boolean);
+           }
+           
+           if (parsed.experience && Array.isArray(parsed.experience) && parsed.experience.length > 0) {
+             newProfileData.experience = parsed.experience.map((exp: any) => ({
+                title: exp.role || exp.title || exp.job_title || 'Role',
+                company: exp.company || 'Company',
+                location: exp.location || 'Remote',
+                period: [exp.start_date, exp.end_date].filter(Boolean).join(' — ') || 'Present',
+                description: exp.description || exp.responsibilities?.join('\n') || ''
+             }));
+           }
+           
+           if (parsed.education && Array.isArray(parsed.education) && parsed.education.length > 0) {
+             newProfileData.education = parsed.education.map((ed: any) => ({
+                 institution: ed.institution || ed.school || 'University',
+                 degree: ed.degree || 'Degree',
+                 period: ed.year || ed.end_date || ed.graduation_year || ''
+             }));
+           }
+        }
+        
+        setProfileData(newProfileData);
+      } catch (err) {
+        console.error('Failed to fetch profile data', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const calculateStrength = (data: any) => {
+    let strength = 0;
+    if (data.name) strength += 10;
+    if (data.title) strength += 10;
+    if (data.email) strength += 5;
+    if (data.phone) strength += 5;
+    if (data.location) strength += 5;
+    if (data.experience && data.experience.length > 0) strength += 25;
+    if (data.education && Object.keys(data.education).length > 0) strength += 20;
+    if (data.skills && data.skills.length > 0) strength += 10;
+    if (data.certifications && data.certifications.length > 0) strength += 10;
+    return Math.min(100, strength);
+  };
+
+  React.useEffect(() => {
+    setProfileData(prev => ({ ...prev, profileStrength: calculateStrength(prev) }));
+  }, [
+    profileData.name, profileData.title, profileData.email, profileData.phone, profileData.location,
+    profileData.experience, profileData.education, profileData.skills, profileData.certifications
+  ]);
 
   const updateProfile = (field: string, value: any) => {
     setProfileData((prev) => ({ ...prev, [field]: value }));
@@ -84,6 +147,11 @@ export default function FullProfile() {
   const updateExperience = (index: number, field: string, value: string) => {
     const newExperience = [...profileData.experience];
     newExperience[index] = { ...newExperience[index], [field]: value };
+    updateProfile('experience', newExperience);
+  };
+
+  const removeExperience = (index: number) => {
+    const newExperience = profileData.experience.filter((_, i) => i !== index);
     updateProfile('experience', newExperience);
   };
 
@@ -96,6 +164,7 @@ export default function FullProfile() {
       description: 'Describe your role and achievements...',
     };
     updateProfile('experience', [...profileData.experience, newExp]);
+    setEditingSection(`experience-${profileData.experience.length}`);
   };
 
   const addCertification = () => {
@@ -116,6 +185,73 @@ export default function FullProfile() {
     const newSkills = profileData.skills.filter((_, i) => i !== index);
     updateProfile('skills', newSkills);
   };
+
+  const addEducation = () => {
+    const newEd = {
+      institution: 'New Institution',
+      degree: 'Degree / Program',
+      period: 'Year',
+    };
+    // Ensure education is an array internally, though schema says string, we extended it
+    const eduList = Array.isArray(profileData.education) ? profileData.education : [profileData.education].filter(Boolean);
+    updateProfile('education', [...eduList, newEd]);
+    setEditingSection(`education-${eduList.length}`);
+  };
+
+  const updateEducation = (index: number, field: string, value: string) => {
+    const eduList = Array.isArray(profileData.education) ? [...profileData.education] : [{...profileData.education}];
+    if(eduList[index]) eduList[index] = { ...eduList[index], [field]: value };
+    updateProfile('education', eduList);
+  };
+
+  const removeEducation = (index: number) => {
+    const eduList = Array.isArray(profileData.education) ? [...profileData.education] : [{...profileData.education}];
+    const filtered = eduList.filter((_, i) => i !== index);
+    updateProfile('education', filtered);
+  };
+
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleSave = async () => {
+    try {
+      setIsSaving(true);
+      
+      const payload = {
+        firstName: profileData.name.split(' ')[0],
+        lastName: profileData.name.split(' ').slice(1).join(' '),
+        phone: profileData.phone,
+        location: profileData.location,
+        jobSeekerProfile: {
+          title: profileData.title,
+          experience: profileData.experience,
+          educationHistory: profileData.education,
+          skills: profileData.skills,
+          certifications: profileData.certifications,
+        }
+      };
+
+      await apiClient.put('/api/auth/profile', payload);
+      
+      toast.success('Profile saved successfully!');
+      if (isOnboarding) {
+        router.push('/job-seeker/onboarding-welcome?step=3');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to save profile. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center font-['Rethink_Sans']">
+        <Loader2 className="w-10 h-10 text-indigo-600 animate-spin mb-4" />
+        <p className="text-slate-500 font-medium">Loading your profile...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 text-slate-900 antialiased selection:bg-indigo-100 selection:text-indigo-900 flex flex-col font-['Rethink_Sans']">
@@ -256,6 +392,12 @@ export default function FullProfile() {
                       >
                         <Pencil className="w-4 h-4" />
                       </button>
+                      <button
+                        onClick={() => removeExperience(index)}
+                        className="text-slate-400 hover:text-red-500 p-1"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                      </button>
                     </div>
                     {editingSection === `experience-${index}` ? (
                       <div className="space-y-3">
@@ -355,47 +497,95 @@ export default function FullProfile() {
                     Education
                   </h2>
                 </div>
-                <button className="text-slate-400 hover:text-purple-600 transition-colors p-1.5 hover:bg-purple-50 rounded-md">
+                <button 
+                  onClick={addEducation}
+                  className="text-slate-400 hover:text-purple-600 transition-colors p-1.5 hover:bg-purple-50 rounded-md"
+                >
                   <Plus className="w-5 h-5" />
                 </button>
               </div>
 
-              <div className="p-6">
-                <div className="group relative flex items-start gap-4">
-                  <div className="h-10 w-10 rounded bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400">
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-                      />
-                    </svg>
-                  </div>
-                  <div className="flex-grow">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="text-sm font-bold text-slate-900">
-                          {profileData.education.institution}
-                        </h3>
-                        <div className="text-sm text-slate-600">
-                          {profileData.education.degree}
+              <div className="p-6 space-y-6">
+                {(Array.isArray(profileData.education) ? profileData.education : [profileData.education]).filter(Boolean).map((edu, index) => (
+                  <div key={index} className="group relative flex items-start gap-4">
+                    <div className="h-10 w-10 rounded bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 flex-shrink-0">
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                        />
+                      </svg>
+                    </div>
+                    <div className="flex-grow">
+                      {editingSection === `education-${index}` ? (
+                        <div className="space-y-3 pr-8">
+                          <input
+                            type="text"
+                            value={edu.institution}
+                            onChange={(e) => updateEducation(index, 'institution', e.target.value)}
+                            className="w-full p-2 border border-slate-200 rounded text-sm font-bold"
+                            placeholder="Institution"
+                          />
+                          <input
+                            type="text"
+                            value={edu.degree}
+                            onChange={(e) => updateEducation(index, 'degree', e.target.value)}
+                            className="w-full p-2 border border-slate-200 rounded text-sm"
+                            placeholder="Degree"
+                          />
+                          <input
+                            type="text"
+                            value={edu.period}
+                            onChange={(e) => updateEducation(index, 'period', e.target.value)}
+                            className="w-full p-2 border border-slate-200 rounded text-sm"
+                            placeholder="Period"
+                          />
+                          <button
+                            onClick={() => setEditingSection(null)}
+                            className="px-4 py-2 bg-purple-600 text-white rounded text-sm"
+                          >
+                            Save
+                          </button>
                         </div>
-                        <div className="text-xs text-slate-400 mt-1">
-                          {profileData.education.period}
+                      ) : (
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h3 className="text-sm font-bold text-slate-900">
+                              {edu.institution}
+                            </h3>
+                            <div className="text-sm text-slate-600">
+                              {edu.degree}
+                            </div>
+                            <div className="text-xs text-slate-400 mt-1">
+                              {edu.period}
+                            </div>
+                          </div>
+                          <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                            <button 
+                              onClick={() => setEditingSection(`education-${index}`)}
+                              className="text-slate-400 hover:text-purple-600 p-1"
+                            >
+                              <Pencil className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => removeEducation(index)}
+                              className="text-slate-400 hover:text-red-500 p-1"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                      <button className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-purple-600 transition-opacity p-1">
-                        <Pencil className="w-4 h-4" />
-                      </button>
+                      )}
                     </div>
                   </div>
-                </div>
+                ))}
               </div>
             </div>
 
@@ -510,9 +700,23 @@ export default function FullProfile() {
                   <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-purple-500" />
                 </button>
 
-                <button className="w-full flex items-center justify-center gap-2 p-3 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium text-sm shadow-md hover:shadow-lg hover:opacity-95 transition-all">
-                  <Save className="w-4 h-4" />
-                  Save Changes
+                <button 
+                  onClick={handleSave}
+                  className={`w-full flex items-center justify-center gap-2 p-3 rounded-lg font-medium text-sm shadow-md hover:shadow-lg hover:opacity-95 transition-all ${
+                    isOnboarding 
+                      ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white animate-pulse-slow' 
+                      : 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white'
+                  }`}
+                >
+                  {isOnboarding ? (
+                    <>
+                      Confirm & Continue Setup <ArrowRight className="w-4 h-4" />
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4" /> Save Changes
+                    </>
+                  )}
                 </button>
               </div>
             </div>
@@ -627,5 +831,18 @@ export default function FullProfile() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function FullProfile() {
+  return (
+    <React.Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center font-['Rethink_Sans']">
+        <Loader2 className="w-10 h-10 text-indigo-600 animate-spin mb-4" />
+        <p className="text-slate-500 font-medium">Loading your profile...</p>
+      </div>
+    }>
+      <FullProfileContent />
+    </React.Suspense>
   );
 }

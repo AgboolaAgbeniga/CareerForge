@@ -48,17 +48,33 @@ export function JobMatches({ matches }: JobMatchesProps) {
                             className="group bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 hover:border-indigo-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all relative"
                         >
                             <div className="absolute top-5 right-5 flex flex-col items-end">
-                                <div
-                                    className={`radial-progress text-[10px] font-bold ${job.matchScore >= 90 ? 'text-green-500' : job.matchScore >= 70 ? 'text-indigo-500' : 'text-amber-500'
-                                        }`}
-                                    style={
-                                        {
-                                            '--value': job.matchScore,
-                                            '--size': '2rem',
-                                        } as React.CSSProperties
-                                    }
-                                >
-                                    {job.matchScore}%
+                                <div className="relative w-10 h-10 flex items-center justify-center">
+                                    <svg className="w-10 h-10 transform -rotate-90">
+                                        <circle
+                                            cx="20"
+                                            cy="20"
+                                            r="16"
+                                            stroke="currentColor"
+                                            strokeWidth="3"
+                                            fill="transparent"
+                                            className="text-gray-100 dark:text-gray-700"
+                                        />
+                                        <circle
+                                            cx="20"
+                                            cy="20"
+                                            r="16"
+                                            stroke="currentColor"
+                                            strokeWidth="3"
+                                            fill="transparent"
+                                            strokeDasharray={`${2 * Math.PI * 16}`}
+                                            strokeDashoffset={`${2 * Math.PI * 16 * (1 - job.matchScore / 100)}`}
+                                            strokeLinecap="round"
+                                            className={`${job.matchScore >= 90 ? 'text-green-500' : job.matchScore >= 70 ? 'text-indigo-500' : 'text-amber-500'}`}
+                                        />
+                                    </svg>
+                                    <span className={`absolute text-[10px] font-bold ${job.matchScore >= 90 ? 'text-green-500' : job.matchScore >= 70 ? 'text-indigo-500' : 'text-amber-500'}`}>
+                                        {job.matchScore}%
+                                    </span>
                                 </div>
                             </div>
 

@@ -1,61 +1,50 @@
 'use client';
 
 import Link from 'next/link';
-import { Clock, Info } from 'lucide-react';
+import AuthLayout from '@/components/layout/AuthLayout';
 
 export default function SessionExpiredPage() {
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
-        {/* Modal Header */}
-        <div className="bg-gradient-to-r from-red-400 to-red-600 text-white p-6 text-center">
-          <div className="flex justify-center mb-4">
-            <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
-              <Clock className="w-6 h-6" />
-            </div>
-          </div>
-          <h2 className="text-xl font-bold">Session Expired</h2>
+    <AuthLayout title="Session expired" subtitle="Your session has timed out for security.">
+      <div className="text-center py-2">
+        {/* Icon */}
+        <div className="w-16 h-16 mx-auto mb-5 rounded-full bg-amber-500/15 border border-amber-500/30 flex items-center justify-center">
+          <svg className="w-8 h-8 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
         </div>
 
-        {/* Modal Body */}
-        <div className="p-6">
-          <p className="text-gray-600 text-center mb-4">
-            For your security, please log in again to continue.
-          </p>
+        <p className="text-sm text-slate-400 mb-6">
+          For your security, your session has expired. Please log in again to continue where you left off.
+        </p>
 
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <div className="flex items-start">
-              <Info className="w-5 h-5 text-blue-600 mt-0.5 mr-3 flex-shrink-0" />
-              <div>
-                <p className="text-sm text-blue-800 font-medium mb-1">
-                  Your changes are saved automatically when possible.
-                </p>
-                <p className="text-sm text-blue-700">
-                  Don't worry, you won't lose your work.
-                </p>
-              </div>
-            </div>
+        {/* Info box */}
+        <div className="flex items-start gap-3 p-3.5 mb-6 bg-indigo-500/10 border border-indigo-500/20 rounded-xl text-left">
+          <svg className="w-4 h-4 text-indigo-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <div>
+            <p className="text-xs text-indigo-300 font-medium mb-0.5">Your work is safe</p>
+            <p className="text-xs text-slate-400">Changes are saved automatically when possible. You won&apos;t lose your progress.</p>
           </div>
         </div>
 
-        {/* Modal Footer */}
-        <div className="px-6 pb-6 pt-4 border-t border-gray-200 bg-gray-50">
-          <div className="flex gap-3">
-            <button
-              onClick={() => window.history.back()}
-              className="flex-1 bg-white border border-gray-300 text-gray-700 py-2.5 px-4 rounded-lg font-medium hover:bg-gray-50 transition-colors"
-            >
-              Cancel
-            </button>
-            <Link
-              href="/auth/login"
-              className="flex-1 bg-indigo-600 text-white py-2.5 px-4 rounded-lg font-medium hover:bg-indigo-700 transition-colors text-center"
-            >
-              Log In
-            </Link>
-          </div>
+        {/* Actions */}
+        <div className="space-y-3">
+          <Link
+            href="/auth/login"
+            className="w-full bg-gradient-to-r from-indigo-600 to-violet-600 text-white text-sm font-semibold py-2.5 rounded-lg shadow-lg shadow-indigo-500/20 hover:from-indigo-500 hover:to-violet-500 transition-all hover:scale-[1.01] active:scale-[0.99] inline-block text-center"
+          >
+            Log In Again
+          </Link>
+          <button
+            onClick={() => window.history.back()}
+            className="w-full bg-slate-800/50 hover:bg-slate-800 text-slate-300 text-sm font-medium py-2.5 rounded-lg border border-slate-700/50 transition-colors"
+          >
+            Go Back
+          </button>
         </div>
       </div>
-    </div>
+    </AuthLayout>
   );
 }

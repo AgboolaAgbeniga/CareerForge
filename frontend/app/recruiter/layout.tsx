@@ -6,10 +6,20 @@ export const metadata: Metadata = {
     'Manage your recruitment pipeline with AI-powered candidate matching, job posting, and talent acquisition tools.',
 };
 
+import { PageContextProvider } from '@/contexts/PageContext';
+import RecruiterCopilot from '@/components/recruiter/RecruiterCopilot';
+
 export default function RecruiterLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return children;
+  return (
+    <PageContextProvider>
+      <div className="relative min-h-screen">
+        {children}
+        <RecruiterCopilot />
+      </div>
+    </PageContextProvider>
+  );
 }

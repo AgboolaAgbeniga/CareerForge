@@ -288,6 +288,42 @@ router.post('/parse-file', upload.single('file'), catchAsync(async (req: AuthReq
 
 /**
  * @swagger
+ * /api/resume/linkedin-import:
+ *   post:
+ *     summary: Import profile data from LinkedIn
+ *     tags: [Resume]
+ *     security:
+ *       - bearerAuth: []
+ */
+router.post('/linkedin-import', authenticateToken, requireVerified, catchAsync(async (req: AuthRequest, res: Response) => {
+  const userId = req.user!.id;
+  
+  // In a real app, this would use the LinkedIn API with OAuth.
+  // For the MVP, we simulate a successful import.
+  const dummyParsedData = {
+    personal_info: { name: `${req.user!.firstName} ${req.user!.lastName}` },
+    skills: [{ skill: 'React', confidence: 0.9 }, { skill: 'Node.js', confidence: 0.85 }, { skill: 'TypeScript', confidence: 0.95 }],
+    experience: [{ company: 'Tech Innovations', role: 'Software Engineer', start_date: '2021', end_date: 'Present' }]
+  };
+
+  await db.insert(resumes).values({
+    jobSeekerId: userId,
+    parsedData: dummyParsedData,
+    isActive: true,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  });
+
+  res.json({
+    success: true,
+    data: dummyParsedData,
+    message: 'LinkedIn profile imported successfully.'
+  });
+}));
+
+
+/**
+ * @swagger
  * /api/resume/{id}/optimize:
  *   post:
  *     summary: AI-optimize an existing resume for a target job

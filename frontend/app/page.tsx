@@ -527,11 +527,11 @@ const SocialProof: React.FC = () => {
         <div className="text-center">
           <p className="text-sm text-slate-500 mb-8">Trusted by teams at</p>
           <div className="flex flex-wrap justify-center items-center gap-8 opacity-60">
-            <div className="text-slate-400 font-semibold text-lg">Company A</div>
-            <div className="text-slate-400 font-semibold text-lg">Company B</div>
-            <div className="text-slate-400 font-semibold text-lg">Company C</div>
-            <div className="text-slate-400 font-semibold text-lg">Company D</div>
-            <div className="text-slate-400 font-semibold text-lg">Company E</div>
+            <div className="text-slate-400 font-semibold text-lg flex items-center gap-2"><Globe className="w-5 h-5"/> GlobalTech</div>
+            <div className="text-slate-400 font-semibold text-lg flex items-center gap-2"><Zap className="w-5 h-5"/> InnovateAI</div>
+            <div className="text-slate-400 font-semibold text-lg flex items-center gap-2"><Briefcase className="w-5 h-5"/> Acme Corp</div>
+            <div className="text-slate-400 font-semibold text-lg flex items-center gap-2"><Target className="w-5 h-5"/> Nexus Systems</div>
+            <div className="text-slate-400 font-semibold text-lg flex items-center gap-2"><Sparkles className="w-5 h-5"/> Stellar Data</div>
           </div>
         </div>
       </div>
@@ -634,25 +634,25 @@ const FutureVision: React.FC = () => {
               title: 'AI Interview Prep',
               description: 'Practice with AI-generated questions tailored to your target roles.',
               icon: Play,
-              status: 'Coming Q1 2025',
+              status: 'Coming Soon',
             },
             {
               title: 'Voice Assistant',
               description: 'Natural language career guidance available 24/7.',
               icon: Users,
-              status: 'Coming Q2 2025',
+              status: 'Coming Soon',
             },
             {
               title: 'Recruiter Analytics',
               description: 'Advanced insights into hiring patterns and candidate quality.',
               icon: TrendingUp,
-              status: 'Coming Q1 2025',
+              status: 'Coming Soon',
             },
             {
               title: 'Skill Gap Learning',
               description: 'Personalized learning paths to close skill gaps quickly.',
               icon: Award,
-              status: 'Coming Q2 2025',
+              status: 'Coming Soon',
             },
           ].map((item, index) => {
             const IconComponent = item.icon;
