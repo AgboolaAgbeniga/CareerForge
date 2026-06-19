@@ -91,6 +91,7 @@ export const updateUserProfileSchema = z.object({
     lastName: z.string().optional(),
     phone: z.string().optional(),
     location: z.string().optional(),
+    onboardingCompleted: z.boolean().optional(),
 });
 
 export const updateJobSeekerProfileSchema = z.object({
@@ -106,6 +107,7 @@ export const updateJobSeekerProfileSchema = z.object({
     portfolioUrl: z.string().optional(),
     linkedinUrl: z.string().optional(),
     isProfileVisible: z.boolean().optional(),
+    resumeFileUrl: z.string().optional(), // allow profile updates to carry the resume URL
 });
 
 export const updateRecruiterProfileSchema = z.object({

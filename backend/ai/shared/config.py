@@ -4,6 +4,10 @@ Shared configuration for AI services
 import os
 from enum import Enum
 from typing import Optional
+from dotenv import load_dotenv
+
+# Load environment variables from the backend/.env file
+load_dotenv(os.path.join(os.path.dirname(__file__), '..', '..', '.env'))
 
 
 class AIProvider(str, Enum):
@@ -22,7 +26,7 @@ class Config:
 
     # ─── NVIDIA NIM Models ──────────────────────────────────────────────
     NVIDIA_API_KEY: Optional[str] = os.getenv("NVIDIA_API_KEY")
-    NVIDIA_LLM_MODEL = os.getenv("NVIDIA_LLM_MODEL", "nvidia/llama-3.1-nemotron-70b-instruct")
+    NVIDIA_LLM_MODEL = os.getenv("NVIDIA_LLM_MODEL", "meta/llama-3.1-70b-instruct")
     NVIDIA_EMBEDDING_MODEL = os.getenv("NVIDIA_EMBEDDING_MODEL", "nvidia/nv-embedqa-e5-v5")
     NVIDIA_EMBEDDING_DIM = 1024  # nv-embedqa-e5-v5 output dimension
 

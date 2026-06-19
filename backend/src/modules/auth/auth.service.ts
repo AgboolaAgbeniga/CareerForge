@@ -502,6 +502,9 @@ export class AuthService {
         if (sanitizedUserUpdates.lastName) sanitizedUserUpdates.lastName = sanitizeText(sanitizedUserUpdates.lastName);
         if (sanitizedUserUpdates.location) sanitizedUserUpdates.location = sanitizeText(sanitizedUserUpdates.location);
 
+        // Explicit override for onboarding completion
+        const explicitOnboardingCompleted = sanitizedUserUpdates.onboardingCompleted;
+
         // Update user table
         if (Object.keys(sanitizedUserUpdates).length > 0) {
             const userUpdatesWithNull = Object.fromEntries(
@@ -516,20 +519,42 @@ export class AuthService {
             if (sanitizedJobSeekerUpdates.title) sanitizedJobSeekerUpdates.title = sanitizeText(sanitizedJobSeekerUpdates.title);
             if (sanitizedJobSeekerUpdates.education) sanitizedJobSeekerUpdates.education = sanitizeText(sanitizedJobSeekerUpdates.education);
 
-            const jobSeekerUpdatesWithNull = Object.fromEntries(
-                Object.entries(sanitizedJobSeekerUpdates).map(([key, value]) => [key, value ?? null])
+            // Deep merge preferences to prevent JSONB overwrite
+            if (sanitizedJobSeekerUpdates.preferences) {
+                const existingProfile = await this.authRepository.getJobSeekerProfile(userId);
+                const existingPreferences = (existingProfile?.preferences as Record<string, any>) || {};
+                sanitizedJobSeekerUpdates.preferences = { ...existingPreferences, ...(sanitizedJobSeekerUpdates.preferences as Record<string, any>) };
+            }
+
+            const jobSeekerUpdatesClean = Object.fromEntries(
+                Object.entries(sanitizedJobSeekerUpdates)
+                    .filter(([_, value]) => value !== undefined)
+                    .map(([key, value]) => [key, value ?? null])
             );
-            await this.authRepository.updateJobSeekerProfile(userId, jobSeekerUpdatesWithNull as any);
+            if (Object.keys(jobSeekerUpdatesClean).length > 0) {
+                await this.authRepository.updateJobSeekerProfile(userId, jobSeekerUpdatesClean as any);
+            }
         } else if (user.role === 'recruiter' && recruiterUpdates && Object.keys(recruiterUpdates).length > 0) {
             const sanitizedRecruiterUpdates = { ...recruiterUpdates };
             if (sanitizedRecruiterUpdates.companyName) sanitizedRecruiterUpdates.companyName = sanitizeText(sanitizedRecruiterUpdates.companyName);
             if (sanitizedRecruiterUpdates.title) sanitizedRecruiterUpdates.title = sanitizeText(sanitizedRecruiterUpdates.title);
             if (sanitizedRecruiterUpdates.industry) sanitizedRecruiterUpdates.industry = sanitizeText(sanitizedRecruiterUpdates.industry);
 
-            const recruiterUpdatesWithNull = Object.fromEntries(
-                Object.entries(sanitizedRecruiterUpdates).map(([key, value]) => [key, value ?? null])
+            // Deep merge billingInfo to prevent JSONB overwrite
+            if (sanitizedRecruiterUpdates.billingInfo) {
+                const existingProfile = await this.authRepository.getRecruiterProfile(userId);
+                const existingBillingInfo = (existingProfile?.billingInfo as Record<string, any>) || {};
+                sanitizedRecruiterUpdates.billingInfo = { ...existingBillingInfo, ...(sanitizedRecruiterUpdates.billingInfo as Record<string, any>) };
+            }
+
+            const recruiterUpdatesClean = Object.fromEntries(
+                Object.entries(sanitizedRecruiterUpdates)
+                    .filter(([_, value]) => value !== undefined)
+                    .map(([key, value]) => [key, value ?? null])
             );
-            await this.authRepository.updateRecruiterProfile(userId, recruiterUpdatesWithNull as any);
+            if (Object.keys(recruiterUpdatesClean).length > 0) {
+                await this.authRepository.updateRecruiterProfile(userId, recruiterUpdatesClean as any);
+            }
         }
 
         // Calculate profile completeness and trigger onboarding completion
@@ -545,11 +570,12 @@ export class AuthService {
                 updatedUser.location,
                 jsProfile.title,
                 jsProfile.experienceYears,
-                jsProfile.education,
-                jsProfile.educationHistory,
-                jsProfile.experience,
+                // NOTE: jsProfile.education (legacy text) deliberately excluded —
+                // the frontend only ever writes educationHistory (JSONB)
+                jsProfile.educationHistory && (jsProfile.educationHistory as any[]).length > 0 ? 'educationHistory' : null,
+                jsProfile.experience && (jsProfile.experience as any[]).length > 0 ? 'experience' : null,
                 jsProfile.bio,
-                jsProfile.certifications,
+                jsProfile.certifications && (jsProfile.certifications as any[]).length > 0 ? 'certifications' : null,
                 jsProfile.resumeFileUrl,
                 jsProfile.skills && jsProfile.skills.length > 0 ? 'skills' : null
             ];
@@ -561,8 +587,8 @@ export class AuthService {
                 profileCompletionPercentage: completionPercentage
             });
 
-            // Auto-complete onboarding if >= 80% and resume exists
-            if (completionPercentage >= 80 && jsProfile.resumeFileUrl) {
+            // Auto-complete onboarding if >= 80% and resume exists, OR if explicitly requested
+            if (explicitOnboardingCompleted === true || (completionPercentage >= 80 && jsProfile.resumeFileUrl)) {
                 await this.authRepository.updateUserOnboarding(userId, true);
             }
         } else if (updatedUser.role === 'recruiter' && profile) {
@@ -579,7 +605,7 @@ export class AuthService {
             const filledFields = fields.filter(f => f !== null && f !== undefined && f !== '').length;
             completionPercentage = Math.round((filledFields / fields.length) * 100);
 
-            if (completionPercentage >= 80) {
+            if (explicitOnboardingCompleted === true || completionPercentage >= 80) {
                 await this.authRepository.updateUserOnboarding(userId, true);
             }
         }
@@ -587,7 +613,7 @@ export class AuthService {
         return {
             message: 'Profile updated successfully',
             completionPercentage,
-            onboardingCompleted: completionPercentage >= 80
+            onboardingCompleted: explicitOnboardingCompleted === true || completionPercentage >= 80
         };
     }
 

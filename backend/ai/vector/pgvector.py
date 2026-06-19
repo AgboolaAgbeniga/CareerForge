@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS embeddings (
 # Example partial index for the main embedding model
 CREATE_INDEX_ALLMINILM_SQL = """
 CREATE INDEX IF NOT EXISTS idx_embeddings_allminilm ON embeddings
-  USING ivfflat (embedding vector_l2_ops)
+  USING ivfflat (embedding vector_cosine_ops)
   WITH (lists = 100)
   WHERE model_id = 'sentence-transformers/all-MiniLM-L6-v2';
 """
@@ -165,7 +165,7 @@ def search_embeddings(embedding: List[float], top_k: int = 10, model_id: Optiona
     where_clauses = []
     params = [emb_lit]
 
-    sql = "SELECT id, candidate_id, model_id, role, payload, embedding <-> %s::vector AS distance FROM embeddings"
+    sql = "SELECT id, candidate_id, model_id, role, payload, embedding <=> %s::vector AS distance FROM embeddings"
 
     if model_id:
         where_clauses.append("model_id = %s")

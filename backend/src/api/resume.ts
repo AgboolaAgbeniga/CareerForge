@@ -2,14 +2,16 @@ import express, { Response } from 'express';
 import multer from 'multer';
 import { z } from 'zod';
 import { db } from '../utils/database';
-import { resumes, jobSeekers } from '../models/schema';
+import { resumes, jobSeekers, users } from '../models/schema';
 import { eq } from 'drizzle-orm';
-import { authenticateToken, AuthRequest, requireVerified } from '../middleware/auth';
+import { authenticateToken, AuthRequest, requireVerified, requireOwnership } from '../middleware/auth';
 import { catchAsync } from '../utils/catchAsync';
+import { dashboardService, SECTION_KEYS } from '../services/dashboard.service';
 import { AppError } from '../middleware/error';
 import { aiService } from '../services/aiService';
 import { resumeStorage, uploadWithFallback } from '../utils/storage';
 import logger from '../utils/logger';
+import { dashboardService } from '../services/dashboard.service';
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
@@ -138,9 +140,12 @@ router.post('/upload', authenticateToken, requireVerified, upload.single('file')
     const fileBuffer = req.file.buffer;
     const localFallbackPath = path.join(localUploadDir, `${userId}-${Date.now()}-${req.file.originalname}`);
 
+    const sanitizedFileName = req.file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
+    const filePath = `${userId}/resume-${Date.now()}-${sanitizedFileName}`;
+
     const uploadResult = await uploadWithFallback(
       'resumes',
-      '', // Will be set by resumeStorage.uploadResume
+      filePath,
       fileBuffer,
       localFallbackPath,
       {
@@ -167,6 +172,78 @@ router.post('/upload', authenticateToken, requireVerified, upload.single('file')
     if (!newResume) {
       throw new AppError('Failed to save resume record', 500, 'INTERNAL_ERROR');
     }
+
+    // Map parsed resume data → job_seekers profile columns so the
+    // profile is correct on the very next login (not just locally in React state).
+    const profileUpdates: Partial<typeof jobSeekers.$inferInsert> = {
+      resumeFileUrl: fileUrl,
+      updatedAt: new Date(),
+    };
+
+    // Title / professional headline
+    if (parsedData.personal_info?.title) {
+      profileUpdates.title = parsedData.personal_info.title;
+    }
+
+    // Bio / summary
+    if (parsedData.summary) {
+      profileUpdates.bio = parsedData.summary;
+    }
+
+    // Experience years
+    if (parsedData.experience_years && parsedData.experience_years > 0) {
+      profileUpdates.experienceYears = parsedData.experience_years;
+    }
+
+    // Skills (stored as text[] in the DB)
+    if (parsedData.skills && Array.isArray(parsedData.skills) && parsedData.skills.length > 0) {
+      profileUpdates.skills = parsedData.skills.map((s: any) =>
+        typeof s === 'string' ? s : (s.skill || '')
+      ).filter(Boolean);
+    }
+
+    // Work experience (stored as JSONB; normalise to the shape the frontend expects)
+    if (parsedData.experience && Array.isArray(parsedData.experience) && parsedData.experience.length > 0) {
+      profileUpdates.experience = parsedData.experience.map((exp: any) => ({
+        title: exp.role || exp.title || exp.job_title || 'Role',
+        company: exp.company || 'Company',
+        location: exp.location || '',
+        period: [exp.start_date, exp.end_date].filter(Boolean).join(' — ') || '',
+        description: exp.description || (Array.isArray(exp.responsibilities) ? exp.responsibilities.join('\n') : '') || '',
+      }));
+    }
+
+    // Education history (stored as JSONB)
+    if (parsedData.education && Array.isArray(parsedData.education) && parsedData.education.length > 0) {
+      profileUpdates.educationHistory = parsedData.education.map((ed: any) => ({
+        institution: ed.institution || ed.school || 'University',
+        degree: ed.degree || 'Degree',
+        period: ed.year || ed.end_date || ed.graduation_year || '',
+      }));
+    }
+
+    // Certifications (stored as JSONB)
+    if (parsedData.certifications && Array.isArray(parsedData.certifications) && parsedData.certifications.length > 0) {
+      profileUpdates.certifications = parsedData.certifications.map((cert: any) => ({
+        name: typeof cert === 'string' ? cert : (cert.name || 'Certification'),
+        issued: typeof cert === 'string' ? '' : (cert.issued || cert.date || ''),
+      }));
+    }
+
+    // Persist all updates to the job_seekers table in one query
+    await db.update(jobSeekers).set(profileUpdates).where(eq(jobSeekers.id, userId));
+
+    // Also sync contact fields (phone, location) back to the users table
+    const userContactUpdates: Partial<typeof users.$inferInsert> = { updatedAt: new Date() };
+    if (parsedData.contact?.phone) userContactUpdates.phone = parsedData.contact.phone;
+    if (parsedData.contact?.location) userContactUpdates.location = parsedData.contact.location;
+    if (Object.keys(userContactUpdates).length > 1) {
+      await db.update(users).set(userContactUpdates).where(eq(users.id, userId));
+    }
+
+    // Invalidate dashboard caches
+    await dashboardService.invalidateSection(userId, SECTION_KEYS.RESUME);
+    await dashboardService.invalidateSection(userId, SECTION_KEYS.CAREER); // Invalidate readiness index
 
     res.status(201).json({
       success: true,
@@ -370,7 +447,7 @@ router.post('/linkedin-import', authenticateToken, requireVerified, catchAsync(a
  *       401:
  *         description: Unauthorized
  */
-router.post('/:id/optimize', authenticateToken, requireVerified, catchAsync(async (req: AuthRequest, res: Response) => {
+router.post('/:id/optimize', authenticateToken, requireVerified, requireOwnership(getResumeOwner), catchAsync(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
   if (!id) {
     throw new AppError('Resume ID is required', 400, 'BAD_REQUEST');
@@ -420,6 +497,144 @@ router.get('/my', authenticateToken, catchAsync(async (req: AuthRequest, res: Re
   res.json({
     success: true,
     data: myResumes
+  });
+}));
+
+/**
+ * @swagger
+ * /api/resume/{id}/score:
+ *   get:
+ *     summary: Compute a structured ATS score for a specific resume
+ *     tags: [Resume]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       200:
+ *         description: ATS score computed successfully
+ */
+router.get('/:id/score', authenticateToken, requireOwnership(getResumeOwner), catchAsync(async (req: AuthRequest, res: Response) => {
+  const { id } = req.params;
+  const userId = req.user!.id;
+
+  if (!id) {
+    throw new AppError('Resume ID is required', 400, 'BAD_REQUEST');
+  }
+
+  const [resume] = await db.select().from(resumes).where(eq(resumes.id, id as string)).limit(1);
+
+  if (!resume) {
+    throw new AppError('Resume not found', 404, 'NOT_FOUND');
+  }
+  if (resume.jobSeekerId !== userId) {
+    throw new AppError('Unauthorized', 403, 'FORBIDDEN');
+  }
+
+  const parsed = resume.parsedData as any;
+  if (!parsed) {
+    return res.json({
+      success: true,
+      data: {
+        ats_score: 0,
+        keyword_match_pct: 0,
+        label: 'No Data',
+        section_scores: {},
+        top_keywords: [],
+        improvements: ['Upload and parse your resume to receive an ATS score.']
+      }
+    });
+  }
+
+  // Section presence scoring (each section = points toward 100)
+  const sectionWeights = {
+    contact:       10,
+    summary:       10,
+    skills:        25,
+    experience:    30,
+    education:     15,
+    certifications: 10,
+  };
+
+  const sectionScores: Record<string, number> = {};
+  let totalScore = 0;
+
+  // Contact
+  const contact = parsed.contact || {};
+  const contactFields = [contact.email, contact.phone, contact.location].filter(Boolean).length;
+  sectionScores.contact = Math.round((contactFields / 3) * sectionWeights.contact);
+  totalScore += sectionScores.contact;
+
+  // Summary
+  const summary = parsed.summary || '';
+  sectionScores.summary = summary.length > 30 ? sectionWeights.summary : Math.round((summary.length / 30) * sectionWeights.summary);
+  totalScore += sectionScores.summary;
+
+  // Skills
+  const skills = Array.isArray(parsed.skills) ? parsed.skills : [];
+  const skillCount = skills.length;
+  sectionScores.skills = Math.min(sectionWeights.skills, Math.round((skillCount / 8) * sectionWeights.skills));
+  totalScore += sectionScores.skills;
+
+  // Experience
+  const experience = Array.isArray(parsed.experience) ? parsed.experience : [];
+  const expWithDescriptions = experience.filter((e: any) => (e.description || '').length > 50).length;
+  sectionScores.experience = experience.length === 0 ? 0
+    : Math.round(((0.5 + (expWithDescriptions / Math.max(experience.length, 1)) * 0.5) * sectionWeights.experience));
+  totalScore += sectionScores.experience;
+
+  // Education
+  const education = Array.isArray(parsed.education) ? parsed.education : [];
+  sectionScores.education = education.length > 0 ? sectionWeights.education : 0;
+  totalScore += sectionScores.education;
+
+  // Certifications
+  const certs = Array.isArray(parsed.certifications) ? parsed.certifications : [];
+  sectionScores.certifications = certs.length > 0 ? sectionWeights.certifications : 0;
+  totalScore += sectionScores.certifications;
+
+  // Keyword match percentage: ratio of skills to recommended minimum (8)
+  const keyword_match_pct = Math.min(100, Math.round((skillCount / 8) * 100));
+
+  // Confidence from AI parsing if available
+  const confidenceBonus = typeof parsed.confidence_score === 'number' ? Math.round(parsed.confidence_score * 10) : 0;
+  const ats_score = Math.min(100, totalScore + confidenceBonus);
+
+  // Label
+  const label = ats_score >= 80 ? 'Strong' : ats_score >= 60 ? 'Good' : 'Needs Work';
+
+  // Improvements list
+  const improvements: string[] = [];
+  if (!contact.phone) improvements.push('Add a phone number to your contact section.');
+  if (!contact.location) improvements.push('Add a location or "Remote" to your contact section.');
+  if (summary.length < 30) improvements.push('Write a professional summary (at least 2–3 sentences).');
+  if (skillCount < 5) improvements.push('List at least 5–8 key skills to improve keyword matching.');
+  if (experience.length === 0) improvements.push('Add work experience entries.');
+  else if (expWithDescriptions < experience.length) improvements.push('Add metric-driven descriptions to each work experience entry.');
+  if (education.length === 0) improvements.push('Add your education history.');
+
+  // Top keywords = first 8 skills from parsed data
+  const top_keywords = skills
+    .slice(0, 8)
+    .map((s: any) => (typeof s === 'string' ? s : s.skill || ''))
+    .filter(Boolean);
+
+  return res.json({
+    success: true,
+    data: {
+      resumeId: id,
+      ats_score,
+      keyword_match_pct,
+      label,
+      section_scores: sectionScores,
+      top_keywords,
+      improvements,
+    }
   });
 }));
 

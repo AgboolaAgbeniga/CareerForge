@@ -31,6 +31,16 @@ const envSchema = z.object({
     // Email config (optional for dev)
     EMAIL_USER: z.string().email().optional(),
     EMAIL_PASS: z.string().optional(),
+
+    // Redis Infrastructure (Phase 1)
+    REDIS_URL: z.string().url().default('redis://localhost:6379'),
+
+    // Scraper Engine (Phase 6)
+    CRAWL4AI_PROXY_LIST: z.string().optional(),
+    MAX_CONCURRENT_CRAWLERS: z.coerce.number().min(1).default(3),
+
+    // Queue Workers (Phase 6)
+    BULLMQ_CONCURRENCY: z.coerce.number().min(1).default(5),
 });
 
 // Create a schema for build time validation (allows missing required fields)
@@ -53,7 +63,7 @@ export const validateEnv = () => {
             // In production, don't crash the build, but log the error
             if (process.env.NODE_ENV === 'production') {
                 logger.warn('⚠️ Running with incomplete environment variables - this may cause runtime errors');
-                return {};
+                return {} as Env;
             }
 
             process.exit(1);
@@ -71,7 +81,7 @@ export const validateEnvForBuild = () => {
         return env;
     } catch (error) {
         logger.warn('⚠️ Build-time environment validation failed (this is normal during Docker build):', error);
-        return {};
+        return {} as Partial<Env>;
     }
 };
 

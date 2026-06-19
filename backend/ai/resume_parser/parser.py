@@ -39,6 +39,7 @@ class ResumeParser:
             return {
                 "personal_info": {
                     "name": result.get("name", ""),
+                    "title": result.get("title", ""),
                 },
                 "contact": {
                     "email": result.get("email", ""),
@@ -51,6 +52,7 @@ class ResumeParser:
                 "summary": result.get("summary", ""),
                 "certifications": result.get("certifications", []),
                 "languages": result.get("languages", []),
+                "experience_years": result.get("experience_years", 0),
                 "confidence_score": 0.85 if result.get("name") else 0.5
             }
 

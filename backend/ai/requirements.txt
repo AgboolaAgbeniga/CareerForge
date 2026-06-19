@@ -29,6 +29,9 @@ python-docx>=1.1.0
 beautifulsoup4>=4.12.2
 pytesseract>=0.3.10
 
+# Web Scraping
+crawl4ai>=0.4.3
+
 # Database (pgvector for embeddings)
 psycopg[binary]>=3.2
 pgvector>=0.4.0

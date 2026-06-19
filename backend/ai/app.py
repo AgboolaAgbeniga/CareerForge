@@ -1,6 +1,12 @@
 """
 Combined AI Services Application
 """
+import sys
+import asyncio
+
+if sys.platform == 'win32':
+    asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
+
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -11,6 +17,7 @@ from resume_parser.app import resume_router, init_parser
 from matching_engine.app import matching_router, init_matcher
 from career_coach.app import career_router, init_coach
 from recruiter_intelligence.app import recruiter_router, init_recruiter
+from scraper_engine.router import scraper_router, init_scraper
 from shared.agent_router import agent_router
 
 @asynccontextmanager
@@ -21,6 +28,7 @@ async def lifespan(app: FastAPI):
     await init_matcher()
     await init_coach()
     await init_recruiter()
+    await init_scraper()
     yield
 
 app = FastAPI(
@@ -48,6 +56,7 @@ app.include_router(resume_router)
 app.include_router(matching_router)
 app.include_router(career_router)
 app.include_router(recruiter_router)
+app.include_router(scraper_router)
 app.include_router(agent_router)
 
 # Vector (pgvector) router (optional)

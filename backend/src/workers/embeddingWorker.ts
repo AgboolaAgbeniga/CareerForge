@@ -79,29 +79,29 @@ export const embeddingWorker = new Worker<EmbeddingPayload>(
       if (type === 'resume') {
         const { userId } = job.data as ResumeEmbeddingPayload;
         logger.info(`Generated embedding for user ${userId}. Saving to db...`);
-        
+
         await db.insert(candidateEmbeddings)
           .values({
-            candidateId: userId,
+            userId: userId,
             modelId: "nvidia/nv-embedqa-e5-v5",
-            modelDim: embeddingVector.length,
-            embedding: embeddingVector
+            embedding: embeddingVector,
+            sourceText: job.data.sourceText
           })
           .onConflictDoUpdate({
-            target: [candidateEmbeddings.candidateId, candidateEmbeddings.modelId],
+            target: [candidateEmbeddings.userId, candidateEmbeddings.modelId],
             set: { embedding: embeddingVector, updatedAt: sql`now()` }
           });
-        
+
       } else if (type === 'job') {
         const { jobId } = job.data as JobEmbeddingPayload;
         logger.info(`Generated embedding for job ${jobId}. Saving to db...`);
-        
+
         await db.insert(jobEmbeddings)
           .values({
             jobId: jobId,
             modelId: "nvidia/nv-embedqa-e5-v5",
-            modelDim: embeddingVector.length,
-            embedding: embeddingVector
+            embedding: embeddingVector,
+            sourceText: job.data.sourceText
           })
           .onConflictDoUpdate({
             target: [jobEmbeddings.jobId, jobEmbeddings.modelId],

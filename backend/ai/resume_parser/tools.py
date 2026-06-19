@@ -1,8 +1,11 @@
+import logging
 from pydantic import BaseModel, Field
 from typing import List
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 from shared.agent_tools import ToolRegistry
 from shared.nvidia_client import nvidia_client
 
+logger = logging.getLogger(__name__)
 registry = ToolRegistry()
 
 class ExtractDocumentTextArgs(BaseModel):
@@ -26,7 +29,14 @@ class ParseResumeEntitiesArgs(BaseModel):
     description="Leverages an LLM to extract a strictly typed JSON schema containing: ContactInfo, Education, WorkExperience, Projects, and RawSkills.",
     args_schema=ParseResumeEntitiesArgs
 )
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=2, max=10),
+    retry=retry_if_exception_type(Exception),
+    reraise=True
+)
 async def parse_resume_entities(raw_text: str) -> dict:
+    logger.info("Parsing resume entities with LLM...")
     prompt = f"""
     Extract the following entities from the resume text into JSON format:
     - ContactInfo (name, email, phone)
@@ -56,7 +66,14 @@ class NormalizeSkillTaxonomyArgs(BaseModel):
     description="Maps free-text skills to canonical internal IDs to ensure database consistency.",
     args_schema=NormalizeSkillTaxonomyArgs
 )
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=2, max=10),
+    retry=retry_if_exception_type(Exception),
+    reraise=True
+)
 async def normalize_skill_taxonomy(raw_skills: List[str]) -> List[str]:
+    logger.info("Normalizing skill taxonomy...")
     skills_list_str = ", ".join(raw_skills)
     prompt = f"""
     Normalize the following list of free-text skills into standardized IT/Tech skill names.
@@ -109,8 +126,15 @@ class GenerateProfileEmbeddingArgs(BaseModel):
     description="Serializes the candidate's core competencies and passes them to the embedding model for vectorization.",
     args_schema=GenerateProfileEmbeddingArgs
 )
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=2, max=10),
+    retry=retry_if_exception_type(Exception),
+    reraise=True
+)
 async def generate_profile_embedding(standardized_profile: dict) -> List[float]:
     import json
+    logger.info("Generating profile embedding...")
     # Serialize the core competencies (skills, experience summary) into a dense string
     core_text = json.dumps({
         "skills": standardized_profile.get("RawSkills", []),

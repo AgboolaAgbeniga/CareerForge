@@ -28,15 +28,22 @@ const colors = {
 // Tell winston that we want to link the colors
 winston.addColors(colors);
 
-// Chose the aspect of the log
+// Choose the aspect of the log
 const format = winston.format.combine(
-  // Add the message timestamp with the preferred format
   winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss:ms' }),
-  // Tell Winston that the logs must be colored
+  winston.format.errors({ stack: true }),
+  winston.format.splat(),
+  winston.format.json()
+);
+
+const consoleFormat = winston.format.combine(
   winston.format.colorize({ all: true }),
-  // Define the format of the message showing the timestamp, the level and the message
   winston.format.printf(
-    (info) => `${info.timestamp} ${info.level}: ${info.message}`,
+    (info) => {
+      const { timestamp, level, message, ...meta } = info;
+      const metaString = Object.keys(meta).length ? `\n${JSON.stringify(meta, null, 2)}` : '';
+      return `${timestamp} ${level}: ${message}${metaString}`;
+    }
   ),
 );
 
@@ -44,7 +51,9 @@ const format = winston.format.combine(
 // In this case, we are using three different transports
 const transports = [
   // Allow the use the console to print the messages
-  new winston.transports.Console(),
+  new winston.transports.Console({
+    format: consoleFormat
+  }),
   // Allow to print all the error level messages inside the error.log file
   new winston.transports.File({
     filename: path.join('logs', 'error.log'),

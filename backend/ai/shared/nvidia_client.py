@@ -25,7 +25,7 @@ class NvidiaClient:
         self.hf_base_url = "https://api-inference.huggingface.co"
 
         # Model mappings
-        self.nvidia_llm = os.getenv("NVIDIA_LLM_MODEL", "nvidia/llama-3.1-nemotron-70b-instruct")
+        self.nvidia_llm = os.getenv("NVIDIA_LLM_MODEL", "meta/llama-3.1-70b-instruct")
         self.nvidia_embedding = os.getenv("NVIDIA_EMBEDDING_MODEL", "nvidia/nv-embedqa-e5-v5")
 
         # Determine primary provider
@@ -36,8 +36,8 @@ class NvidiaClient:
             elif self.hf_api_key:
                 self.provider = "huggingface"
             else:
-                self.provider = "mock"
-                logger.warning("No AI API keys configured — using mock responses")
+                self.provider = "none"
+                logger.warning("No AI API keys configured (NVIDIA_API_KEY or HF_API_KEY)")
 
         self._openai_client = None
         self._init_clients()
@@ -78,21 +78,26 @@ class NvidiaClient:
         Returns:
             Generated text string
         """
-        if self.provider == "nvidia" and self._openai_client:
+        errors = []
+        if (self.provider == "nvidia" or self.provider == "auto") and self._openai_client:
             try:
                 return await self._nvidia_generate(
                     prompt, system_prompt, temperature, max_tokens, response_format
                 )
             except Exception as e:
                 logger.warning(f"NVIDIA NIM failed ({e}), falling back to HF")
+                errors.append(f"NVIDIA NIM: {e}")
 
-        if self.hf_api_key:
+        if (self.provider == "huggingface" or self.provider == "auto") and self.hf_api_key:
             try:
                 return await self._hf_generate(prompt, system_prompt, max_tokens)
             except Exception as e:
-                logger.warning(f"HF Inference API failed ({e}), using mock")
+                logger.warning(f"HF Inference API failed ({e})")
+                errors.append(f"Hugging Face: {e}")
 
-        return self._mock_generate(prompt)
+        error_msg = "AI inference service is currently unavailable. " + " | ".join(errors) if errors else "No active AI provider (NVIDIA_API_KEY or HF_API_KEY) is configured."
+        logger.error(error_msg)
+        raise RuntimeError(error_msg)
 
     async def generate_embedding(self, text: str) -> list[float]:
         """
@@ -101,20 +106,24 @@ class NvidiaClient:
         Returns:
             List of floats (1024-dim for NVIDIA, 384-dim for HF)
         """
-        if self.provider == "nvidia" and self._openai_client:
+        errors = []
+        if (self.provider == "nvidia" or self.provider == "auto") and self._openai_client:
             try:
                 return await self._nvidia_embedding(text)
             except Exception as e:
                 logger.warning(f"NVIDIA embedding failed ({e}), falling back to HF")
+                errors.append(f"NVIDIA embedding: {e}")
 
-        if self.hf_api_key:
+        if (self.provider == "huggingface" or self.provider == "auto") and self.hf_api_key:
             try:
                 return await self._hf_embedding(text)
             except Exception as e:
-                logger.warning(f"HF embedding failed ({e}), using zero vector")
+                logger.warning(f"HF embedding failed ({e})")
+                errors.append(f"Hugging Face embedding: {e}")
 
-        # Return zero vector as last resort
-        return [0.0] * 1024
+        error_msg = "AI embedding service is currently unavailable. " + " | ".join(errors) if errors else "No active AI provider is configured for embeddings."
+        logger.error(error_msg)
+        raise RuntimeError(error_msg)
 
     async def generate_structured(
         self,
@@ -258,52 +267,7 @@ class NvidiaClient:
                 return result
             return [0.0] * 384
 
-    def _mock_generate(self, prompt: str) -> str:
-        """Return mock response when no API keys are configured."""
-        logger.warning("Using mock AI response — configure NVIDIA_API_KEY or HF_API_KEY")
-        
-        # If it looks like a resume parsing prompt, return a rich mock resume
-        if "resume" in prompt.lower() or "extract" in prompt.lower() or "skills" in prompt.lower():
-            return json.dumps({
-                "name": "Emmanuel Agboola",
-                "email": "emmanuel@example.com",
-                "phone": "+44 7123 456789",
-                "location": "London, UK",
-                "skills": ["React", "Next.js", "TypeScript", "Node.js", "Python", "UI/UX Design"],
-                "experience": [
-                    {
-                        "title": "Senior Frontend Engineer",
-                        "company": "TechNova Solutions",
-                        "location": "London",
-                        "start_date": "2021-06",
-                        "end_date": "Present",
-                        "description": "Led the migration of legacy Angular app to Next.js. Improved performance by 40%."
-                    },
-                    {
-                        "title": "Frontend Developer",
-                        "company": "Creative Digital",
-                        "location": "Remote",
-                        "start_date": "2019-01",
-                        "end_date": "2021-05",
-                        "description": "Developed dynamic interfaces using React and Tailwind CSS."
-                    }
-                ],
-                "education": [
-                    {
-                        "degree": "BSc Computer Science",
-                        "institution": "University of Manchester",
-                        "year": "2018"
-                    }
-                ],
-                "summary": "Experienced Frontend Engineer with a passion for building pixel-perfect, performant web applications.",
-                "certifications": ["AWS Certified Developer"],
-                "languages": ["English", "French"]
-            })
-            
-        return json.dumps({
-            "response": "AI service is not configured. Please set NVIDIA_API_KEY or HF_API_KEY.",
-            "mock": True,
-        })
+
 
 
 # Singleton instance

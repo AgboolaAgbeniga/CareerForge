@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { AuthService } from './auth.service';
+import { dashboardService, SECTION_KEYS } from '../../services/dashboard.service';
 import { AppError } from '../../middleware/error';
 import { catchAsync } from '../../utils/catchAsync';
 import { authenticateToken, AuthRequest } from '../../middleware/auth';
@@ -473,9 +474,9 @@ export class AuthController {
         authenticateToken,
         catchAsync(async (req: AuthRequest, res: Response) => {
             const userId = req.user!.id;
-            const { firstName, lastName, phone, location, jobSeekerProfile, recruiterProfile } = req.body;
+            const { firstName, lastName, phone, location, onboardingCompleted, jobSeekerProfile, recruiterProfile } = req.body;
 
-            const parsedUserUpdates = updateUserProfileSchema.parse({ firstName, lastName, phone, location });
+            const parsedUserUpdates = updateUserProfileSchema.parse({ firstName, lastName, phone, location, onboardingCompleted });
             const userUpdates = Object.fromEntries(
                 Object.entries(parsedUserUpdates).filter(([_, value]) => value !== undefined)
             ) as UpdateUserProfileDTO;
@@ -488,6 +489,11 @@ export class AuthController {
             }
 
             const result = await this.authService.updateProfile(userId, userUpdates, jobSeekerUpdates, recruiterUpdates);
+
+            if (jobSeekerUpdates && (jobSeekerUpdates.skills || jobSeekerUpdates.title || jobSeekerUpdates.experience)) {
+                await dashboardService.invalidateSection(userId, SECTION_KEYS.JOBS);
+            }
+
             res.json({ success: true, data: result });
         })
     ];

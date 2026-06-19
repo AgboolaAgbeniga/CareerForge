@@ -120,3 +120,38 @@ export const optionalAuth = async (req: AuthRequest, res: Response, next: NextFu
 
   next();
 };
+
+/**
+ * Middleware to enforce resource ownership (Multi-Tenant Authorization)
+ * @param resourceGetter A function that takes a resource ID from req.params.id and returns an object with a userId property.
+ */
+export const requireOwnership = (resourceGetter: (id: string) => Promise<{ userId?: string; jobSeekerId?: string; recruiterId?: string } | null>) => {
+  return async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+    if (!req.user) {
+      return next(new AppError('Authentication required', 401, 'UNAUTHORIZED'));
+    }
+
+    const resourceId = req.params.id;
+    if (!resourceId) {
+       return next(new AppError('Resource ID is required', 400, 'BAD_REQUEST'));
+    }
+
+    try {
+      const resource = await resourceGetter(resourceId);
+      if (!resource) {
+         return next(new AppError('Resource not found', 404, 'NOT_FOUND'));
+      }
+
+      // Check against standard ownership fields
+      const ownerIds = [resource.userId, resource.jobSeekerId, resource.recruiterId].filter(Boolean);
+
+      if (ownerIds.length === 0 || !ownerIds.includes(req.user.id)) {
+         return next(new AppError('Forbidden: You do not have permission to access this resource', 403, 'FORBIDDEN'));
+      }
+
+      next();
+    } catch (error) {
+      next(error);
+    }
+  };
+};
