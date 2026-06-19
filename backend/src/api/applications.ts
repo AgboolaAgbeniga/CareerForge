@@ -343,14 +343,18 @@ router.get('/job/:jobId', authenticateToken, catchAsync(async (req: AuthRequest,
  *       422:
  *         description: Invalid status transition
  */
-const getApplicationOwner = async (id: string) => {
+const getApplicationOwner = async (id: string): Promise<{ userId?: string; jobSeekerId?: string; recruiterId?: string } | null> => {
     const [app] = await db
       .select({ jobSeekerId: applications.jobSeekerId, recruiterId: jobs.recruiterId })
       .from(applications)
       .innerJoin(jobs, eq(applications.jobId, jobs.id))
       .where(eq(applications.id, id))
       .limit(1);
-    return app || null;
+    if (!app) return null;
+    const result: { userId?: string; jobSeekerId?: string; recruiterId?: string } = {};
+    if (app.jobSeekerId) result.jobSeekerId = app.jobSeekerId;
+    if (app.recruiterId) result.recruiterId = app.recruiterId;
+    return result;
 };
 
 router.put('/:id/status', authenticateToken, requireRole(['recruiter']), requireOwnership(getApplicationOwner), catchAsync(async (req: AuthRequest, res: Response) => {
@@ -413,7 +417,9 @@ router.put('/:id/status', authenticateToken, requireRole(['recruiter']), require
     logger.info(`Application status updated: ${id} to ${newStatus}`);
     
     // Invalidate dashboard cache for the job seeker
-    await dashboardService.invalidateSection(application.jobSeekerId, SECTION_KEYS.APPS);
+    if (application.jobSeekerId) {
+        await dashboardService.invalidateSection(application.jobSeekerId, SECTION_KEYS.APPS);
+    }
 
     res.json({
         success: true,

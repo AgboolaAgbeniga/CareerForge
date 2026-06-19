@@ -11,7 +11,6 @@ import { AppError } from '../middleware/error';
 import { aiService } from '../services/aiService';
 import { resumeStorage, uploadWithFallback } from '../utils/storage';
 import logger from '../utils/logger';
-import { dashboardService } from '../services/dashboard.service';
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
@@ -398,6 +397,17 @@ router.post('/linkedin-import', authenticateToken, requireVerified, catchAsync(a
   });
 }));
 
+const getResumeOwner = async (id: string): Promise<{ userId?: string; jobSeekerId?: string; recruiterId?: string } | null> => {
+  const [res] = await db
+    .select({ jobSeekerId: resumes.jobSeekerId })
+    .from(resumes)
+    .where(eq(resumes.id, id))
+    .limit(1);
+  if (!res) return null;
+  const result: { userId?: string; jobSeekerId?: string; recruiterId?: string } = {};
+  if (res.jobSeekerId) result.jobSeekerId = res.jobSeekerId;
+  return result;
+};
 
 /**
  * @swagger
