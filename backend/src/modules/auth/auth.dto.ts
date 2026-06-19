@@ -12,20 +12,43 @@ const passwordSchema = z.string()
     });
 
 export const registerSchema = z.object({
-    email: z.string().email(),
+    email: z.string()
+        .trim()
+        .toLowerCase()
+        .min(1, 'Email address is required')
+        .email('Please enter a valid email address (e.g. name@company.com)'),
     password: passwordSchema,
-    role: z.enum(['job_seeker', 'recruiter']),
-    firstName: z.string(),
-    lastName: z.string(),
+    role: z.enum(['job_seeker', 'recruiter'], {
+        errorMap: () => ({ message: 'Please select whether you are a Job Seeker or Recruiter' })
+    }),
+    firstName: z.string()
+        .trim()
+        .min(1, 'First name is required')
+        .max(50, 'First name must be 50 characters or fewer')
+        .regex(/^[a-zA-ZÀ-ÿ' -]+$/, 'First name can only contain letters, spaces, hyphens, and apostrophes'),
+    lastName: z.string()
+        .trim()
+        .min(1, 'Last name is required')
+        .max(50, 'Last name must be 50 characters or fewer')
+        .regex(/^[a-zA-ZÀ-ÿ' -]+$/, 'Last name can only contain letters, spaces, hyphens, and apostrophes'),
 });
 
 export const loginSchema = z.object({
-    email: z.string().email(),
-    password: z.string(),
+    email: z.string()
+        .trim()
+        .toLowerCase()
+        .min(1, 'Email address is required')
+        .email('Please enter a valid email address'),
+    password: z.string()
+        .min(1, 'Password is required'),
 });
 
 export const forgotPasswordSchema = z.object({
-    email: z.string().email(),
+    email: z.string()
+        .trim()
+        .toLowerCase()
+        .min(1, 'Email address is required')
+        .email('Please enter a valid email address'),
 });
 
 export const resetPasswordSchema = z.object({
@@ -68,16 +91,23 @@ export const updateUserProfileSchema = z.object({
     lastName: z.string().optional(),
     phone: z.string().optional(),
     location: z.string().optional(),
+    onboardingCompleted: z.boolean().optional(),
 });
 
 export const updateJobSeekerProfileSchema = z.object({
     title: z.string().optional(),
+    bio: z.string().optional(),
     experienceYears: z.number().optional(),
     skills: z.array(z.string()).optional(),
     education: z.string().optional(),
+    experience: z.any().optional(),
+    educationHistory: z.any().optional(),
+    certifications: z.any().optional(),
+    preferences: z.any().optional(),
     portfolioUrl: z.string().optional(),
     linkedinUrl: z.string().optional(),
     isProfileVisible: z.boolean().optional(),
+    resumeFileUrl: z.string().optional(), // allow profile updates to carry the resume URL
 });
 
 export const updateRecruiterProfileSchema = z.object({

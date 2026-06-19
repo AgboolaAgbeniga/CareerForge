@@ -3,23 +3,36 @@ import FormData from 'form-data';
 import { env } from '../config/env';
 
 interface ResumeData {
-  skills: string[];
+  skills: any[];
   experience: Array<{
     title: string;
     company: string;
-    duration: string;
+    duration?: string;
+    start_date?: string;
+    end_date?: string;
     description: string;
   }>;
   education: Array<{
     degree: string;
     institution: string;
-    year: string;
+    year?: string;
+    graduation_year?: string;
   }>;
   contact: {
     email?: string;
     phone?: string;
     linkedin?: string;
+    location?: string;
   };
+  personal_info?: {
+    name?: string;
+    title?: string;
+  };
+  summary?: string;
+  certifications?: any[];
+  languages?: string[];
+  experience_years?: number;
+  confidence_score?: number;
 }
 
 interface JobMatch {
@@ -68,19 +81,33 @@ export class AIService {
       const formData = new FormData();
       formData.append('file', fileBuffer, filename);
 
-      const response = await axios.post<ResumeData>(
-        `${this.resumeParserUrl}/resume/parse-file`, // Updated to match actual endpoint
+      const response = await axios.post<any>(
+        `${this.resumeParserUrl}/resume/parse-file`,
         formData,
         {
           headers: formData.getHeaders(),
-          timeout: 30000,
+          timeout: 90000,
         }
       );
 
-      return response.data;
+      // Extract the actual parsed data from the response
+      const parsedData = response.data.data || response.data;
+
+      return {
+        skills: parsedData.skills || [],
+        experience: parsedData.experience || [],
+        education: parsedData.education || [],
+        contact: parsedData.contact || {},
+        personal_info: parsedData.personal_info || {},
+        summary: parsedData.summary || '',
+        certifications: parsedData.certifications || [],
+        languages: parsedData.languages || [],
+        experience_years: parsedData.experience_years || 0,
+        confidence_score: parsedData.confidence_score || 0
+      };
     } catch (error) {
       console.error('Resume parsing error:', error);
-      throw new Error('Failed to parse resume');
+      throw new Error(`Failed to parse resume: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 

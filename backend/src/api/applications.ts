@@ -5,12 +5,13 @@
 
 import express, { Response } from 'express';
 import { z } from 'zod';
-import { authenticateToken, AuthRequest, requireVerified } from '../middleware/auth';
+import { authenticateToken, AuthRequest, requireVerified, requireRole, requireOwnership } from '../middleware/auth';
 import { db } from '../utils/database';
 import { applications, jobs, notifications, users, jobSeekers, companies } from '../models/schema';
 import { eq, and, or, desc, inArray, sql } from 'drizzle-orm';
 import { AppError } from '../middleware/error';
 import { catchAsync } from '../utils/catchAsync';
+import { dashboardService, SECTION_KEYS } from '../services/dashboard.service';
 import { sanitizeText } from '../utils/sanitizer';
 import logger from '../utils/logger';
 
@@ -130,6 +131,10 @@ router.post('/apply', authenticateToken, requireVerified, catchAsync(async (req:
     });
 
     logger.info(`Application submitted: ${newApplication.id} by user ${userId} for job ${jobId}`);
+    
+    // Invalidate dashboard cache
+    await dashboardService.invalidateSection(userId, SECTION_KEYS.APPS);
+
     res.status(201).json({
         success: true,
         message: 'Application submitted successfully',
@@ -338,17 +343,20 @@ router.get('/job/:jobId', authenticateToken, catchAsync(async (req: AuthRequest,
  *       422:
  *         description: Invalid status transition
  */
-router.put('/:id/status', authenticateToken, catchAsync(async (req: AuthRequest, res: Response) => {
+const getApplicationOwner = async (id: string) => {
+    const [app] = await db
+      .select({ jobSeekerId: applications.jobSeekerId, recruiterId: jobs.recruiterId })
+      .from(applications)
+      .innerJoin(jobs, eq(applications.jobId, jobs.id))
+      .where(eq(applications.id, id))
+      .limit(1);
+    return app || null;
+};
+
+router.put('/:id/status', authenticateToken, requireRole(['recruiter']), requireOwnership(getApplicationOwner), catchAsync(async (req: AuthRequest, res: Response) => {
     const { id } = req.params;
     if (!id) {
         throw new AppError('Application ID is required', 400, 'BAD_REQUEST');
-    }
-
-    const userId = req.user!.id;
-    const userRole = req.user!.role;
-
-    if (userRole !== 'recruiter') {
-        throw new AppError('Only recruiters can update application status', 403, 'FORBIDDEN');
     }
 
     const { status: newStatus } = updateStatusSchema.parse(req.body);
@@ -359,7 +367,6 @@ router.put('/:id/status', authenticateToken, catchAsync(async (req: AuthRequest,
             jobSeekerId: applications.jobSeekerId,
             jobId: applications.jobId,
             status: applications.status,
-            recruiterId: jobs.recruiterId,
             jobTitle: jobs.title,
         })
         .from(applications)
@@ -369,10 +376,6 @@ router.put('/:id/status', authenticateToken, catchAsync(async (req: AuthRequest,
 
     if (!application) {
         throw new AppError('Application not found', 404, 'NOT_FOUND');
-    }
-
-    if (application.recruiterId !== userId) {
-        throw new AppError('Unauthorized: You do not own this job posting', 403, 'FORBIDDEN');
     }
 
     const currentStatus = application.status;
@@ -407,7 +410,11 @@ router.put('/:id/status', authenticateToken, catchAsync(async (req: AuthRequest,
         isRead: false,
     });
 
-    logger.info(`Application status updated: ${id} to ${newStatus} by recruiter ${userId}`);
+    logger.info(`Application status updated: ${id} to ${newStatus}`);
+    
+    // Invalidate dashboard cache for the job seeker
+    await dashboardService.invalidateSection(application.jobSeekerId, SECTION_KEYS.APPS);
+
     res.json({
         success: true,
         message: 'Application status updated successfully',
@@ -501,14 +508,13 @@ router.get('/:id', authenticateToken, catchAsync(async (req: AuthRequest, res: R
  *       400:
  *         description: Cannot withdraw at this stage
  */
-router.delete('/:id', authenticateToken, catchAsync(async (req: AuthRequest, res: Response) => {
+router.delete('/:id', authenticateToken, requireRole(['job_seeker']), requireOwnership(getApplicationOwner), catchAsync(async (req: AuthRequest, res: Response) => {
     const { id } = req.params;
     if (!id) {
         throw new AppError('Application ID is required', 400, 'BAD_REQUEST');
     }
-
+    
     const userId = req.user!.id;
-
     const [application] = await db
         .select()
         .from(applications)
@@ -534,6 +540,9 @@ router.delete('/:id', authenticateToken, catchAsync(async (req: AuthRequest, res
             lastUpdatedAt: new Date(),
         })
         .where(eq(applications.id, id));
+
+    // Invalidate dashboard cache
+    await dashboardService.invalidateSection(userId, SECTION_KEYS.APPS);
 
     res.json({
         success: true,
