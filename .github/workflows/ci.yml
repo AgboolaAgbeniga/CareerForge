@@ -1,0 +1,118 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend:
+    name: Backend (TypeScript)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Install dependencies
+        working-directory: backend
+        run: pnpm install --frozen-lockfile
+
+      - name: TypeScript check
+        working-directory: backend
+        run: pnpm exec tsc --noEmit
+
+      - name: Lint
+        working-directory: backend
+        run: pnpm run lint || true
+
+      - name: Run tests
+        working-directory: backend
+        run: pnpm test || true
+
+      - name: Security audit
+        working-directory: backend
+        run: pnpm audit --audit-level=high || true
+
+  frontend:
+    name: Frontend (Next.js)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        working-directory: frontend
+        run: pnpm run build
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:5000
+
+      - name: Lint
+        working-directory: frontend
+        run: pnpm run lint || true
+
+  ai-services:
+    name: AI Services (Python)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        working-directory: ai
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run tests
+        working-directory: ai
+        run: python -m pytest tests/ -v || true
+
+  security-check:
+    name: Security Checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for secrets in code
+        run: |
+          echo "Checking for hardcoded secrets..."
+          ! grep -rn "|| 'secret'" backend/src/ || echo "⚠️ Found JWT secret fallbacks"
+          ! grep -rn "hf_[a-zA-Z0-9]" --include="*.ts" --include="*.tsx" --include="*.py" . || echo "⚠️ Found HF API keys"
+          echo "Security check complete"
+
+      - name: Check for localhost in production code
+        run: |
+          HARDCODED=$(grep -rn "fetch('http://localhost" frontend/ --include="*.tsx" --include="*.ts" || true)
+          if [ -n "$HARDCODED" ]; then
+            echo "⚠️ Found hardcoded localhost URLs:"
+            echo "$HARDCODED"
+          else
+            echo "✅ No hardcoded localhost URLs found"
+          fi

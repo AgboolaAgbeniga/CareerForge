@@ -60,6 +60,7 @@ const startTime = Date.now();
  *         alive:
  *           type: boolean
  *           description: Indicates if the service is alive
+ */
 
 /**
  * @swagger

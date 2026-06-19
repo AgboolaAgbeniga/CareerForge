@@ -66,9 +66,26 @@ export class AuthService {
         this.authRepository = new AuthRepository();
     }
 
+    private async cleanupPartialRegistration(userId: string, role: 'job_seeker' | 'recruiter') {
+        const cleanupTasks = [
+            supabase.from('users').delete().eq('id', userId),
+            role === 'job_seeker'
+                ? supabase.from('job_seekers').delete().eq('id', userId)
+                : supabase.from('recruiters').delete().eq('id', userId),
+        ];
+
+        const results = await Promise.all(cleanupTasks);
+        for (const result of results) {
+            if (result.error) {
+                logger.warn(`Cleanup warning for ${userId}: ${result.error.message}`);
+            }
+        }
+    }
+
     async register(data: RegisterDTO) {
         logger.info(`🔍 Starting registration for ${data.email} as ${data.role}`);
 
+        let createdAuthUserId: string | null = null;
         // Create user in Supabase Auth
         // In development mode, auto-confirm email so user can log in immediately
         // In production, require email confirmation
@@ -86,6 +103,8 @@ export class AuthService {
 
         if (authError) {
             logger.error(`❌ Supabase auth error: ${authError.message}`);
+            logger.error(`Full error: ${JSON.stringify(authError)}`);
+            logger.error(`Status: ${(authError as any).status}`);
             // Map Supabase errors to user-friendly messages
             let friendlyMessage = 'We couldn\'t create your account. Please try again.';
             if (authError.message?.toLowerCase().includes('already registered') ||
@@ -106,82 +125,15 @@ export class AuthService {
             throw new AppError('Failed to create user', 400);
         }
 
+        createdAuthUserId = authData.user.id;
         logger.info(`✅ User created in auth: ${authData.user.id}`);
+        logger.info(`⏳ Waiting for trigger to sync user to public.users table...`);
 
-        // Create or verify user record in public.users table using Supabase service role
-        try {
-            logger.info(`📝 Creating/verifying user record in database...`);
+        // The Supabase trigger will automatically create the user record in public.users
+        // with the metadata we provided during auth user creation
+        await new Promise(resolve => setTimeout(resolve, 500));
 
-            // Try to insert the user record
-            const { data: insertData, error: insertError } = await supabase
-                .from('users')
-                .insert({
-                    id: authData.user.id,
-                    email: data.email,
-                    role: data.role,
-                    first_name: data.firstName,
-                    last_name: data.lastName,
-                    is_verified: false,
-                })
-                .select();
-
-            if (insertError) {
-                // If it's a duplicate key error, the user record was created by a trigger - that's OK
-                if (insertError.message?.includes('duplicate') || insertError.message?.includes('unique constraint')) {
-                    logger.info(`✅ User record already exists (created by trigger), proceeding with profile creation`);
-                } else {
-                    logger.error(`❌ USER RECORD CREATION FAILED`);
-                    logger.error(`Supabase error: ${insertError.message}`);
-                    throw new AppError(`Database error creating new user`, 400);
-                }
-            } else {
-                logger.info(`✅ User record created successfully`);
-            }
-        } catch (error) {
-            if (error instanceof AppError) throw error;
-            logger.error(`❌ USER RECORD CREATION FAILED`);
-            logger.error(`Error type: ${typeof error}`);
-            if (error instanceof Error) {
-                logger.error(`Error message: ${error.message}`);
-            }
-            throw new AppError(`Database error creating new user`, 400);
-        }
-
-        // Create role-specific profile using Supabase service role
-        try {
-            logger.info(`📝 Creating ${data.role} profile for user ${authData.user.id}...`);
-
-            if (data.role === 'job_seeker') {
-                const { error: profileError } = await supabase
-                    .from('job_seekers')
-                    .insert({ id: authData.user.id })
-                    .select();
-
-                if (profileError) {
-                    logger.error(`❌ JOB SEEKER PROFILE CREATION FAILED`);
-                    logger.error(`Supabase error: ${profileError.message}`);
-                    throw new AppError(`Database error creating new user`, 400);
-                }
-            } else {
-                const { error: profileError } = await supabase
-                    .from('recruiters')
-                    .insert({ id: authData.user.id })
-                    .select();
-
-                if (profileError) {
-                    logger.error(`❌ RECRUITER PROFILE CREATION FAILED`);
-                    logger.error(`Supabase error: ${profileError.message}`);
-                    throw new AppError(`Database error creating new user`, 400);
-                }
-            }
-
-            logger.info(`✅ Profile created successfully`);
-        } catch (error) {
-            if (error instanceof AppError) throw error;
-            logger.error(`❌ PROFILE CREATION FAILED`);
-            logger.error(`Error: ${error instanceof Error ? error.message : String(error)}`);
-            throw new AppError(`Database error creating new user`, 400);
-        }
+        logger.info(`✅ Role-specific profile will be created by database trigger`);
 
         // Send verification email
         try {
@@ -549,6 +501,9 @@ export class AuthService {
         if (sanitizedUserUpdates.lastName) sanitizedUserUpdates.lastName = sanitizeText(sanitizedUserUpdates.lastName);
         if (sanitizedUserUpdates.location) sanitizedUserUpdates.location = sanitizeText(sanitizedUserUpdates.location);
 
+        // Explicit override for onboarding completion
+        const explicitOnboardingCompleted = sanitizedUserUpdates.onboardingCompleted;
+
         // Update user table
         if (Object.keys(sanitizedUserUpdates).length > 0) {
             const userUpdatesWithNull = Object.fromEntries(
@@ -563,20 +518,42 @@ export class AuthService {
             if (sanitizedJobSeekerUpdates.title) sanitizedJobSeekerUpdates.title = sanitizeText(sanitizedJobSeekerUpdates.title);
             if (sanitizedJobSeekerUpdates.education) sanitizedJobSeekerUpdates.education = sanitizeText(sanitizedJobSeekerUpdates.education);
 
-            const jobSeekerUpdatesWithNull = Object.fromEntries(
-                Object.entries(sanitizedJobSeekerUpdates).map(([key, value]) => [key, value ?? null])
+            // Deep merge preferences to prevent JSONB overwrite
+            if (sanitizedJobSeekerUpdates.preferences) {
+                const existingProfile = await this.authRepository.getJobSeekerProfile(userId);
+                const existingPreferences = (existingProfile?.preferences as Record<string, any>) || {};
+                sanitizedJobSeekerUpdates.preferences = { ...existingPreferences, ...(sanitizedJobSeekerUpdates.preferences as Record<string, any>) };
+            }
+
+            const jobSeekerUpdatesClean = Object.fromEntries(
+                Object.entries(sanitizedJobSeekerUpdates)
+                    .filter(([_, value]) => value !== undefined)
+                    .map(([key, value]) => [key, value ?? null])
             );
-            await this.authRepository.updateJobSeekerProfile(userId, jobSeekerUpdatesWithNull as any);
+            if (Object.keys(jobSeekerUpdatesClean).length > 0) {
+                await this.authRepository.updateJobSeekerProfile(userId, jobSeekerUpdatesClean as any);
+            }
         } else if (user.role === 'recruiter' && recruiterUpdates && Object.keys(recruiterUpdates).length > 0) {
             const sanitizedRecruiterUpdates = { ...recruiterUpdates };
             if (sanitizedRecruiterUpdates.companyName) sanitizedRecruiterUpdates.companyName = sanitizeText(sanitizedRecruiterUpdates.companyName);
             if (sanitizedRecruiterUpdates.title) sanitizedRecruiterUpdates.title = sanitizeText(sanitizedRecruiterUpdates.title);
             if (sanitizedRecruiterUpdates.industry) sanitizedRecruiterUpdates.industry = sanitizeText(sanitizedRecruiterUpdates.industry);
 
-            const recruiterUpdatesWithNull = Object.fromEntries(
-                Object.entries(sanitizedRecruiterUpdates).map(([key, value]) => [key, value ?? null])
+            // Deep merge billingInfo to prevent JSONB overwrite
+            if (sanitizedRecruiterUpdates.billingInfo) {
+                const existingProfile = await this.authRepository.getRecruiterProfile(userId);
+                const existingBillingInfo = (existingProfile?.billingInfo as Record<string, any>) || {};
+                sanitizedRecruiterUpdates.billingInfo = { ...existingBillingInfo, ...(sanitizedRecruiterUpdates.billingInfo as Record<string, any>) };
+            }
+
+            const recruiterUpdatesClean = Object.fromEntries(
+                Object.entries(sanitizedRecruiterUpdates)
+                    .filter(([_, value]) => value !== undefined)
+                    .map(([key, value]) => [key, value ?? null])
             );
-            await this.authRepository.updateRecruiterProfile(userId, recruiterUpdatesWithNull as any);
+            if (Object.keys(recruiterUpdatesClean).length > 0) {
+                await this.authRepository.updateRecruiterProfile(userId, recruiterUpdatesClean as any);
+            }
         }
 
         // Calculate profile completeness and trigger onboarding completion
@@ -592,7 +569,12 @@ export class AuthService {
                 updatedUser.location,
                 jsProfile.title,
                 jsProfile.experienceYears,
-                jsProfile.education,
+                // NOTE: jsProfile.education (legacy text) deliberately excluded —
+                // the frontend only ever writes educationHistory (JSONB)
+                jsProfile.educationHistory && (jsProfile.educationHistory as any[]).length > 0 ? 'educationHistory' : null,
+                jsProfile.experience && (jsProfile.experience as any[]).length > 0 ? 'experience' : null,
+                jsProfile.bio,
+                jsProfile.certifications && (jsProfile.certifications as any[]).length > 0 ? 'certifications' : null,
                 jsProfile.resumeFileUrl,
                 jsProfile.skills && jsProfile.skills.length > 0 ? 'skills' : null
             ];
@@ -604,8 +586,8 @@ export class AuthService {
                 profileCompletionPercentage: completionPercentage
             });
 
-            // Auto-complete onboarding if >= 80% and resume exists
-            if (completionPercentage >= 80 && jsProfile.resumeFileUrl) {
+            // Auto-complete onboarding if >= 80% and resume exists, OR if explicitly requested
+            if (explicitOnboardingCompleted === true || (completionPercentage >= 80 && jsProfile.resumeFileUrl)) {
                 await this.authRepository.updateUserOnboarding(userId, true);
             }
         } else if (updatedUser.role === 'recruiter' && profile) {
@@ -622,7 +604,7 @@ export class AuthService {
             const filledFields = fields.filter(f => f !== null && f !== undefined && f !== '').length;
             completionPercentage = Math.round((filledFields / fields.length) * 100);
 
-            if (completionPercentage >= 80) {
+            if (explicitOnboardingCompleted === true || completionPercentage >= 80) {
                 await this.authRepository.updateUserOnboarding(userId, true);
             }
         }
@@ -630,7 +612,7 @@ export class AuthService {
         return {
             message: 'Profile updated successfully',
             completionPercentage,
-            onboardingCompleted: completionPercentage >= 80
+            onboardingCompleted: explicitOnboardingCompleted === true || completionPercentage >= 80
         };
     }
 

@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   postgres:
-    image: postgres:15-alpine
+    image: ankane/pgvector:v0.5.1
     environment:
       POSTGRES_DB: careerforge
       POSTGRES_USER: postgres
@@ -63,16 +63,25 @@ services:
       - backend
     restart: unless-stopped
 
-  # AI services (optional - comment out if not using)
-  # ai_services:
-  #   build:
-  #     context: ./ai
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "8000:8000"
-  #   environment:
-  #     PYTHONUNBUFFERED: 1
-  #   restart: unless-stopped
+  ai_services:
+    build:
+      context: ./backend/ai
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      PYTHONUNBUFFERED: 1
+      NVIDIA_API_KEY: ${NVIDIA_API_KEY}
+      HF_API_KEY: ${HF_API_KEY}
+      AI_PROVIDER: ${AI_PROVIDER:-auto}
+      REDIS_URL: redis://redis:6379
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/careerforge
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
 
 volumes:
   postgres_data:

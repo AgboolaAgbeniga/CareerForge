@@ -11,6 +11,8 @@ import logger from './utils/logger';
 import { sanitizeText } from './utils/sanitizer';
 import loggingMiddleware from './middleware/logging';
 import { handleCareerCoachEvents } from './sockets/careerCoach';
+import './workers/embeddingWorker';
+import './workers/scrapingWorker';
 
 // Load environment variables
 dotenv.config();

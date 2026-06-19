@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, text, integer, boolean, timestamp, decimal, jsonb, pgEnum, inet, index, uniqueIndex } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, text, integer, boolean, timestamp, decimal, jsonb, pgEnum, inet, index, uniqueIndex, customType } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 
 // Enums
@@ -38,20 +38,26 @@ export const users = pgTable('users', {
 export const jobSeekers = pgTable('job_seekers', {
   id: uuid('id').primaryKey().references(() => users.id, { onDelete: 'cascade' }),
   title: varchar('title', { length: 255 }),
+  bio: text('bio'),
   experienceYears: integer('experience_years'),
+  experience: jsonb('experience'),
   skills: text('skills').array(), // PostgreSQL array
   education: text('education'),
+  educationHistory: jsonb('education_history'),
+  certifications: jsonb('certifications'),
   portfolioUrl: varchar('portfolio_url', { length: 255 }),
   linkedinUrl: varchar('linkedin_url', { length: 255 }),
   resumeFileUrl: varchar('resume_file_url', { length: 255 }),
   profileCompletionPercentage: integer('profile_completion_percentage').default(0),
   isProfileVisible: boolean('is_profile_visible').default(true),
+  preferences: jsonb('preferences'),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
 });
 
 export const recruiters = pgTable('recruiters', {
   id: uuid('id').primaryKey().references(() => users.id, { onDelete: 'cascade' }),
+  companyId: uuid('company_id').references(() => companies.id, { onDelete: 'set null' }),
   companyName: varchar('company_name', { length: 255 }),
   industry: varchar('industry', { length: 100 }),
   companySize: varchar('company_size', { length: 50 }),
@@ -84,6 +90,7 @@ export const jobs = pgTable('jobs', {
   title: varchar('title', { length: 255 }).notNull(),
   description: text('description'),
   requirements: text('requirements'),
+  responsibilities: text('responsibilities'),
   location: varchar('location', { length: 255 }),
   salaryMin: decimal('salary_min', { precision: 10, scale: 2 }),
   salaryMax: decimal('salary_max', { precision: 10, scale: 2 }),
@@ -222,4 +229,63 @@ export const experimentParticipants = pgTable('experiment_participants', {
   conversionEvents: jsonb('conversion_events'),
 }, (table) => ({
   uniqueParticipant: uniqueIndex('unique_experiment_participant_idx').on(table.experimentId, table.userId),
+}));
+
+// ─── Embedding Tables (pgvector) ───────────────────────────────────
+
+const vectorType = customType<{ data: number[]; driverData: string }>({
+  dataType() {
+    return 'vector(1024)';
+  },
+  toDriver(value: number[]) {
+    return `[${value.join(',')}]`;
+  },
+  fromDriver(value: string | number[]) {
+    // Some drivers return the string "[1.0, 2.0]", others an array
+    if (typeof value === 'string') {
+      try {
+        return JSON.parse(value);
+      } catch (e) {
+        return [];
+      }
+    }
+    return value;
+  },
+});
+
+export const candidateEmbeddings = pgTable('candidate_embeddings', {
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  modelId: varchar('model_id', { length: 100 }).notNull().default('nvidia/nv-embedqa-e5-v5'),
+  embedding: vectorType('embedding').notNull(),
+  sourceText: text('source_text'),
+  metadata: jsonb('metadata'),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+}, (table) => ({
+  userModelIdx: uniqueIndex('candidate_emb_user_model_idx').on(table.userId, table.modelId),
+}));
+
+export const jobEmbeddings = pgTable('job_embeddings', {
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  jobId: uuid('job_id').references(() => jobs.id, { onDelete: 'cascade' }).notNull(),
+  modelId: varchar('model_id', { length: 100 }).notNull().default('nvidia/nv-embedqa-e5-v5'),
+  embedding: vectorType('embedding').notNull(),
+  sourceText: text('source_text'),
+  metadata: jsonb('metadata'),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+}, (table) => ({
+  jobModelIdx: uniqueIndex('job_emb_job_model_idx').on(table.jobId, table.modelId),
+}));
+
+export const aiChatMessages = pgTable('ai_chat_messages', {
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  role: varchar('role', { length: 20 }).notNull(),
+  content: text('content').notNull(),
+  createdAt: timestamp('created_at').defaultNow(),
+}, (table) => ({
+  userIdx: index('ai_chat_messages_user_idx').on(table.userId),
+  createdAtIdx: index('ai_chat_messages_created_at_idx').on(table.createdAt),
 }));

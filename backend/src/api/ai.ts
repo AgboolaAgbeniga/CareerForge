@@ -2,6 +2,9 @@ import express, { Response } from 'express';
 import { z } from 'zod';
 import { aiService } from '../services/aiService';
 import { authenticateToken, AuthRequest, requireVerified } from '../middleware/auth';
+import { db } from '../utils/database';
+import { aiChatMessages } from '../models/schema';
+import { eq, asc } from 'drizzle-orm';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
@@ -490,6 +493,92 @@ router.get('/recruiter/analyze/:candidateId', authenticateToken, requireVerified
     data: result,
     timestamp: new Date().toISOString(),
   });
+}));
+
+/**
+ * @swagger
+ * /api/ai/coach/history:
+ *   get:
+ *     summary: Get AI Coach chat history
+ */
+router.get('/coach/history', authenticateToken, requireVerified, catchAsync(async (req: AuthRequest, res: Response) => {
+  const userId = req.user!.id;
+  
+  const history = await db.select()
+    .from(aiChatMessages)
+    .where(eq(aiChatMessages.userId, userId))
+    .orderBy(asc(aiChatMessages.createdAt));
+
+  res.json({
+    success: true,
+    data: history,
+  });
+}));
+
+/**
+ * @swagger
+ * /api/ai/coach/message:
+ *   post:
+ *     summary: Save AI Coach messages
+ */
+router.post('/coach/message', authenticateToken, requireVerified, catchAsync(async (req: AuthRequest, res: Response) => {
+  const userId = req.user!.id;
+  const { messages } = req.body; // Array of {role, content}
+  
+  if (!messages || !Array.isArray(messages)) {
+    throw new AppError('Messages array is required', 400, 'INVALID_INPUT');
+  }
+
+  const values = messages.map(m => ({
+    userId,
+    role: m.role,
+    content: m.content
+  }));
+
+  const saved = await db.insert(aiChatMessages).values(values).returning();
+
+  res.json({
+    success: true,
+    data: saved,
+  });
+}));
+
+/**
+ * @swagger
+ * /api/ai/insights:
+ *   post:
+ *     summary: Generate page-specific AI insights
+ */
+router.post('/insights', authenticateToken, requireVerified, catchAsync(async (req: AuthRequest, res: Response) => {
+  const userId = req.user!.id;
+  const { pageType, pageContext } = req.body;
+  
+  if (!pageType) {
+    throw new AppError('pageType is required', 400, 'INVALID_INPUT');
+  }
+
+  // Forward to Python AI service
+  const aiServiceUrl = process.env.CAREER_COACH_URL || 'http://localhost:8000';
+  const axios = require('axios');
+  
+  try {
+    const response = await axios.post(`${aiServiceUrl}/agent/insights`, {
+      page_type: pageType,
+      page_context: pageContext || '',
+      user_id: userId
+    });
+    
+    res.json({
+      success: true,
+      data: response.data
+    });
+  } catch (err) {
+    console.error("AI Insights Error:", err);
+    res.json({
+      success: true,
+      data: { message: "Keep updating your profile to unlock more AI insights.", action: "NONE" }
+    });
+  }
 }));
 
 export default router;
