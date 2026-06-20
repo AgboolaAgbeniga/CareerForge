@@ -98,6 +98,16 @@ export function useProfileStats() {
   const profile = user?.profile as any;
   const jobMatches: any[] = dashboardData?.jobMatches || [];
 
+  const extractData = (field: any, defaultVal: any) => {
+    if (!field) return defaultVal;
+    if (field.error) return defaultVal;
+    return field;
+  };
+
+  const applicationsData = extractData(dashboardData?.applications, []);
+  const jobMatchesData = extractData(dashboardData?.jobMatches, []);
+  const notificationsData = extractData(dashboardData?.notifications, []);
+
   // ── Resume data ──────────────────────────────────────────────────────────────
   const activeResume = useMemo(() => {
     if (!resumes || !Array.isArray(resumes)) return null;
@@ -164,16 +174,6 @@ export function useProfileStats() {
       href: '/job-seeker/full-profile',
     },
   ], [hasResume, profile, skills.length]);
-
-  const extractData = (field: any, defaultVal: any) => {
-    if (!field) return defaultVal;
-    if (field.error) return defaultVal;
-    return field;
-  };
-
-  const applicationsData = extractData(dashboardData?.applications, []);
-  const jobMatchesData = extractData(dashboardData?.jobMatches, []);
-  const notificationsData = extractData(dashboardData?.notifications, []);
 
   // ── Top job match ─────────────────────────────────────────────────────────────
   const topJobMatch = jobMatchesData[0] ?? null;

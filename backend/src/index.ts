@@ -163,6 +163,7 @@ import analyticsRoutes from './api/analytics';
 import experimentsRoutes from './api/experiments';
 import adminRoutes from './api/admin';
 import aiRoutes from './api/ai';
+import mcpRouter from './mcp/server';
 
 app.use('/health', healthRoutes);
 app.use('/api/auth', authRoutes);
@@ -177,6 +178,7 @@ app.use('/api/analytics', analyticsRoutes);
 app.use('/api/experiments', experimentsRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/mcp', mcpRouter);
 
 // Socket.io setup with authentication
 import { socketAuthMiddleware, validateUserRoom, socketRateLimiter } from './middleware/socketAuth';
@@ -323,3 +325,5 @@ server.listen(PORT, () => {
 });
 
 export default app;
+// Trigger restart again (2).
+

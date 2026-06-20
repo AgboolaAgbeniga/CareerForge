@@ -190,3 +190,29 @@ async def analyze_resume(data: dict):
     except Exception as e:
         logger.error(f"Resume analysis error: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
+
+@matching_router.post("/matching/report/download")
+async def download_match_report(data: dict):
+    """Generate and download XLSX match report for recruiter"""
+    try:
+        import io
+        from fastapi.responses import StreamingResponse
+        from .report_generator import generate_match_report_xlsx
+
+        job = data.get("job")
+        candidates = data.get("candidates")
+        anonymize = data.get("anonymize", False)
+
+        if not job or not candidates:
+            raise HTTPException(status_code=400, detail="Job and candidates data are required")
+
+        xlsx_bytes = generate_match_report_xlsx(job, candidates, anonymize)
+
+        return StreamingResponse(
+            io.BytesIO(xlsx_bytes),
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers={"Content-Disposition": "attachment; filename=match_report.xlsx"}
+        )
+    except Exception as e:
+        logger.error(f"Generate match report error: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")

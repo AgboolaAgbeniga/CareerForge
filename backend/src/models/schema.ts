@@ -235,7 +235,7 @@ export const experimentParticipants = pgTable('experiment_participants', {
 
 const vectorType = customType<{ data: number[]; driverData: string }>({
   dataType() {
-    return 'vector(1024)';
+    return 'text';
   },
   toDriver(value: number[]) {
     return `[${value.join(',')}]`;
@@ -289,3 +289,41 @@ export const aiChatMessages = pgTable('ai_chat_messages', {
   userIdx: index('ai_chat_messages_user_idx').on(table.userId),
   createdAtIdx: index('ai_chat_messages_created_at_idx').on(table.createdAt),
 }));
+
+export const guidedBuilderSessions = pgTable('guided_builder_sessions', {
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  stage: integer('stage').default(1),                              // 1=Context, 2=Refine, 3=Test
+  currentSection: varchar('current_section', { length: 50 }),      // 'summary', 'skills', 'experience', etc.
+  contextData: jsonb('context_data'),                              // Stage 1 gathered context (career goals, target roles)
+  draftSections: jsonb('draft_sections'),                          // Stage 2 section-by-section drafts
+  readerTestResults: jsonb('reader_test_results'),                  // Stage 3 ATS simulation results
+  isCompleted: boolean('is_completed').default(false),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+}, (table) => ({
+  userIdx: index('guided_sessions_user_idx').on(table.userId),
+  completedIdx: index('guided_sessions_completed_idx').on(table.isCompleted),
+}));
+
+export const documentTypeEnum = pgEnum('document_type', [
+  'cover_letter', 'optimized_resume', 'match_report', 'career_pitch_deck', 'talent_pipeline_report'
+]);
+
+export const generatedDocuments = pgTable('generated_documents', {
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  documentType: documentTypeEnum('document_type').notNull(),
+  fileName: varchar('file_name', { length: 255 }).notNull(),       // 'CoverLetter_Google_SWE_2026-06-19.docx'
+  fileUrl: varchar('file_url', { length: 255 }).notNull(),          // Supabase Storage path
+  fileSizeBytes: integer('file_size_bytes'),
+  relatedJobId: uuid('related_job_id').references(() => jobs.id, { onDelete: 'set null' }),
+  relatedResumeId: uuid('related_resume_id').references(() => resumes.id, { onDelete: 'set null' }),
+  metadata: jsonb('metadata'),                                      // { format: 'docx', pages: 2, generatedBy: 'career_coach' }
+  createdAt: timestamp('created_at').defaultNow(),
+}, (table) => ({
+  userIdx: index('gen_docs_user_idx').on(table.userId),
+  typeIdx: index('gen_docs_type_idx').on(table.documentType),
+  jobIdx: index('gen_docs_job_idx').on(table.relatedJobId),
+}));
+

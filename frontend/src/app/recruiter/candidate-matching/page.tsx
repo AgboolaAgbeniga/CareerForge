@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Icon } from '@iconify/react';
 import { formatRelativeTime } from '@/lib/utils/dateUtils';
 import Button from '@/components/ui/Button';
+import { ExportReportButton } from '@/components/recruiter/ExportReportButton';
 
 interface Candidate {
   id: string;
@@ -431,10 +432,12 @@ export default function CandidateMatching() {
 
             {/* Panel Footer */}
             <div className="p-4 border-t border-hairline bg-surface-dark flex justify-between items-center z-10">
-              <Button variant="outline" className="!px-3 !py-1.5 !min-h-0 text-[12px] leading-[12px]">
-                <Icon icon="lucide:download" width={12} className="mr-1.5" />
-                Export List
-              </Button>
+              <ExportReportButton
+                jobId="00000000-0000-0000-0000-000000000000"
+                jobTitle={selectedJob}
+                variant="outline"
+                className="!px-3 !py-1.5 !min-h-0 text-[12px] leading-[12px]"
+              />
               <div className="flex items-center gap-2">
                 <Button variant="outline" className="!px-2 !py-1.5 !min-h-0 text-[12px]" disabled>
                   <Icon icon="lucide:chevron-left" width={14} />

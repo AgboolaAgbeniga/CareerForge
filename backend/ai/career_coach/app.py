@@ -17,6 +17,7 @@ from .session_manager import SessionManager
 # Global coach and session manager instances
 coach = None
 session_manager = None
+guided_builder = None
 
 # Router
 career_router = APIRouter()
@@ -61,11 +62,14 @@ class CoverLetterResponse(BaseModel):
 
 async def init_coach():
     """Initialize the career coach services"""
-    global coach, session_manager
+    global coach, session_manager, guided_builder
     from .coach import CareerCoach
+    from .session_manager import SessionManager
+    from .guided_builder import GuidedResumeBuilder
     logger.info("Initializing Career Coach & Session Manager...")
     coach = CareerCoach()
     session_manager = SessionManager()
+    guided_builder = GuidedResumeBuilder()
 
 @career_router.post("/career-coach/advice", response_model=AdviceResponse)
 async def get_career_advice(data: dict):
@@ -209,3 +213,127 @@ async def submit_feedback(data: dict):
     except Exception as e:
         logger.error(f"Feedback submission error: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
+
+@career_router.post("/career-coach/cover-letter/download")
+async def download_cover_letter(data: dict):
+    """Generate and download cover letter as DOCX"""
+    try:
+        if not coach:
+            raise HTTPException(status_code=503, detail="Coach not initialized")
+        content = data.get('content', '')
+        candidate_info = data.get('candidateInfo', {})
+        job_info = data.get('jobInfo')
+        
+        docx_bytes = await coach.generate_cover_letter_document(content, candidate_info, job_info)
+        
+        from fastapi import Response
+        return Response(
+            content=docx_bytes,
+            media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            headers={"Content-Disposition": "attachment; filename=CoverLetter.docx"}
+        )
+    except Exception as e:
+        logger.error(f"Download cover letter error: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@career_router.post("/career-coach/resume/download")
+async def download_resume(data: dict):
+    """Generate and download optimized resume as DOCX"""
+    try:
+        if not coach:
+            raise HTTPException(status_code=503, detail="Coach not initialized")
+        parsed_data = data.get('parsedData', {})
+        optimizations = data.get('optimizations')
+        
+        docx_bytes = await coach.generate_resume_document(parsed_data, optimizations)
+        
+        from fastapi import Response
+        return Response(
+            content=docx_bytes,
+            media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            headers={"Content-Disposition": "attachment; filename=Resume.docx"}
+        )
+    except Exception as e:
+        logger.error(f"Download resume error: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@career_router.post("/career-coach/guided-builder/start")
+async def start_guided_builder(data: dict):
+    """Start a new guided resume builder session"""
+    try:
+        if not guided_builder:
+            raise HTTPException(status_code=503, detail="Guided builder not initialized")
+            
+        user_id = data.get("userId")
+        target_role = data.get("targetRole")
+        experience_years = int(data.get("experienceYears", 0))
+        key_achievements = data.get("keyAchievements", "")
+        
+        if not user_id or not target_role:
+            raise HTTPException(status_code=400, detail="userId and targetRole are required")
+            
+        session = await guided_builder.create_session(user_id, target_role, experience_years, key_achievements)
+        return {"success": True, "session": session}
+    except Exception as e:
+        logger.error(f"Start guided builder error: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@career_router.post("/career-coach/guided-builder/respond")
+async def respond_guided_builder(data: dict):
+    """Process user response/feedback in the guided resume builder workflow"""
+    try:
+        if not guided_builder:
+            raise HTTPException(status_code=503, detail="Guided builder not initialized")
+            
+        session_id = data.get("sessionId")
+        stage = int(data.get("stage", 1))
+        answer = data.get("answer") # Stage 1
+        feedback = data.get("feedback") # Stage 2
+        approve = data.get("approve", False) # Stage 2 / Stage 3
+        
+        if not session_id:
+            raise HTTPException(status_code=400, detail="sessionId is required")
+            
+        if stage == 1:
+            if not answer:
+                raise HTTPException(status_code=400, detail="answer is required for stage 1")
+            session = await guided_builder.stage_1_gather_context(session_id, answer)
+        elif stage == 2:
+            session = await guided_builder.stage_2_refine_sections(session_id, feedback, approve)
+        elif stage == 3:
+            session = await guided_builder.stage_3_reader_test(session_id, approve)
+        else:
+            raise HTTPException(status_code=400, detail="Invalid stage")
+            
+        return {"success": True, "session": session}
+    except Exception as e:
+        logger.error(f"Respond guided builder error: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@career_router.get("/career-coach/guided-builder/session/{session_id}")
+async def get_guided_builder_session(session_id: str):
+    """Retrieve guided builder session state"""
+    try:
+        if not guided_builder:
+            raise HTTPException(status_code=503, detail="Guided builder not initialized")
+            
+        session = await guided_builder.get_session(session_id)
+        if not session:
+            raise HTTPException(status_code=404, detail="Session not found")
+        return {"success": True, "session": session}
+    except Exception as e:
+        logger.error(f"Get guided builder session error: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@career_router.get("/career-coach/guided-builder/sessions/{user_id}")
+async def list_guided_builder_sessions(user_id: str):
+    """List guided builder sessions for a user"""
+    try:
+        if not guided_builder:
+            raise HTTPException(status_code=503, detail="Guided builder not initialized")
+            
+        sessions = await guided_builder.list_user_sessions(user_id)
+        return {"success": True, "sessions": sessions}
+    except Exception as e:
+        logger.error(f"List guided builder sessions error: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")

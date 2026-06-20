@@ -25,12 +25,14 @@ import { sanitizeText } from '../../utils/sanitizer';
 
 // Initialize Supabase client
 const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabaseKey = process.env.NODE_ENV !== 'production'
+    ? (process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY)
+    : (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY);
 
 if (!supabaseUrl) throw new Error('FATAL: SUPABASE_URL environment variable is not configured');
-if (!supabaseServiceRoleKey) throw new Error('FATAL: SUPABASE_SERVICE_ROLE_KEY environment variable is not configured');
+if (!supabaseKey) throw new Error('FATAL: SUPABASE_SERVICE_ROLE_KEY or SUPABASE_ANON_KEY environment variable is not configured');
 
-const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Email transporter
 const createTransporter = () => {
@@ -89,35 +91,70 @@ export class AuthService {
         // Create user in Supabase Auth
         // In development mode, auto-confirm email so user can log in immediately
         // In production, require email confirmation
-        logger.info(`🔐 Calling supabase.auth.admin.createUser()...`);
-        const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-            email: data.email,
-            password: data.password,
-            email_confirm: process.env.NODE_ENV === 'production' ? false : true,
-            user_metadata: {
-                firstName: data.firstName,
-                lastName: data.lastName,
-                role: data.role,
-            },
-        });
+        const useAdminClient = process.env.NODE_ENV === 'production';
+        let authData: any;
+        let authError: any;
+
+        if (useAdminClient) {
+            logger.info(`🔐 Calling supabase.auth.admin.createUser()...`);
+            const response = await supabase.auth.admin.createUser({
+                email: data.email,
+                password: data.password,
+                email_confirm: false,
+                user_metadata: {
+                    firstName: data.firstName,
+                    lastName: data.lastName,
+                    role: data.role,
+                },
+            });
+            authData = response.data;
+            authError = response.error;
+        } else {
+            logger.info(`🔐 Calling supabase.auth.signUp() for local development...`);
+            const response = await supabase.auth.signUp({
+                email: data.email,
+                password: data.password,
+                options: {
+                    data: {
+                        firstName: data.firstName,
+                        lastName: data.lastName,
+                        role: data.role,
+                    }
+                }
+            });
+            authData = response.data;
+            authError = response.error;
+        }
 
         if (authError) {
-            logger.error(`❌ Supabase auth error: ${authError.message}`);
-            logger.error(`Full error: ${JSON.stringify(authError)}`);
-            logger.error(`Status: ${(authError as any).status}`);
-            // Map Supabase errors to user-friendly messages
-            let friendlyMessage = 'We couldn\'t create your account. Please try again.';
-            if (authError.message?.toLowerCase().includes('already registered') ||
-                authError.message?.toLowerCase().includes('already been registered') ||
-                authError.message?.toLowerCase().includes('duplicate') ||
-                authError.message?.toLowerCase().includes('already exists')) {
-                friendlyMessage = 'An account with this email already exists. Please log in or use a different email.';
-            } else if (authError.message?.toLowerCase().includes('rate limit')) {
-                friendlyMessage = 'Too many sign-up attempts. Please wait a few minutes and try again.';
-            } else if (authError.message?.toLowerCase().includes('invalid email')) {
-                friendlyMessage = 'Please enter a valid email address.';
+            if (process.env.NODE_ENV !== 'production') {
+                logger.warn(`⚠️ Supabase auth error during dev registration: ${authError.message}. Falling back to local-only user.`);
+                const fallbackUserId = require('crypto').randomUUID();
+                authData = {
+                    user: {
+                        id: fallbackUserId,
+                        email: data.email,
+                    }
+                };
+                authError = null;
+            } else {
+                logger.error(`❌ Supabase auth error: ${authError.message}`);
+                logger.error(`Full error: ${JSON.stringify(authError)}`);
+                logger.error(`Status: ${(authError as any).status}`);
+                // Map Supabase errors to user-friendly messages
+                let friendlyMessage = 'We couldn\'t create your account. Please try again.';
+                if (authError.message?.toLowerCase().includes('already registered') ||
+                    authError.message?.toLowerCase().includes('already been registered') ||
+                    authError.message?.toLowerCase().includes('duplicate') ||
+                    authError.message?.toLowerCase().includes('already exists')) {
+                    friendlyMessage = 'An account with this email already exists. Please log in or use a different email.';
+                } else if (authError.message?.toLowerCase().includes('rate limit')) {
+                    friendlyMessage = 'Too many sign-up attempts. Please wait a few minutes and try again.';
+                } else if (authError.message?.toLowerCase().includes('invalid email')) {
+                    friendlyMessage = 'Please enter a valid email address.';
+                }
+                throw new AppError(friendlyMessage, 400, 'REGISTRATION_FAILED');
             }
-            throw new AppError(friendlyMessage, 400, 'REGISTRATION_FAILED');
         }
 
         if (!authData.user) {
@@ -127,8 +164,35 @@ export class AuthService {
 
         createdAuthUserId = authData.user.id;
         logger.info(`✅ User created in auth: ${authData.user.id}`);
-        logger.info(`⏳ Waiting for trigger to sync user to public.users table...`);
 
+        // In development mode, manually populate the local PostgreSQL database
+        if (process.env.NODE_ENV !== 'production' && authData.user) {
+            logger.info(`💾 DEV MODE: Manually populating local database for user ${authData.user.id}`);
+            try {
+                const existingLocalUser = await this.authRepository.findUserById(authData.user.id);
+                if (!existingLocalUser) {
+                    await this.authRepository.createUser({
+                        id: authData.user.id,
+                        email: data.email,
+                        role: data.role,
+                        firstName: data.firstName,
+                        lastName: data.lastName,
+                        isVerified: true,
+                    });
+                    
+                    if (data.role === 'job_seeker') {
+                        await this.authRepository.createJobSeekerProfile(authData.user.id);
+                    } else if (data.role === 'recruiter') {
+                        await this.authRepository.createRecruiterProfile(authData.user.id);
+                    }
+                    logger.info(`✅ Manually populated local user and role profile`);
+                }
+            } catch (dbErr) {
+                logger.error(`❌ Failed to manually populate local DB: ${dbErr instanceof Error ? dbErr.message : String(dbErr)}`);
+            }
+        }
+
+        logger.info(`⏳ Waiting for trigger to sync user to public.users table...`);
         // The Supabase trigger will automatically create the user record in public.users
         // with the metadata we provided during auth user creation
         await new Promise(resolve => setTimeout(resolve, 500));
@@ -138,20 +202,29 @@ export class AuthService {
         // Send verification email
         try {
             logger.info(`📧 Sending verification email...`);
-            const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
-                type: 'signup',
-                email: data.email,
-                password: data.password,
-                options: {
-                    redirectTo: `${process.env.FRONTEND_URL}/auth/email-verification`,
-                },
-            });
+            let verificationLink = '';
+            
+            if (process.env.NODE_ENV === 'production') {
+                const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
+                    type: 'signup',
+                    email: data.email,
+                    password: data.password,
+                    options: {
+                        redirectTo: `${process.env.FRONTEND_URL}/auth/email-verification`,
+                    },
+                });
 
-            if (linkError) {
-                logger.warn(`⚠️ Failed to generate verification link: ${linkError.message}`);
-            } else if (linkData?.properties?.action_link) {
-                const verificationLink = linkData.properties.action_link;
+                if (linkError) {
+                    logger.warn(`⚠️ Failed to generate verification link: ${linkError.message}`);
+                } else if (linkData?.properties?.action_link) {
+                    verificationLink = linkData.properties.action_link;
+                }
+            } else {
+                verificationLink = `${process.env.FRONTEND_URL}/auth/email-verification?token=dev-token&type=signup`;
+                logger.info(`[DEV MODE] Generated mock verification link: ${verificationLink}`);
+            }
 
+            if (verificationLink) {
                 // Send verification email
                 await transporter.sendMail({
                     from: process.env.EMAIL_USER || 'noreply@careerforge.com',
@@ -214,20 +287,39 @@ export class AuthService {
             throw new AppError('Invalid credentials', 401);
         }
 
-        // Get user details from database using Supabase client (handles RLS)
+        // Get user details from database using local fallback in development
         try {
-            const { data: userData, error: userError } = await supabase
-                .from('users')
-                .select('*')
-                .eq('email', data.email)
-                .single();
+            let user: any;
+            if (process.env.NODE_ENV !== 'production') {
+                const localUser = await this.authRepository.findUserByEmail(data.email);
+                if (!localUser) {
+                    logger.warn(`User not found in local database: ${data.email}`);
+                    throw new AppError('User not found', 404);
+                }
+                user = {
+                    id: localUser.id,
+                    email: localUser.email,
+                    role: localUser.role,
+                    first_name: localUser.firstName,
+                    last_name: localUser.lastName,
+                    is_verified: localUser.isVerified,
+                    phone: localUser.phone,
+                    location: localUser.location,
+                    onboarding_completed: localUser.onboardingCompleted,
+                };
+            } else {
+                const { data: userData, error: userError } = await supabase
+                    .from('users')
+                    .select('*')
+                    .eq('email', data.email)
+                    .single();
 
-            if (userError || !userData) {
-                logger.warn(`User not found in database: ${data.email}`);
-                throw new AppError('User not found', 404);
+                if (userError || !userData) {
+                    logger.warn(`User not found in database: ${data.email}`);
+                    throw new AppError('User not found', 404);
+                }
+                user = userData;
             }
-
-            const user = userData;
 
             // In development mode, allow unverified login for testing
             // In production, enforce email verification
@@ -242,10 +334,14 @@ export class AuthService {
             }
 
             // Update last login
-            await supabase
-                .from('users')
-                .update({ last_login_at: new Date().toISOString() })
-                .eq('id', user.id);
+            if (process.env.NODE_ENV !== 'production') {
+                await this.authRepository.updateLastLogin(user.id);
+            } else {
+                await supabase
+                    .from('users')
+                    .update({ last_login_at: new Date().toISOString() })
+                    .eq('id', user.id);
+            }
 
             logger.info(`User logged in: ${user.id} (${user.email})`);
 

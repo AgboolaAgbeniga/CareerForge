@@ -37,3 +37,30 @@ plans/
 temp_auto_push.bat
 temp_interactive_push.bat
 branch_structure.json
+
+# Python caches
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+
+# Playwright & Testing outputs
+playwright-report/
+test-results/
+
+# Temporary test/diagnostic scripts in backend root
+backend/backend.pid
+backend/frontend.pid
+backend/startup_errors.txt
+backend/compile_errors.txt
+backend/type_errors.txt
+backend/error_log.txt
+backend/test_results.txt
+backend/check*.js
+backend/test*.js
+backend/test*.ts
+backend/ai/read_keys.py
+backend/ai/test_nvidia.py
+backend/ai/test_parse_direct.py
+!backend/tests/**/*

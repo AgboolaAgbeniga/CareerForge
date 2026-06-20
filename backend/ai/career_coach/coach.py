@@ -172,3 +172,23 @@ class CareerCoach:
                 "time_estimate": "Unknown",
                 "resources": []
             }
+
+    @timing_decorator
+    async def generate_cover_letter_document(self, cover_letter_content: str, candidate_info: Dict[str, Any], job_info: Dict[str, Any] = None) -> bytes:
+        """Generate a professionally formatted DOCX cover letter file."""
+        try:
+            from career_coach.document_generator import generate_cover_letter_docx
+            return generate_cover_letter_docx(cover_letter_content, candidate_info, job_info)
+        except Exception as e:
+            logger.error(f"Error generating cover letter DOCX: {e}")
+            raise e
+
+    @timing_decorator
+    async def generate_resume_document(self, parsed_data: Dict[str, Any], optimizations: Dict[str, Any] = None) -> bytes:
+        """Generate a formatted DOCX resume file."""
+        try:
+            from career_coach.document_generator import generate_optimized_resume_docx
+            return generate_optimized_resume_docx(parsed_data, optimizations)
+        except Exception as e:
+            logger.error(f"Error generating resume DOCX: {e}")
+            raise e

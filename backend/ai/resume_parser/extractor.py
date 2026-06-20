@@ -48,29 +48,105 @@ def extract_text(content: bytes, filename: str, content_type: Optional[str] = No
         # Default to text
         return _decode_text(content)
 
+def _detect_table_type(headers: list, rows: list) -> str:
+    """Detect the logical type of the table based on cell contents."""
+    headers_lower = [str(h).lower() for h in headers]
+    all_text = " ".join(headers_lower) + " " + " ".join([str(cell).lower() for row in rows for cell in row if cell is not None])
+    
+    # Check for skills
+    skills_keywords = {'skill', 'technology', 'technologies', 'tool', 'tools', 'language', 'languages', 'proficiency', 'level', 'expert', 'intermediate', 'beginner'}
+    if any(kw in all_text for kw in skills_keywords):
+        return "Skills Matrix"
+        
+    # Check for experience/work history
+    experience_keywords = {'company', 'employer', 'role', 'title', 'year', 'years', 'date', 'dates', 'duration', 'description', 'responsibility', 'responsibilities', 'project', 'projects'}
+    if any(kw in all_text for kw in experience_keywords):
+        return "Work Experience/Timeline"
+        
+    # Check for education
+    education_keywords = {'school', 'university', 'college', 'degree', 'major', 'gpa', 'graduation', 'education', 'institution', 'course', 'courses'}
+    if any(kw in all_text for kw in education_keywords):
+        return "Education History"
+        
+    return "Structured Table Data"
+
+def _format_table_as_markdown(table) -> str:
+    """Convert raw table structure from pdfplumber into Markdown with type detection."""
+    if not table:
+        return ""
+        
+    # Clean rows and filter out completely empty ones
+    clean_rows = []
+    for row in table:
+        if not row:
+            continue
+        clean_row = [str(cell).strip() if cell is not None else "" for cell in row]
+        if any(clean_row):
+            clean_rows.append(clean_row)
+            
+    if not clean_rows:
+        return ""
+        
+    # Determine headers and data rows
+    headers = clean_rows[0]
+    data_rows = clean_rows[1:]
+    
+    # Detect the logical type of table
+    table_type = _detect_table_type(headers, data_rows)
+    
+    markdown = f"\n[Table Type: {table_type}]\n"
+    # Header row
+    markdown += "| " + " | ".join(headers) + " |\n"
+    markdown += "| " + " | ".join(["---"] * len(headers)) + " |\n"
+    
+    # Data rows
+    for row in data_rows:
+        # Pad or truncate row to match headers count
+        if len(row) < len(headers):
+            row += [""] * (len(headers) - len(row))
+        elif len(row) > len(headers):
+            row = row[:len(headers)]
+        markdown += "| " + " | ".join(row) + " |\n"
+        
+    return markdown
+
 def _extract_from_pdf(content: bytes) -> str:
-    """Extract text from PDF using pdfplumber with OCR fallback (Beta)"""
+    """Extract text and tables from PDF using pdfplumber with OCR fallback (Beta)"""
     if not pdfplumber:
         logger.warning("pdfplumber not installed")
         return ""
 
     text = ""
+    tables_text = ""
     try:
         with pdfplumber.open(io.BytesIO(content)) as pdf:
-            for page in pdf.pages:
+            for page_num, page in enumerate(pdf.pages, 1):
                 page_text = page.extract_text()
                 if page_text:
                     text += page_text + "\n"
+                
+                # Extract tables
+                try:
+                    tables = page.extract_tables()
+                    for t_idx, table in enumerate(tables, 1):
+                        md_table = _format_table_as_markdown(table)
+                        if md_table:
+                            tables_text += f"\n[Page {page_num}, Table {t_idx}]{md_table}"
+                except Exception as table_err:
+                    logger.warning(f"Failed to extract tables on page {page_num}: {table_err}")
     except Exception as e:
         logger.error(f"PDF extraction failed: {e}")
     
+    # Merge tables with text
+    if tables_text:
+        text += "\n\n--- STRUCTURED TABLES DETECTED ---\n" + tables_text
+
     # BETA: OCR Fallback for scanned PDFs
     if not text.strip() and HAS_OCR:
         try:
             logger.info("PDF appears empty, attempting OCR...")
             images = _convert_pdf_to_images(content) # simplified placeholder
             # Real implementation would use pdf2image or similar
-            # For now, just logging availability
             pass 
         except Exception as e:
             logger.warning(f"OCR failed: {e}")

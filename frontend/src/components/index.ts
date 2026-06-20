@@ -44,6 +44,7 @@ export { AISuggestionsPanel } from './recruiter/AISuggestionsPanel';
 export { ResumeAnalysis } from './recruiter/ResumeAnalysis';
 export { ResumeEditor } from './recruiter/ResumeEditor';
 export { TemplateSelector } from './recruiter/TemplateSelector';
+export { ExportReportButton } from './recruiter/ExportReportButton';
 
 // Shared Components
 // Contexts removed, use Zustand stores instead
@@ -51,6 +52,8 @@ export { default as MessagingInbox } from './shared/MessagingInbox';
 export { default as Settings } from './shared/Settings';
 export { default as Contributors } from './shared/Contributors';
 export { PremiumUpsell } from './shared/PremiumUpsell';
+export { DownloadDocumentButton } from './DownloadDocumentButton';
+export { DocumentHistory } from './DocumentHistory';
 
 // Types
 export * from './types';

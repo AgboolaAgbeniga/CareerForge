@@ -1,56 +1,86 @@
-import unittest
-from unittest.mock import MagicMock, patch
+import pytest
+from unittest.mock import MagicMock, patch, AsyncMock
 import sys
 import os
 
 # Add parent directory to path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from career_coach.coach import CareerCoach, CareerAdvice
+from career_coach.coach import CareerCoach, CareerAdvice, LinkedInOptimization
 
-class TestCareerCoach(unittest.TestCase):
-    def setUp(self):
-        # Mock config and shared utils if needed, or rely on graceful fallback
-        self.coach = CareerCoach()
-        # Force fallback by ensuring generator is None (if not already)
-        if hasattr(self.coach, 'generator') and self.coach.generator:
-            pass # Use real if available, or mock it? 
-                 # For unit tests, we usually want to avoid loading massive models.
-                 # But the class loads it in __init__. 
-                 # We'll assert on the structure of the response regardless of source.
+@pytest.fixture
+def coach():
+    return CareerCoach()
 
-    def test_provide_advice_structure(self):
-        user_profile = {
-            "title": "Junior Developer",
-            "skills": ["python", "javascript"],
-            "experience_years": 1
-        }
-        context = "How can I get promoted?"
+@pytest.mark.asyncio
+async def test_provide_advice_structure(coach):
+    user_profile = {
+        "title": "Junior Developer",
+        "skills": ["python", "javascript"],
+        "experience_years": 1
+    }
+    context = "How can I get promoted?"
+    
+    # Mock nvidia_client.generate_structured
+    mock_res = {
+        "advice": "Test advice content",
+        "action_items": ["Item 1", "Item 2"],
+        "resources": ["Resource 1"],
+        "confidence_score": 0.9
+    }
+    with patch('shared.nvidia_client.nvidia_client.generate_structured', new_callable=AsyncMock) as mock_gen:
+        mock_gen.return_value = mock_res
+        advice = await coach.provide_advice(user_profile, context)
         
-        advice = self.coach.provide_advice(user_profile, context)
+        assert isinstance(advice, CareerAdvice)
+        assert advice.advice == "Test advice content"
+        assert advice.action_items == ["Item 1", "Item 2"]
+        assert advice.resources == ["Resource 1"]
+        assert advice.confidence_score == 0.9
+
+@pytest.mark.asyncio
+async def test_linkedin_optimization(coach):
+    mock_res = {
+        "optimized_headline": "Optimized Headline",
+        "profile_tips": ["Tip 1"],
+        "keyword_suggestions": ["Keyword 1"]
+    }
+    with patch('shared.nvidia_client.nvidia_client.generate_structured', new_callable=AsyncMock) as mock_gen:
+        mock_gen.return_value = mock_res
+        result = await coach.optimize_linkedin_profile("Dev", "Senior Dev")
         
-        self.assertIsInstance(advice, CareerAdvice)
-        self.assertTrue(len(advice.advice) > 0)
-        self.assertIsInstance(advice.action_items, list)
-        self.assertIsInstance(advice.resources, list)
-        self.assertTrue(0 <= advice.confidence_score <= 1)
+        assert isinstance(result, LinkedInOptimization)
+        assert result.optimized_headline == "Optimized Headline"
+        assert result.suggestions == ["Tip 1"]
+        assert result.keywords_added == ["Keyword 1"]
 
-    def test_analyze_user_situation_entry_level(self):
-        user_profile = {"experience_years": 1}
-        analysis = self.coach._analyze_user_situation(user_profile, "career advice")
-        self.assertEqual(analysis["experience_level"], "entry")
+@pytest.mark.asyncio
+async def test_generate_cover_letter_document(coach):
+    content = "Dear Hiring Manager,\n\nI am writing to apply..."
+    candidate_info = {"name": "John Doe", "email": "john@example.com"}
+    job_info = {"company": "Google", "title": "Software Engineer"}
+    
+    docx_bytes = await coach.generate_cover_letter_document(content, candidate_info, job_info)
+    assert isinstance(docx_bytes, bytes)
+    assert len(docx_bytes) > 0
 
-    def test_analyze_user_situation_senior_level(self):
-        user_profile = {"experience_years": 6}
-        analysis = self.coach._analyze_user_situation(user_profile, "career advice")
-        self.assertEqual(analysis["experience_level"], "senior")
-
-    def test_linkedin_optimization_fallback(self):
-        # Ensure fallback logic works even if generator fails
-        with patch.object(self.coach, 'generator', None):
-            result = self.coach.optimize_linkedin_profile("Dev", "Senior Dev")
-            self.assertIn("Senior Dev", result.optimized_headline)
-            self.assertIn("Dev", result.optimized_headline)
-
-if __name__ == '__main__':
-    unittest.main()
+@pytest.mark.asyncio
+async def test_generate_resume_document(coach):
+    parsed_data = {
+        "name": "John Doe",
+        "personal_info": {"email": "john@example.com", "phone": "123-456-7890"},
+        "summary": "Experienced engineer",
+        "skills": ["Python", "Docker"],
+        "experience": [
+            {
+                "title": "Software Engineer",
+                "company": "Tech Inc",
+                "start_date": "2020",
+                "end_date": "2023",
+                "bullets": ["Wrote code", "Fixed bugs"]
+            }
+        ]
+    }
+    docx_bytes = await coach.generate_resume_document(parsed_data)
+    assert isinstance(docx_bytes, bytes)
+    assert len(docx_bytes) > 0

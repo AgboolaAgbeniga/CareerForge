@@ -1,10 +1,11 @@
 import express, { Response } from 'express';
 import { z } from 'zod';
+import axios from 'axios';
 import { aiService } from '../services/aiService';
 import { authenticateToken, AuthRequest, requireVerified } from '../middleware/auth';
 import { db } from '../utils/database';
-import { aiChatMessages } from '../models/schema';
-import { eq, asc } from 'drizzle-orm';
+import { aiChatMessages, generatedDocuments, users, jobSeekers, jobs, companies, applications, resumes } from '../models/schema';
+import { eq, asc, desc, and, isNull } from 'drizzle-orm';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
@@ -37,12 +38,13 @@ const upload = multer({
     const allowedTypes = [
       'application/pdf',
       'application/msword',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'text/plain'
     ];
     if (allowedTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new AppError('Invalid file type. Only PDF and Word documents are allowed.', 400, 'INVALID_FILE_TYPE') as any);
+      cb(new AppError('Invalid file type. Only PDF, Word, and Text documents are allowed.', 400, 'INVALID_FILE_TYPE') as any);
     }
   }
 });
@@ -579,6 +581,549 @@ router.post('/insights', authenticateToken, requireVerified, catchAsync(async (r
       data: { message: "Keep updating your profile to unlock more AI insights.", action: "NONE" }
     });
   }
+}));
+
+/**
+ * @swagger
+ * /api/ai/documents/my:
+ *   get:
+ *     summary: List all generated documents for the authenticated user
+ *     tags: [AI]
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: List of generated documents
+ */
+router.get('/documents/my', authenticateToken, requireVerified, catchAsync(async (req: AuthRequest, res: Response) => {
+  const userId = req.user!.id;
+  const docs = await db.select()
+    .from(generatedDocuments)
+    .where(eq(generatedDocuments.userId, userId))
+    .orderBy(desc(generatedDocuments.createdAt));
+  
+  res.json({
+    success: true,
+    data: docs
+  });
+}));
+
+/**
+ * @swagger
+ * /api/ai/cover-letter/{jobId}/download:
+ *   get:
+ *     summary: Download cover letter as DOCX
+ *     tags: [AI]
+ *     security:
+ *       - cookieAuth: []
+ */
+router.get('/cover-letter/:jobId/download', authenticateToken, requireVerified, catchAsync(async (req: AuthRequest, res: Response) => {
+  const userId = req.user!.id;
+  const jobId = req.params.jobId as string;
+
+  // 1. Check if we already have it in generatedDocuments
+  const existingDocs = await db.select()
+    .from(generatedDocuments)
+    .where(
+      and(
+        eq(generatedDocuments.userId, userId),
+        eq(generatedDocuments.relatedJobId, jobId),
+        eq(generatedDocuments.documentType, 'cover_letter')
+      )
+    )
+    .limit(1);
+
+  const doc = existingDocs[0];
+  if (doc) {
+    if (fs.existsSync(doc.fileUrl)) {
+      const fileBuffer = fs.readFileSync(doc.fileUrl);
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+      res.setHeader('Content-Disposition', `attachment; filename="${doc.fileName}"`);
+      res.send(fileBuffer);
+      return;
+    }
+    try {
+      if (doc.fileUrl.startsWith('http')) {
+        const response = await axios.get(doc.fileUrl, { responseType: 'arraybuffer' });
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+        res.setHeader('Content-Disposition', `attachment; filename="${doc.fileName}"`);
+        res.send(Buffer.from(response.data));
+        return;
+      }
+    } catch (err) {
+      logger.warn(`Could not fetch existing document from remote: ${err}`);
+    }
+  }
+
+  // 2. Generate fresh cover letter
+  const user = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+  const job = await db.select().from(jobs).where(eq(jobs.id, jobId)).limit(1);
+  
+  const userRecord = user[0];
+  if (!userRecord) {
+    throw new AppError('User not found', 404, 'NOT_FOUND');
+  }
+
+  const jobRecord = job[0];
+  const company = jobRecord && jobRecord.companyId
+    ? await db.select().from(companies).where(eq(companies.id, jobRecord.companyId)).limit(1)
+    : null;
+  const companyRecord = company && company[0];
+
+  const candidateInfo = {
+    name: `${userRecord.firstName || ''} ${userRecord.lastName || ''}`.trim() || 'Candidate Name',
+    email: userRecord.email,
+    phone: userRecord.phone || '',
+    location: userRecord.location || ''
+  };
+
+  const jobInfo = jobRecord ? {
+    title: jobRecord.title,
+    company: companyRecord ? companyRecord.name : '',
+    description: jobRecord.description || '',
+    requirements: jobRecord.requirements || ''
+  } : null;
+
+  const application = await db.select()
+    .from(applications)
+    .where(and(eq(applications.jobSeekerId, userId), eq(applications.jobId, jobId)))
+    .limit(1);
+
+  let coverLetterContent = "";
+  const appRecord = application[0];
+  if (appRecord && appRecord.coverLetter) {
+    coverLetterContent = appRecord.coverLetter;
+  } else {
+    // Generate cover letter text via AI Service
+    const aiResult = await aiService.generateCoverLetter(jobId, userId);
+    coverLetterContent = aiResult.content || aiResult.cover_letter || "Dear Hiring Manager...";
+  }
+
+  // Generate the DOCX buffer via career coach download API
+  const docxBuffer = await aiService.downloadCoverLetter(coverLetterContent, candidateInfo, jobInfo);
+
+  // Save the document using uploadWithFallback
+  const sanitizedJobTitle = (jobInfo?.title || 'Job').replace(/[^a-zA-Z0-9]/g, '_');
+  const fileName = `CoverLetter_${sanitizedJobTitle}_${Date.now()}.docx`;
+  const storagePath = `${userId}/cover_letters/${fileName}`;
+  const localFallbackPath = path.join(os.tmpdir(), 'careerforge', 'uploads', 'documents', userId, fileName);
+
+  const uploadResult = await uploadWithFallback(
+    'documents',
+    storagePath,
+    docxBuffer,
+    localFallbackPath,
+    { contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' }
+  );
+
+  // Insert row into generatedDocuments
+  await db.insert(generatedDocuments).values({
+    userId,
+    documentType: 'cover_letter',
+    fileName,
+    fileUrl: uploadResult.url,
+    fileSizeBytes: docxBuffer.length,
+    relatedJobId: jobId,
+    metadata: { format: 'docx', source: 'career_coach' }
+  });
+
+  res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+  res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+  res.send(docxBuffer);
+}));
+
+/**
+ * @swagger
+ * /api/ai/resume/{resumeId}/download:
+ *   get:
+ *     summary: Download resume as DOCX
+ *     tags: [AI]
+ *     security:
+ *       - cookieAuth: []
+ */
+router.get('/resume/:resumeId/download', authenticateToken, requireVerified, catchAsync(async (req: AuthRequest, res: Response) => {
+  const userId = req.user!.id;
+  const resumeId = req.params.resumeId as string;
+  const targetJobId = req.query.targetJobId as string | undefined;
+
+  // 1. Check if we already have it in generatedDocuments
+  const existingDocs = await db.select()
+    .from(generatedDocuments)
+    .where(
+      and(
+        eq(generatedDocuments.userId, userId),
+        eq(generatedDocuments.relatedResumeId, resumeId),
+        eq(generatedDocuments.documentType, 'optimized_resume'),
+        targetJobId ? eq(generatedDocuments.relatedJobId, targetJobId) : isNull(generatedDocuments.relatedJobId)
+      )
+    )
+    .limit(1);
+
+  const doc = existingDocs[0];
+  if (doc) {
+    if (fs.existsSync(doc.fileUrl)) {
+      const fileBuffer = fs.readFileSync(doc.fileUrl);
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+      res.setHeader('Content-Disposition', `attachment; filename="${doc.fileName}"`);
+      res.send(fileBuffer);
+      return;
+    }
+    try {
+      if (doc.fileUrl.startsWith('http')) {
+        const response = await axios.get(doc.fileUrl, { responseType: 'arraybuffer' });
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+        res.setHeader('Content-Disposition', `attachment; filename="${doc.fileName}"`);
+        res.send(Buffer.from(response.data));
+        return;
+      }
+    } catch (err) {
+      logger.warn(`Could not fetch existing document from remote: ${err}`);
+    }
+  }
+
+  // 2. Fetch the Resume data
+  const resume = await db.select().from(resumes).where(and(eq(resumes.id, resumeId), eq(resumes.jobSeekerId, userId))).limit(1);
+  const resumeRecord = resume[0];
+  if (!resumeRecord) {
+    throw new AppError('Resume not found', 404, 'NOT_FOUND');
+  }
+
+  const parsedData = (resumeRecord.parsedData as any) || {};
+  let optimizations: any = null;
+
+  // If targetJobId is specified, let's optimize or use existing optimizations
+  if (targetJobId) {
+    const job = await db.select().from(jobs).where(eq(jobs.id, targetJobId)).limit(1);
+    const jobRecord = job[0];
+    if (jobRecord) {
+      const optResult = await aiService.optimizeResume(parsedData, jobRecord.requirements || jobRecord.description || '');
+      optimizations = optResult.optimizations || optResult;
+    }
+  }
+
+  const docxBuffer = await aiService.downloadOptimizedResume(parsedData, optimizations);
+
+  // Save the document
+  const fileName = `Resume_${Date.now()}.docx`;
+  const storagePath = `${userId}/resumes/${fileName}`;
+  const localFallbackPath = path.join(os.tmpdir(), 'careerforge', 'uploads', 'documents', userId, fileName);
+
+  const uploadResult = await uploadWithFallback(
+    'documents',
+    storagePath,
+    docxBuffer,
+    localFallbackPath,
+    { contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' }
+  );
+
+  // Insert row into generatedDocuments
+  await db.insert(generatedDocuments).values({
+    userId,
+    documentType: 'optimized_resume',
+    fileName,
+    fileUrl: uploadResult.url,
+    fileSizeBytes: docxBuffer.length,
+    relatedResumeId: resumeId,
+    relatedJobId: targetJobId || null,
+    metadata: { format: 'docx', source: 'career_coach' }
+  });
+
+  res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+  res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+  res.send(docxBuffer);
+}));
+
+/**
+ * @swagger
+ * /api/ai/coach/guided-builder/start:
+ *   post:
+ *     summary: Start a new guided resume builder session
+ *     tags: [AI]
+ *     security:
+ *       - cookieAuth: []
+ */
+router.post('/coach/guided-builder/start', authenticateToken, requireVerified, catchAsync(async (req: AuthRequest, res: Response) => {
+  const userId = req.user!.id;
+  const { targetRole, experienceYears, keyAchievements } = req.body;
+
+  if (!targetRole) {
+    throw new AppError('Target role is required', 400, 'BAD_REQUEST');
+  }
+
+  const result = await aiService.startGuidedBuilder(userId, targetRole, Number(experienceYears || 0), keyAchievements || '');
+
+  res.json(result);
+}));
+
+/**
+ * @swagger
+ * /api/ai/coach/guided-builder/respond:
+ *   post:
+ *     summary: Process user response or feedback for guided builder
+ *     tags: [AI]
+ *     security:
+ *       - cookieAuth: []
+ */
+router.post('/coach/guided-builder/respond', authenticateToken, requireVerified, catchAsync(async (req: AuthRequest, res: Response) => {
+  const { sessionId, stage, answer, feedback, approve } = req.body;
+
+  if (!sessionId) {
+    throw new AppError('Session ID is required', 400, 'BAD_REQUEST');
+  }
+
+  const result = await aiService.respondGuidedBuilder(
+    sessionId,
+    Number(stage || 1),
+    answer,
+    feedback,
+    approve
+  );
+
+  res.json(result);
+}));
+
+/**
+ * @swagger
+ * /api/ai/coach/guided-builder/session/{id}:
+ *   get:
+ *     summary: Get guided builder session details
+ *     tags: [AI]
+ *     security:
+ *       - cookieAuth: []
+ */
+router.get('/coach/guided-builder/session/:id', authenticateToken, requireVerified, catchAsync(async (req: AuthRequest, res: Response) => {
+  const { id } = req.params;
+
+  if (!id) {
+    throw new AppError('Session ID is required', 400, 'BAD_REQUEST');
+  }
+
+  const result = await aiService.getGuidedBuilderSession(id);
+
+  res.json(result);
+}));
+
+/**
+ * @swagger
+ * /api/ai/coach/guided-builder/sessions:
+ *   get:
+ *     summary: List guided builder sessions for the user
+ *     tags: [AI]
+ *     security:
+ *       - cookieAuth: []
+ */
+router.get('/coach/guided-builder/sessions', authenticateToken, requireVerified, catchAsync(async (req: AuthRequest, res: Response) => {
+  const userId = req.user!.id;
+  const result = await aiService.listGuidedBuilderSessions(userId);
+
+  res.json(result);
+}));
+
+/**
+ * @swagger
+ * /api/ai/career-pitch-deck/{candidateId}/download:
+ *   get:
+ *     summary: Download candidate career pitch deck as PPTX
+ *     tags: [AI]
+ *     security:
+ *       - cookieAuth: []
+ */
+router.get('/career-pitch-deck/:candidateId/download', authenticateToken, requireVerified, catchAsync(async (req: AuthRequest, res: Response) => {
+  const userId = req.user!.id;
+  const candidateId = req.params.candidateId as string;
+
+  if (!candidateId) {
+    throw new AppError('Candidate ID is required', 400, 'BAD_REQUEST');
+  }
+
+  // Verify ownership or role
+  if (userId !== candidateId && req.user!.role !== 'recruiter') {
+    throw new AppError('Unauthorized to view this candidate pitch deck', 403, 'FORBIDDEN');
+  }
+
+  // 1. Check if we already have it in generatedDocuments
+  const existingDocs = await db.select()
+    .from(generatedDocuments)
+    .where(
+      and(
+        eq(generatedDocuments.userId, candidateId),
+        eq(generatedDocuments.documentType, 'career_pitch_deck')
+      )
+    )
+    .orderBy(desc(generatedDocuments.createdAt))
+    .limit(1);
+
+  const doc = existingDocs[0];
+  if (doc) {
+    if (fs.existsSync(doc.fileUrl)) {
+      const fileBuffer = fs.readFileSync(doc.fileUrl);
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.presentationml.presentation');
+      res.setHeader('Content-Disposition', `attachment; filename="${doc.fileName}"`);
+      res.send(fileBuffer);
+      return;
+    }
+  }
+
+  // 2. Fetch the profile and active resume
+  const [userRecord] = await db.select().from(users).where(eq(users.id, candidateId)).limit(1);
+  const [profileRecord] = await db.select().from(jobSeekers).where(eq(jobSeekers.id, candidateId)).limit(1);
+  const [activeResume] = await db.select().from(resumes).where(and(eq(resumes.jobSeekerId, candidateId), eq(resumes.isActive, true))).limit(1);
+
+  const candidateName = `${userRecord?.firstName || ''} ${userRecord?.lastName || ''}`.trim() || 'Candidate';
+  const targetRole = (req.query.targetRole as string) || profileRecord?.title || 'Professional';
+
+  const candidateData = {
+    summary: (activeResume?.parsedData as any)?.summary || profileRecord?.bio || '',
+    skills: (activeResume?.parsedData as any)?.skills || profileRecord?.skills || [],
+    experience_years: profileRecord?.experienceYears || 0,
+    education: (activeResume?.parsedData as any)?.education || profileRecord?.education || '',
+    certifications: (activeResume?.parsedData as any)?.certifications || profileRecord?.certifications || [],
+    experience: (activeResume?.parsedData as any)?.experience || profileRecord?.experience || [],
+    contact: {
+      email: userRecord?.email || '',
+      phone: userRecord?.phone || '',
+    }
+  };
+
+  const { presentationService } = require('../services/presentationService');
+  const pptxBuffer = await presentationService.generateCareerPitchDeck(candidateName, candidateData, targetRole);
+
+  // 3. Upload report
+  const sanitizedTitle = targetRole.replace(/[^a-zA-Z0-9]/g, '_');
+  const fileName = `CareerPitchDeck_${sanitizedTitle}_${Date.now()}.pptx`;
+  const storagePath = `${candidateId}/presentations/${fileName}`;
+  const localFallbackPath = path.join(os.tmpdir(), 'careerforge', 'uploads', 'documents', candidateId, fileName);
+
+  const uploadResult = await uploadWithFallback(
+    'documents',
+    storagePath,
+    pptxBuffer,
+    localFallbackPath,
+    { contentType: 'application/vnd.openxmlformats-officedocument.presentationml.presentation' }
+  );
+
+  // 4. Insert row into generatedDocuments
+  await db.insert(generatedDocuments).values({
+    userId: candidateId,
+    documentType: 'career_pitch_deck',
+    fileName,
+    fileUrl: uploadResult.url,
+    fileSizeBytes: pptxBuffer.length,
+    relatedResumeId: activeResume?.id || null,
+    metadata: { format: 'pptx', source: 'career_coach' }
+  });
+
+  res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.presentationml.presentation');
+  res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+  res.send(pptxBuffer);
+}));
+
+/**
+ * @swagger
+ * /api/ai/talent-report/{jobId}/download:
+ *   get:
+ *     summary: Download recruiter talent pipeline report as PPTX
+ *     tags: [AI]
+ *     security:
+ *       - cookieAuth: []
+ */
+router.get('/talent-report/:jobId/download', authenticateToken, requireVerified, catchAsync(async (req: AuthRequest, res: Response) => {
+  const { jobId } = req.params;
+  const userId = req.user!.id;
+
+  if (!jobId) {
+    throw new AppError('Job ID is required', 400, 'BAD_REQUEST');
+  }
+
+  // 1. Get job and verify ownership
+  const [job] = await db.select().from(jobs).where(eq(jobs.id, jobId)).limit(1);
+  if (!job) {
+    throw new AppError('Job not found', 404, 'NOT_FOUND');
+  }
+
+  if (job.recruiterId !== userId) {
+    throw new AppError('Unauthorized to view this talent report', 403, 'FORBIDDEN');
+  }
+
+  // Helper matching function
+  function calculateLocalMatch(jobSeekerSkills: string[], jobSkills: string[]): { score: number } {
+    if (!jobSkills || jobSkills.length === 0) return { score: 100 };
+    if (!jobSeekerSkills || jobSeekerSkills.length === 0) return { score: 0 };
+    const lowerJobSkills = jobSkills.map(s => s.toLowerCase());
+    const lowerUserSkills = jobSeekerSkills.map(s => s.toLowerCase());
+    const matchedSkills = lowerJobSkills.filter(s => lowerUserSkills.some(u => u.includes(s) || s.includes(u)));
+    const score = Math.round((matchedSkills.length / lowerJobSkills.length) * 100);
+    return { score };
+  }
+
+  // 2. Gather candidates
+  const allJobSeekers = await db.select({
+    id: jobSeekers.id,
+    title: jobSeekers.title,
+    experienceYears: jobSeekers.experienceYears,
+    skills: jobSeekers.skills,
+    education: jobSeekers.education,
+    firstName: users.firstName,
+    lastName: users.lastName,
+  })
+  .from(jobSeekers)
+  .innerJoin(users, eq(jobSeekers.id, users.id));
+
+  const candidatesData = allJobSeekers.map((jobSeeker) => {
+    const { score } = calculateLocalMatch(
+      (jobSeeker as any).skills || [],
+      (job as any).skillsRequired || []
+    );
+
+    return {
+      candidate_id: jobSeeker.id,
+      name: `${jobSeeker.firstName || ''} ${jobSeeker.lastName || ''}`.trim() || 'Candidate Name',
+      skills: jobSeeker.skills || [],
+      experience_years: jobSeeker.experienceYears || 0,
+      education: jobSeeker.education || '',
+      overall_score: score / 100.0,
+      skill_alignment: score / 100.0,
+      experience_fit: jobSeeker.experienceYears && jobSeeker.experienceYears >= 3 ? 0.9 : 0.6,
+      cultural_fit: 0.8,
+      recommendations: score >= 80 ? ["Strong match - highly recommended"] : ["Evaluate in interviews"]
+    };
+  }).sort((a, b) => b.overall_score - a.overall_score);
+
+  const { presentationService } = require('../services/presentationService');
+  const pptxBuffer = await presentationService.generateTalentPipelineReport(
+    job.title,
+    job.skillsRequired || [],
+    candidatesData
+  );
+
+  // 3. Upload report
+  const sanitizedTitle = job.title.replace(/[^a-zA-Z0-9]/g, '_');
+  const fileName = `TalentPipelineReport_${sanitizedTitle}_${Date.now()}.pptx`;
+  const storagePath = `${userId}/presentations/${fileName}`;
+  const localFallbackPath = path.join(os.tmpdir(), 'careerforge', 'uploads', 'documents', userId, fileName);
+
+  const uploadResult = await uploadWithFallback(
+    'documents',
+    storagePath,
+    pptxBuffer,
+    localFallbackPath,
+    { contentType: 'application/vnd.openxmlformats-officedocument.presentationml.presentation' }
+  );
+
+  // 4. Insert row into generatedDocuments
+  await db.insert(generatedDocuments).values({
+    userId,
+    documentType: 'talent_pipeline_report',
+    fileName,
+    fileUrl: uploadResult.url,
+    fileSizeBytes: pptxBuffer.length,
+    relatedJobId: jobId,
+    metadata: { format: 'pptx', source: 'matching_engine' }
+  });
+
+  res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.presentationml.presentation');
+  res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+  res.send(pptxBuffer);
 }));
 
 export default router;
