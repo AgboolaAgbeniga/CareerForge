@@ -349,11 +349,10 @@ export default function OnboardingWelcomePage() {
         }
       });
       
-      // Force a full navigation to clear Next.js router cache and remount AuthGuard
-      window.location.href = '/job-seeker/dashboard';
+      router.push('/job-seeker/dashboard');
     } catch (error) {
       console.error('Failed to update onboarding status:', error);
-      window.location.href = '/job-seeker/dashboard';
+      router.push('/job-seeker/dashboard');
     }
   };
 
