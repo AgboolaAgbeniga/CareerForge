@@ -106,7 +106,7 @@ test.describe('Job Seeker End-to-End Flow', () => {
     await page.click('button:has-text("Save Preferences")');
 
     // 6. Step 4: Launch
-    await expect(page.locator('text=Enable AI Career Coach')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('text=Enable AI Career Coach').first()).toBeVisible({ timeout: 10000 });
     await page.click('button:has-text("Launch")');
 
     // Should redirect to dashboard
