@@ -3,6 +3,7 @@ import { db } from '../utils/database';
 import { applications, jobs, notifications, jobSeekers, companies } from '../models/schema';
 import { eq, desc, and, or, isNull, sql } from 'drizzle-orm';
 import logger from '../utils/logger';
+import { calculateSkillOverlap } from '../utils/matchingHelper';
 
 export interface SectionResult<T> {
   error?: boolean;
@@ -161,10 +162,7 @@ export class DashboardService {
       const userSkills = (jobSeekerProfile as any)?.skills as string[] | null;
 
       if (jobSkillsRequired && userSkills) {
-        const lowerJobSkills = jobSkillsRequired.map((s: string) => s.toLowerCase());
-        const lowerUserSkills = userSkills.map((s: string) => s.toLowerCase());
-        const matched = lowerJobSkills.filter((s: string) => lowerUserSkills.some((u: string) => u.includes(s) || s.includes(u)));
-        const skillScore = (matched.length / lowerJobSkills.length) * 100;
+        const { score: skillScore } = calculateSkillOverlap(userSkills, jobSkillsRequired);
         totalScore += skillScore * 50;
         weightSum += 50;
       }

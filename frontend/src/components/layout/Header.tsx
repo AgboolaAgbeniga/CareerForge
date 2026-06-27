@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { Logo } from '@/components/shared/Logo';
+import Link from 'next/link';
 
 type HeaderVariant = 'public' | 'auth' | 'job-seeker' | 'recruiter';
 
@@ -148,7 +149,7 @@ const Header: React.FC<HeaderProps> = ({
               {currentVariant === 'job-seeker' ? 'Job Seeker' : 'Recruiter'}
             </p>
           </div>
-          <a
+          <Link
             href={currentVariant === 'job-seeker' ? '/job-seeker/settings' : '/recruiter/settings'}
             className={`flex items-center gap-3 px-4 py-2 type-body-md transition-colors ${
               isDarkNav ? 'hover:bg-surface-dark-soft' : 'hover:bg-hairline'
@@ -156,8 +157,8 @@ const Header: React.FC<HeaderProps> = ({
           >
             <Settings className="h-4 w-4" />
             Settings
-          </a>
-          <a
+          </Link>
+          <Link
             href="/"
             className={`flex items-center gap-3 px-4 py-2 type-body-md transition-colors ${
               isDarkNav ? 'hover:bg-surface-dark-soft' : 'hover:bg-hairline'
@@ -165,7 +166,7 @@ const Header: React.FC<HeaderProps> = ({
           >
             <Home className="h-4 w-4" />
             Home
-          </a>
+          </Link>
           <div className={`mt-2 border-t pt-2 ${isDarkNav ? 'border-surface-dark-soft' : 'border-hairline'}`}>
             <button className={`flex w-full items-center gap-3 px-4 py-2 type-body-md transition-colors ${isDarkNav ? 'hover:bg-surface-dark-soft' : 'hover:bg-hairline'}`}>
               <LogOut className="h-4 w-4" />
@@ -180,9 +181,9 @@ const Header: React.FC<HeaderProps> = ({
   const RightActions = () => {
     if (currentVariant === 'auth') {
       return (
-        <a href="/" className="cf-button-outline hidden sm:inline-flex">
+        <Link href="/" className="cf-button-outline hidden sm:inline-flex">
           Back Home
-        </a>
+        </Link>
       );
     }
 
@@ -193,9 +194,9 @@ const Header: React.FC<HeaderProps> = ({
             {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
           </button>
           {currentVariant === 'job-seeker' && (
-            <a href="/job-seeker/messaging" className={iconButtonClass} aria-label="Messages">
+            <Link href="/job-seeker/messaging" className={iconButtonClass} aria-label="Messages">
               <MessageCircle className="h-5 w-5" />
-            </a>
+            </Link>
           )}
           {(showUserMenu || isAuthenticated) && <UserMenu />}
         </div>
@@ -207,12 +208,12 @@ const Header: React.FC<HeaderProps> = ({
         <button onClick={toggleTheme} className={iconButtonClass} aria-label="Toggle theme">
           {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
         </button>
-        <a href="/auth/login" className={isDarkNav ? 'cf-button-secondary-white hidden md:inline-flex' : 'cf-button-outline hidden md:inline-flex'}>
+        <Link href="/auth/login" className={isDarkNav ? 'cf-button-secondary-white hidden md:inline-flex' : 'cf-button-outline hidden md:inline-flex'}>
           Sign In
-        </a>
-        <a href="/auth/signup" className="cf-button-primary">
+        </Link>
+        <Link href="/auth/signup" className="cf-button-primary">
           Get Started
-        </a>
+        </Link>
       </div>
     );
   };
@@ -226,9 +227,9 @@ const Header: React.FC<HeaderProps> = ({
           {navItems.length > 0 && (
             <nav className="hidden items-center gap-2xl md:flex" aria-label="Primary">
               {navItems.map((item) => (
-                <a key={item.href} href={item.href} className={navLinkClass(item.href)}>
+                <Link key={item.href} href={item.href} className={navLinkClass(item.href)}>
                   {item.label}
-                </a>
+                </Link>
               ))}
             </nav>
           )}
@@ -254,7 +255,7 @@ const Header: React.FC<HeaderProps> = ({
         <div className={`fixed inset-0 z-40 md:hidden pt-16 ${isDarkNav ? 'bg-canvas-dark text-on-dark' : 'bg-canvas text-ink'}`}>
           <nav className="flex flex-col gap-1 px-lg py-lg" aria-label="Mobile primary">
             {navItems.map((item) => (
-              <a
+              <Link
                 key={item.href}
                 href={item.href}
                 className={`rounded-sm px-3 py-3 type-body-lg transition-colors ${
@@ -263,7 +264,7 @@ const Header: React.FC<HeaderProps> = ({
                 onClick={() => setMobileMenuOpen(false)}
               >
                 {item.label}
-              </a>
+              </Link>
             ))}
           </nav>
         </div>

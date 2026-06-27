@@ -201,6 +201,10 @@ class NvidiaClient:
         """Generate embedding using NVIDIA NIM."""
         import asyncio
 
+        extra_body = {}
+        if "nv-embedqa" in self.nvidia_embedding:
+            extra_body = {"input_type": "query", "truncate": "NONE"}
+
         loop = asyncio.get_event_loop()
         response = await loop.run_in_executor(
             None,
@@ -208,6 +212,7 @@ class NvidiaClient:
                 model=self.nvidia_embedding,
                 input=text,
                 encoding_format="float",
+                extra_body=extra_body,
             ),
         )
 

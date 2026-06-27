@@ -59,6 +59,18 @@ export class AIService {
       const response = await axios.post(`${serviceUrl}/${endpoint}`, data, { timeout });
       return response.data;
     } catch (error) {
+      // Dynamic connection fallback if port-specific URL fails
+      const fallbackUrl = env.AI_SERVICE_URL || 'http://localhost:8000';
+      if (axios.isAxiosError(error) && error.code === 'ECONNREFUSED' && serviceUrl !== fallbackUrl) {
+        console.warn(`[aiService] ${serviceUrl} unreachable. Retrying with fallback: ${fallbackUrl}`);
+        try {
+          const response = await axios.post(`${fallbackUrl}/${endpoint}`, data, { timeout });
+          return response.data;
+        } catch (fallbackError) {
+          console.error(`AI Fallback Service Error (${endpoint}):`, fallbackError);
+        }
+      }
+
       console.error(`AI Service Error (${endpoint}):`, error);
       if (axios.isAxiosError(error)) {
         if (error.code === 'ECONNREFUSED') {

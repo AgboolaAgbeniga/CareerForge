@@ -87,7 +87,7 @@ export default function OnboardingWelcomePage() {
       setProfileData({
         name: `${userObj.firstName || ''} ${userObj.lastName || ''}`.trim(),
         title: jsProfile.title || '',
-        location: userObj.location || jsProfile.location || '',
+        location: userObj.location || '',
         email: userObj.email || '',
         phone: userObj.phone || '',
         website: jsProfile.portfolioUrl || '',

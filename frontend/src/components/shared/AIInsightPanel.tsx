@@ -18,7 +18,8 @@ interface InsightData {
 
 export default function AIInsightPanel({ pageType }: AIInsightPanelProps) {
   const pageContextData = usePageStore((s) => s.pageContextData);
-  const { data: insightData, isLoading: isQueryLoading, isError } = useAiInsights(pageType, pageContextData || '');
+  const contextString = pageContextData ? JSON.stringify(pageContextData) : '';
+  const { data: insightData, isLoading: isQueryLoading, isError } = useAiInsights(pageType, contextString);
 
   const [insight, setInsight] = useState<InsightData | null>(null);
   const [isLoading, setIsLoading] = useState(true);

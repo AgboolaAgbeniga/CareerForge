@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import Link from 'next/link';
 
 export default function RecruiterError({
   error,
@@ -10,13 +11,12 @@ export default function RecruiterError({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error('Recruiter error:', error);
+    console.error(error);
   }, [error]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-900">
-      <div className="text-center max-w-md mx-auto p-6">
-        <div className="text-4xl mb-4">🏢</div>
+    <div className="min-h-screen bg-slate-900 flex items-center justify-center p-6">
+      <div className="bg-slate-800 border border-slate-700 p-8 rounded-xl max-w-md w-full text-center">
         <h1 className="text-xl font-bold text-white mb-2">
           Recruiter Dashboard Error
         </h1>
@@ -29,12 +29,12 @@ export default function RecruiterError({
         >
           Try Again
         </button>
-        <a
+        <Link
           href="/auth/login"
           className="px-6 py-2 bg-slate-700 text-slate-300 rounded-lg hover:bg-slate-600 transition-colors"
         >
           Login
-        </a>
+        </Link>
       </div>
     </div>
   );

@@ -74,7 +74,8 @@ class TestCareerCoachSessions:
         assert "Coach: Focus on Python and React" in context
         assert "User: How long will it take?" in context
     
-    def test_stateful_conversation(self, coach, session_manager, sample_user_profile):
+    @pytest.mark.asyncio
+    async def test_stateful_conversation(self, coach, session_manager, sample_user_profile):
         """Test that coach maintains context across multiple queries"""
         session_id = session_manager.create_session()
         
@@ -83,7 +84,7 @@ class TestCareerCoachSessions:
         session_manager.add_message(session_id, "user", query1)
         
         context1 = session_manager.get_context_string(session_id)
-        advice1 = coach.provide_advice(sample_user_profile, context1)
+        advice1 = await coach.provide_advice(sample_user_profile, context1)
         
         session_manager.add_message(session_id, "assistant", advice1.advice)
         
@@ -96,7 +97,7 @@ class TestCareerCoachSessions:
         # Context should include previous conversation
         assert "senior developer" in context2.lower()
         
-        advice2 = coach.provide_advice(sample_user_profile, context2)
+        advice2 = await coach.provide_advice(sample_user_profile, context2)
         
         # Should provide advice
         assert len(advice2.advice) > 0
@@ -134,10 +135,11 @@ class TestCareerCoachSessions:
         assert "Message 8" in context
         assert "Message 0" not in context  # Too old
     
-    def test_advice_with_empty_session(self, coach, sample_user_profile):
+    @pytest.mark.asyncio
+    async def test_advice_with_empty_session(self, coach, sample_user_profile):
         """Test advice generation without session context"""
         # No session context, just direct query
-        advice = coach.provide_advice(sample_user_profile, "How do I improve my skills?")
+        advice = await coach.provide_advice(sample_user_profile, "How do I improve my skills?")
         
         assert advice is not None
         assert len(advice.advice) > 0

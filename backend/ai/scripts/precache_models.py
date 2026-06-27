@@ -71,5 +71,12 @@ if __name__ == '__main__':
     parser.add_argument('--dry-run', action='store_true', help='Do not download, just report')
     args = parser.parse_args()
 
-    rc = precache_models(args.models, dry_run=args.dry_run)
+    models_file_path = args.models
+    if not os.path.exists(models_file_path):
+        # Fallback to parent directory of the script file
+        fallback_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'models.yaml'))
+        if os.path.exists(fallback_path):
+            models_file_path = fallback_path
+
+    rc = precache_models(models_file_path, dry_run=args.dry_run)
     sys.exit(rc)

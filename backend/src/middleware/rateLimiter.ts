@@ -32,3 +32,30 @@ export const aiLimiter = rateLimit({
     max: isProd ? 5 : 1000,
     message: 'AI processing limit exceeded. Please wait a minute before trying again.',
 });
+
+// Resume Parsing: Max 10 per hour
+export const resumeParseLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    max: isProd ? 10 : 1000,
+    message: 'Resume parsing limit exceeded (Max 10 per hour). Please try again later.',
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+// Career Coach: Max 100 per day
+export const careerCoachLimiter = rateLimit({
+    windowMs: 24 * 60 * 60 * 1000, // 24 hours
+    max: isProd ? 100 : 1000,
+    message: 'Career Coach chat limit exceeded (Max 100 per day). Please try again tomorrow.',
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+// Recruiter Copilot: Max 50 per day
+export const recruiterCopilotLimiter = rateLimit({
+    windowMs: 24 * 60 * 60 * 1000, // 24 hours
+    max: isProd ? 50 : 1000,
+    message: 'Recruiter Copilot limit exceeded (Max 50 per day). Please try again tomorrow.',
+    standardHeaders: true,
+    legacyHeaders: false,
+});

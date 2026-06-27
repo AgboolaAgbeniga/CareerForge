@@ -15,6 +15,7 @@ import {
 import { CandidateCard } from '@/components/recruiter/CandidateCard';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import Button from '@/components/ui/Button';
+import { usePageStore } from '@/store/usePageStore';
 
 interface Candidate {
   id: string;
@@ -43,6 +44,12 @@ export default function RecruiterDashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [matchScoreFilter, setMatchScoreFilter] = useState(70);
+
+  const setPageContextData = usePageStore((s) => s.setPageContextData);
+
+  useEffect(() => {
+    setPageContextData({ type: 'DASHBOARD', role: 'recruiter' });
+  }, [setPageContextData]);
   const [selectedSkills, setSelectedSkills] = useState<string[]>([
     'Figma',
     'User Research',
@@ -59,7 +66,7 @@ export default function RecruiterDashboard() {
   const currentDate = formatShortDate(new Date());
 
   const filteredCandidates = realApplications.filter(
-    (candidate) =>
+    (candidate: any) =>
       candidate?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       candidate?.title?.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -242,7 +249,7 @@ export default function RecruiterDashboard() {
 
                 {/* Candidate List */}
                 <div className="divide-y divide-hairline">
-                  {filteredCandidates.map((candidate) => (
+                  {filteredCandidates.map((candidate: any) => (
                     <CandidateCard key={candidate.id} candidate={candidate} />
                   ))}
                   {filteredCandidates.length === 0 && (

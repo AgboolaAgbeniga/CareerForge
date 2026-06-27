@@ -2,8 +2,25 @@ import os
 import pytest
 from vector.pgvector import ensure_extension_and_table, upsert_embedding, search_embeddings, EMBEDDING_COLUMN_DIM
 
+def is_pgvector_available() -> bool:
+    if not os.getenv('DATABASE_URL'):
+        return False
+    try:
+        from vector.pgvector import get_conn
+        with get_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT 1 FROM pg_available_extensions WHERE name = 'vector';")
+                row = cur.fetchone()
+                if row:
+                    return True
+                cur.execute("SELECT 1 FROM pg_extension WHERE extname = 'vector';")
+                return cur.fetchone() is not None
+    except Exception:
+        return False
 
-@pytest.mark.skipif(not os.getenv('DATABASE_URL'), reason='DATABASE_URL not set; skipping pgvector integration tests')
+PGVECTOR_AVAILABLE = is_pgvector_available()
+
+@pytest.mark.skipif(not PGVECTOR_AVAILABLE, reason='pgvector extension not available in Postgres; skipping pgvector integration tests')
 def test_pgvector_index_and_search():
     ensure_extension_and_table()
 
@@ -18,7 +35,7 @@ def test_pgvector_index_and_search():
     assert any(r['candidate_id'] == 99999 for r in results)
 
 
-@pytest.mark.skipif(not os.getenv('DATABASE_URL'), reason='DATABASE_URL not set; skipping pgvector integration tests')
+@pytest.mark.skipif(not PGVECTOR_AVAILABLE, reason='pgvector extension not available in Postgres; skipping pgvector integration tests')
 def test_dimension_validation():
     ensure_extension_and_table()
     emb_bad = [0.1] * (EMBEDDING_COLUMN_DIM + 1)

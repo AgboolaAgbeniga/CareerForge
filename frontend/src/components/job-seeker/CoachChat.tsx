@@ -6,6 +6,7 @@ import clsx from 'clsx';
 import { usePathname } from 'next/navigation';
 import { usePageStore } from '@/store/usePageStore';
 import { useCoachHistory, useSaveCoachMessage } from '@/hooks/queries/useAi';
+import { supabase } from '@/lib/supabase';
 
 interface Message {
   id: string;
@@ -66,9 +67,15 @@ export default function CoachChat() {
 
       const payloadMessages = messages.map(m => ({ role: m.role as 'user' | 'assistant', content: m.content })).concat(contextualizedMessage);
 
-      const response = await fetch('http://localhost:8000/agent/invoke', {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/ai/agent/invoke`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
         body: JSON.stringify({
           agent_type: 'coach',
           messages: payloadMessages
@@ -80,17 +87,22 @@ export default function CoachChat() {
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let finalAssistantContent = "";
+      let buffer = "";
 
       while (true) {
         const { value, done } = await reader.read();
         if (done) break;
 
-        const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split('\n');
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() ?? ''; // retain incomplete trailing line
 
         for (const line of lines) {
-          if (line.startsWith('data: ') && line !== 'data: [DONE]') {
-            const dataStr = line.slice(6).trim();
+          const trimmed = line.trim();
+          if (!trimmed || trimmed === 'data: [DONE]') continue;
+
+          if (trimmed.startsWith('data: ')) {
+            const dataStr = trimmed.slice(6).trim();
             if (!dataStr) continue;
 
             try {

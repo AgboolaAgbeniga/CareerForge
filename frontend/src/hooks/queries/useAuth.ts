@@ -9,6 +9,8 @@ export interface User {
   role: 'job_seeker' | 'recruiter';
   firstName: string;
   lastName: string;
+  phone?: string;
+  location?: string;
   onboardingCompleted: boolean;
   twoFactorEnabled?: boolean;
   profile?: any;

@@ -12,24 +12,9 @@ import os from 'os';
 import axios from 'axios';
 import { aiService } from '../services/aiService';
 import { uploadWithFallback } from '../utils/storage';
+import { calculateSkillOverlap } from '../utils/matchingHelper';
 
 const router = express.Router();
-
-/**
- * Simple matching function based on skills
- */
-function calculateMatch(jobSeekerSkills: string[], jobSkills: string[]): { score: number, matchedSkills: string[] } {
-  if (!jobSkills || jobSkills.length === 0) return { score: 100, matchedSkills: [] };
-  if (!jobSeekerSkills || jobSeekerSkills.length === 0) return { score: 0, matchedSkills: [] };
-
-  const lowerJobSkills = jobSkills.map(s => s.toLowerCase());
-  const lowerUserSkills = jobSeekerSkills.map(s => s.toLowerCase());
-
-  const matchedSkills = lowerJobSkills.filter(s => lowerUserSkills.some(u => u.includes(s) || s.includes(u)));
-  const score = Math.round((matchedSkills.length / lowerJobSkills.length) * 100);
-
-  return { score, matchedSkills };
-}
 
 /**
  * @swagger
@@ -69,7 +54,7 @@ router.get('/jobs/:jobSeekerId', authenticateToken, requireVerified, catchAsync(
   const allJobs = await db.select().from(jobs).where(eq(jobs.status, 'open'));
 
   const matches = allJobs.map((job) => {
-    const { score, matchedSkills } = calculateMatch(
+    const { score, matchedSkills } = calculateSkillOverlap(
       (jobSeeker as any).skills || [],
       (job as any).skillsRequired || []
     );
@@ -136,7 +121,7 @@ router.get('/candidates/:jobId', authenticateToken, requireVerified, catchAsync(
   const allJobSeekers = await db.select().from(jobSeekers);
 
   const candidates = allJobSeekers.map((jobSeeker) => {
-    const { score, matchedSkills } = calculateMatch(
+    const { score, matchedSkills } = calculateSkillOverlap(
       (jobSeeker as any).skills || [],
       (job as any).skillsRequired || []
     );
@@ -280,7 +265,7 @@ router.get('/:jobId/report/download', authenticateToken, requireVerified, catchA
   .innerJoin(users, eq(jobSeekers.id, users.id));
 
   const candidatesData = allJobSeekers.map((jobSeeker) => {
-    const { score, matchedSkills } = calculateMatch(
+    const { score, matchedSkills } = calculateSkillOverlap(
       (jobSeeker as any).skills || [],
       (job as any).skillsRequired || []
     );

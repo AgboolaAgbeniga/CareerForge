@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Rethink_Sans, Inter } from 'next/font/google';
+import Script from 'next/script';
 import './globals.css';
 import {
   Header,
@@ -14,7 +15,7 @@ const inter = Inter({
   display: 'swap',
 });
 
-const rethinkSans = Inter({
+const rethinkSans = Rethink_Sans({
   subsets: ['latin'],
   variable: '--font-rethink-sans',
   display: 'swap',
@@ -35,46 +36,22 @@ export const metadata: Metadata = {
     'recruitment software',
   ],
   authors: [{ name: 'CareerForge Team' }],
-  creator: 'CareerForge',
-  publisher: 'CareerForge',
+  viewport: 'width=device-width, initial-scale=1',
+  robots: 'index, follow',
   openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    url: 'https://careerforge.com',
     title: 'CareerForge - The Future of Hiring',
     description:
       'The all-in-one AI platform connecting top talent with innovative companies. Optimize resumes, find perfect matches, and accelerate your career growth.',
-    url: 'https://careerforge.com',
     siteName: 'CareerForge',
-    images: [
-      {
-        url: '/og-image.jpg',
-        width: 1200,
-        height: 630,
-        alt: 'CareerForge - AI-Powered Hiring Platform',
-      },
-    ],
-    locale: 'en_US',
-    type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
     title: 'CareerForge - The Future of Hiring',
     description:
-      'The all-in-one AI platform connecting top talent with innovative companies.',
-    images: ['/og-image.jpg'],
-    creator: '@careerforge',
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
-    },
-  },
-  verification: {
-    google: 'your-google-site-verification-code',
+      'The all-in-one AI platform connecting top talent with innovative companies. Optimize resumes, find perfect matches, and accelerate your career growth.',
   },
 };
 
@@ -98,6 +75,10 @@ export default function RootLayout({
               } catch (_) {}
             `,
           }}
+        />
+        <Script
+          src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"
+          strategy="beforeInteractive"
         />
       </head>
       <body suppressHydrationWarning>

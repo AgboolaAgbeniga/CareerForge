@@ -1,4 +1,5 @@
 import express, { Response } from 'express';
+import httpProxy from 'http-proxy';
 import { z } from 'zod';
 import axios from 'axios';
 import { aiService } from '../services/aiService';
@@ -6,7 +7,7 @@ import { authenticateToken, AuthRequest, requireVerified } from '../middleware/a
 import { db } from '../utils/database';
 import { aiChatMessages, generatedDocuments, users, jobSeekers, jobs, companies, applications, resumes } from '../models/schema';
 import { eq, asc, desc, and, isNull } from 'drizzle-orm';
-import multer from 'multer';
+import { documentUploader, validateFileMagicBytes } from '../utils/uploader';
 import path from 'path';
 import fs from 'fs';
 import os from 'os';
@@ -16,6 +17,33 @@ import { resumeStorage, uploadWithFallback } from '../utils/storage';
 import logger from '../utils/logger';
 
 const router = express.Router();
+const proxy = httpProxy.createProxyServer({});
+
+// Handle body serialization for proxied POST requests after body-parser consumption
+proxy.on('proxyReq', (proxyReq, req: any) => {
+  if (req.body) {
+    const bodyData = JSON.stringify(req.body);
+    proxyReq.setHeader('Content-Type', 'application/json');
+    proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
+    proxyReq.write(bodyData);
+  }
+});
+
+import { env } from '../config/env';
+
+const AI_SERVICE_URL = env.AI_SERVICE_URL;
+
+import { resumeParseLimiter, careerCoachLimiter, recruiterCopilotLimiter } from '../middleware/rateLimiter';
+
+const agentRateLimiter = (req: any, res: any, next: any) => {
+  const agentType = req.body.agent_type;
+  if (agentType === 'coach') {
+    return careerCoachLimiter(req, res, next);
+  } else if (agentType === 'recruiter') {
+    return recruiterCopilotLimiter(req, res, next);
+  }
+  next();
+};
 
 // Determine local fallback directory for development
 const localUploadDir = process.env.UPLOAD_DIR
@@ -30,24 +58,7 @@ try {
   logger.warn(`Could not create local upload dir: ${err?.message || err}`);
 }
 
-// Multer config for memory storage (we'll handle Supabase upload manually)
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
-  fileFilter: (req, file, cb) => {
-    const allowedTypes = [
-      'application/pdf',
-      'application/msword',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      'text/plain'
-    ];
-    if (allowedTypes.includes(file.mimetype)) {
-      cb(null, true);
-    } else {
-      cb(new AppError('Invalid file type. Only PDF, Word, and Text documents are allowed.', 400, 'INVALID_FILE_TYPE') as any);
-    }
-  }
-});
+const upload = documentUploader;
 
 // Validation schemas
 const parseResumeSchema = z.object({
@@ -161,6 +172,9 @@ router.post('/resume/parse-file', authenticateToken, requireVerified, upload.sin
   if (!req.file) {
     throw new AppError('No file uploaded', 400, 'MISSING_FILE');
   }
+
+  // Verify file magic bytes and extension securely
+  await validateFileMagicBytes(req.file);
 
   try {
     // Use file buffer directly for AI parsing
@@ -1124,6 +1138,104 @@ router.get('/talent-report/:jobId/download', authenticateToken, requireVerified,
   res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.presentationml.presentation');
   res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
   res.send(pptxBuffer);
+}));
+
+// Authenticated Gateway Proxy for Agent Invocations (Streams SSE content)
+router.post('/agent/invoke', authenticateToken, requireVerified, agentRateLimiter, (req: AuthRequest, res) => {
+  logger.info(`Proxying agent invoke for user ${req.user!.id}`);
+
+  // Inject authentication details before proxying
+  req.body.userId = req.user!.id;
+  req.body.userRole = req.user!.role;
+
+  proxy.web(req, res, { target: AI_SERVICE_URL, changeOrigin: true }, (err) => {
+    logger.error('Proxy to Agent Invoke failed:', err);
+    res.status(502).json({ error: 'AI agent microservice unreachable' });
+  });
+});
+
+// Authenticated Gateway Proxy for Contextual Agent Insights
+router.post('/agent/insights', authenticateToken, requireVerified, (req: AuthRequest, res) => {
+  logger.info(`Proxying agent insights request for user ${req.user!.id}`);
+
+  // Transform payload from camelCase (JS) to snake_case (Python Pydantic)
+  req.body = {
+    page_type: req.body.pageType ?? req.body.page_type,
+    page_context: req.body.pageContext ?? req.body.page_context ?? '',
+    user_id: req.user!.id,
+    user_role: req.user!.role
+  };
+
+  proxy.web(req, res, { target: AI_SERVICE_URL, changeOrigin: true }, (err) => {
+    logger.error('Proxy to Agent Insights failed:', err);
+    res.status(502).json({ error: 'AI agent microservice unreachable' });
+  });
+});
+
+/**
+ * @swagger
+ * /api/ai/career/path:
+ *   post:
+ *     summary: Infer next career path milestones based on job title
+ *     tags: [AI]
+ */
+router.post('/career/path', authenticateToken, requireVerified, catchAsync(async (req: AuthRequest, res: Response) => {
+  const { title } = req.body;
+  if (!title) {
+    throw new AppError('Title is required', 400, 'MISSING_TITLE');
+  }
+
+  const t = title.toLowerCase();
+  let path = {
+    oneYear: `Senior ${title}`,
+    threeYear: `Lead ${title}`,
+    fiveYear: 'Director / Head of Function'
+  };
+
+  if (t.includes('director') || t.includes('vp') || t.includes('head')) {
+    path = { oneYear: 'VP / Head of Department', threeYear: 'C-Suite Executive', fiveYear: 'Industry Leader' };
+  } else if (t.includes('senior') || t.includes('lead')) {
+    path = { oneYear: 'Principal / Staff Level', threeYear: 'Director', fiveYear: 'VP' };
+  } else if (t.includes('manager')) {
+    path = { oneYear: 'Senior Manager', threeYear: 'Director', fiveYear: 'VP' };
+  }
+
+  res.json({
+    success: true,
+    path,
+    timestamp: new Date().toISOString()
+  });
+}));
+
+/**
+ * @swagger
+ * /api/ai/learning/recommendations:
+ *   post:
+ *     summary: Get personalized learning resource recommendations for skill gaps
+ *     tags: [AI]
+ */
+router.post('/learning/recommendations', authenticateToken, requireVerified, catchAsync(async (req: AuthRequest, res: Response) => {
+  const { skillGaps } = req.body;
+  if (!skillGaps || !Array.isArray(skillGaps)) {
+    throw new AppError('skillGaps array is required', 400, 'INVALID_INPUT');
+  }
+
+  const recommendations = skillGaps.map(skill => {
+    const query = encodeURIComponent(skill);
+    return {
+      skill,
+      title: `${skill.charAt(0).toUpperCase() + skill.slice(1)} Professional Certificate`,
+      provider: 'Coursera',
+      url: `https://www.coursera.org/search?query=${query}`,
+      duration: '4-6 Weeks'
+    };
+  });
+
+  res.json({
+    success: true,
+    recommendations,
+    timestamp: new Date().toISOString()
+  });
 }));
 
 export default router;

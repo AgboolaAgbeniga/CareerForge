@@ -14,6 +14,7 @@ import {
     AlertCircle
 } from 'lucide-react';
 import { useUser, useDisable2FA, useRegenerateBackupCodes } from '@/hooks/queries/useAuth';
+import Link from 'next/link';
 
 const SecuritySettings: React.FC = () => {
     const { data: userProfile, isLoading: loading } = useUser();
@@ -124,12 +125,12 @@ const SecuritySettings: React.FC = () => {
 
                     {!is2FAEnabled ? (
                         <div className="flex flex-col sm:flex-row gap-4">
-                            <a
+                            <Link
                                 href="/auth/two-factor-setup"
                                 className="bg-indigo-600 text-white px-6 py-2.5 rounded-lg font-medium hover:bg-indigo-700 transition-colors inline-block text-center shadow-lg shadow-indigo-500/20"
                             >
                                 Setup 2FA
-                            </a>
+                            </Link>
                         </div>
                     ) : (
                         <div className="space-y-4">

@@ -14,6 +14,7 @@ module.exports = {
         body: "#999999",
         canvas: "#ffffff",
         "canvas-dark": "#010120",
+        "surface-dark": "var(--cf-surface-dark)",
         "surface-dark-soft": "#313641",
         "on-dark": "#ffffff",
         "accent-orange": "#fc4c02",

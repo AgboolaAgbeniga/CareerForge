@@ -16,6 +16,7 @@
     --cf-canvas: #ffffff;
     --cf-canvas-dark: #010120;
     --cf-surface-dark-soft: #313641;
+    --cf-surface-dark: #f5f5f7;
     --cf-on-dark: #ffffff;
     --cf-accent-orange: #fc4c02;
     --cf-accent-magenta: #ef2cc1;
@@ -26,6 +27,7 @@
   .dark {
     --background: #010120;
     --foreground: #ffffff;
+    --cf-surface-dark: #121232;
   }
 }
 

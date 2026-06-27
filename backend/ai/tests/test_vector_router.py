@@ -14,7 +14,7 @@ def test_init_calls_ensure(monkeypatch):
     def fake_ensure():
         called['ok'] = True
 
-    monkeypatch.setattr('vector.pgvector.ensure_extension_and_table', fake_ensure)
+    monkeypatch.setattr('vector.router.ensure_extension_and_table', fake_ensure)
 
     r = client.post('/vectors/init')
     assert r.status_code == 200
@@ -30,8 +30,8 @@ def test_index_uses_manifest_dim(monkeypatch):
     def fake_upsert(candidate_id, model_id, model_dim, embedding, payload, role=None):
         recorded['args'] = (candidate_id, model_id, model_dim, embedding[:3], payload, role)
 
-    monkeypatch.setattr('vector.pgvector.get_model_info', fake_get_model_info)
-    monkeypatch.setattr('vector.pgvector.upsert_embedding', fake_upsert)
+    monkeypatch.setattr('vector.router.get_model_info', fake_get_model_info)
+    monkeypatch.setattr('vector.router.upsert_embedding', fake_upsert)
 
     body = {
         'candidate_id': 42,
@@ -51,7 +51,7 @@ def test_index_missing_dim_errors(monkeypatch):
     def fake_get_model_info(mid):
         return {}
 
-    monkeypatch.setattr('ai.vector.pgvector.get_model_info', fake_get_model_info)
+    monkeypatch.setattr('vector.router.get_model_info', fake_get_model_info)
 
     body = {
         'candidate_id': 99,
@@ -67,7 +67,7 @@ def test_search_returns_results(monkeypatch):
     def fake_search(embedding, top_k, model_id=None, role=None):
         return [{'candidate_id': 42, 'distance': 0.01, 'model_id': model_id, 'role': role}]
 
-    monkeypatch.setattr('vector.pgvector.search_embeddings', fake_search)
+    monkeypatch.setattr('vector.router.search_embeddings', fake_search)
 
     body = {
         'embedding': [0.1] * 384,

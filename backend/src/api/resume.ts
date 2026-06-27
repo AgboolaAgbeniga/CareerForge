@@ -1,5 +1,5 @@
 import express, { Response } from 'express';
-import multer from 'multer';
+import { documentUploader, validateFileMagicBytes } from '../utils/uploader';
 import { z } from 'zod';
 import { db } from '../utils/database';
 import { resumes, jobSeekers, users } from '../models/schema';
@@ -30,24 +30,7 @@ try {
   logger.warn(`Could not create local upload dir: ${err?.message || err}`);
 }
 
-// Multer config for memory storage (we'll handle Supabase upload manually)
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 10 * 1024 * 1024 },
-  fileFilter: (req, file, cb) => {
-    const allowedTypes = [
-      'application/pdf',
-      'application/msword',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      'text/plain'
-    ];
-    if (allowedTypes.includes(file.mimetype)) {
-      cb(null, true);
-    } else {
-      cb(new AppError('Invalid file type. Only PDF, Word, and Text documents are allowed.', 400, 'INVALID_FILE_TYPE') as any);
-    }
-  }
-});
+const upload = documentUploader;
 
 // Validation schemas
 const optimizeSchema = z.object({
@@ -126,6 +109,9 @@ router.post('/upload', authenticateToken, requireVerified, upload.single('file')
   if (!req.file) {
     throw new AppError('No file uploaded', 400, 'MISSING_FILE');
   }
+
+  // Verify file magic bytes and extension securely
+  await validateFileMagicBytes(req.file);
 
   const userId = req.user!.id;
 

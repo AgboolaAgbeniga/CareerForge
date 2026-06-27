@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Linkedin, UploadCloud, Sparkles, X } from 'lucide-react';
+import Link from 'next/link';
 import {
   ResumeHealthCard,
   ProfileCompletionCard,
@@ -21,6 +22,7 @@ import { useProfileStats } from '@/hooks/useDashboardProfile';
 import { useResumeScore } from '@/hooks/queries/useDashboard';
 import { supabase } from '@/lib/supabase';
 import { useQueryClient } from '@tanstack/react-query';
+import { usePageStore } from '@/store/usePageStore';
 
 const WELCOME_BANNER_KEY = 'cf_welcome_banner_dismissed';
 
@@ -51,12 +53,12 @@ function WelcomeBanner({
       </div>
       <div className="flex items-center gap-3 ml-4 flex-shrink-0">
         {completion < 80 && (
-          <a
+          <Link
             href="/job-seeker/full-profile"
             className="type-mono-eyebrow text-accent-mint hover:opacity-80 transition-opacity whitespace-nowrap"
           >
             Complete Profile →
-          </a>
+          </Link>
         )}
         <button onClick={onDismiss} className="text-on-primary/50 hover:text-on-primary transition-colors">
           <X className="w-4 h-4" />
@@ -71,6 +73,12 @@ export default function Dashboard() {
   const queryClient = useQueryClient();
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const [showWelcome, setShowWelcome] = useState(false);
+
+  const setPageContextData = usePageStore((s) => s.setPageContextData);
+
+  useEffect(() => {
+    setPageContextData({ type: 'DASHBOARD', role: 'job_seeker' });
+  }, [setPageContextData]);
 
   const {
     isLoading,

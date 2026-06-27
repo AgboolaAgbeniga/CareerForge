@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 
 const ValueProposition: React.FC = () => {
   return (
@@ -13,9 +14,9 @@ const ValueProposition: React.FC = () => {
             <p className="type-body-lg text-ink/70 mb-8 max-w-md">
               Tailored, ATS-friendly resumes and LinkedIn profile optimization directly linked to personalized job recommendations.
             </p>
-            <a href="/auth/signup" className="type-mono-caps-eyebrow text-ink border-b border-ink/30 pb-1 self-start hover:border-ink transition-colors">
+            <Link href="/auth/signup" className="type-mono-caps-eyebrow text-ink border-b border-ink/30 pb-1 self-start hover:border-ink transition-colors">
               Get Started →
-            </a>
+            </Link>
           </div>
 
           <div className="flex flex-col">
@@ -26,9 +27,9 @@ const ValueProposition: React.FC = () => {
             <p className="type-body-lg text-ink/70 mb-8 max-w-md">
               Intelligent candidate screening and ranking accelerates your hiring cycle, bringing the best talent to the top instantly.
             </p>
-            <a href="/auth/signup" className="type-mono-caps-eyebrow text-ink border-b border-ink/30 pb-1 self-start hover:border-ink transition-colors">
+            <Link href="/auth/signup" className="type-mono-caps-eyebrow text-ink border-b border-ink/30 pb-1 self-start hover:border-ink transition-colors">
               Start Hiring →
-            </a>
+            </Link>
           </div>
         </div>
       </div>
